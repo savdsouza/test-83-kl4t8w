@@ -1,0 +1,149 @@
+################################################################################
+# DOCKERIGNORE FILE FOR BACKEND MICROSERVICES
+# ------------------------------------------------------------------------------
+# This file defines comprehensive exclusion patterns to optimize the Docker
+# build context, enhance security, and prevent sensitive or unnecessary files
+# from being included in container images. Each exclusion category is annotated
+# for clarity and traceability to the technical specifications:
+# - System Security (Section 7.2 Data Security)
+# - Container Security (Section 8.3.2)
+# - Build Optimization (Section 8.5.2)
+################################################################################
+
+
+################################################################################
+# EXPORT: dockerignore_patterns
+# Named Exports:
+#   - version_control_patterns
+#   - dependency_patterns
+#   - development_patterns
+#   - docker_patterns
+#   - temporary_patterns
+#   - security_patterns
+################################################################################
+
+
+################################################################################
+# 1) VERSION CONTROL FILES
+# ------------------------------------------------------------------------------
+# Purpose: Exclude all version control system files and directories to minimize
+#          build context size and remove any sensitive repository details.
+################################################################################
+.gitattributes
+.gitignore
+.github
+.gitmodules
+**/.git
+**/.gitkeep
+
+
+################################################################################
+# 2) DEPENDENCIES
+# ------------------------------------------------------------------------------
+# Purpose: Exclude package manager directories, lock files, and compiled artifacts
+#          that are not needed in the final container, thereby reducing image size
+#          and attack surface.
+################################################################################
+**/node_modules
+**/vendor
+**/target
+**/build
+**/dist
+**/__pycache__
+**/*.pyc
+**/pip-log.txt
+**/poetry.lock
+**/package-lock.json
+**/yarn.lock
+**/.gradle
+**/gradle
+**/maven
+**/.m2
+
+
+################################################################################
+# 3) DEVELOPMENT
+# ------------------------------------------------------------------------------
+# Purpose: Exclude local environment variables, test files, documentation,
+#          IDE/project configurations, and other dev-only artifacts that do not
+#          belong in production images.
+################################################################################
+**/.env*
+**/*.log
+**/coverage
+**/tests
+**/*.test.*
+**/*.spec.*
+**/README.md
+**/CHANGELOG.md
+**/docs
+**/.vscode
+**/.idea
+**/.editorconfig
+**/.eslintrc*
+**/.prettierrc*
+**/jest.config.*
+**/swagger.*
+**/api-docs
+**/postman
+**/cypress
+
+
+################################################################################
+# 4) DOCKER & CONTAINER ORCHESTRATION
+# ------------------------------------------------------------------------------
+# Purpose: Exclude Dockerfiles, docker-compose files, and other container
+#          orchestration artifacts if they are not required directly in the
+#          final context for each microservice image.
+################################################################################
+**/Dockerfile*
+**/.dockerignore
+**/docker-compose*.yml
+**/docker
+**/.docker
+**/container-scripts
+**/kubernetes
+**/helm
+
+
+################################################################################
+# 5) TEMPORARY & SYSTEM FILES
+# ------------------------------------------------------------------------------
+# Purpose: Exclude temporary system files, OS-specific hidden files, Terraform
+#          artifacts, and other ephemeral items that should not be baked into
+#          the image.
+################################################################################
+**/tmp
+**/*.tmp
+**/.DS_Store
+**/*.swp
+**/*.swo
+**/thumbs.db
+**/temp
+**/.terraform
+**/.terraformrc
+**/terraform.tfstate*
+
+
+################################################################################
+# 6) SECURITY & SENSITIVE FILES
+# ------------------------------------------------------------------------------
+# Purpose: Exclude private keys, certificates, credentials, and other sensitive
+#          data to safeguard them from container images and mitigate risks.
+################################################################################
+**/*.pem
+**/*.key
+**/*.crt
+**/*.csr
+**/*.p12
+**/*.pfx
+**/id_rsa*
+**/id_ed25519*
+**/secrets
+**/credentials
+**/.aws
+**/.ssh
+**/vault
+**/private
+**/.htpasswd
+**/auth.json
