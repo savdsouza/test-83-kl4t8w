@@ -1,0 +1,144 @@
+<!--
+    This file implements the layout for an individual payment item within
+    the payment history RecyclerView. It uses Data Binding to bind a Payment
+    model and a click listener, following Material Design card patterns, 
+    accessibility guidelines, and performance optimizations.
+
+    External Imports:
+      - androidx.cardview.widget.CardView (version 1.0.0)
+      - androidx.constraintlayout.widget.ConstraintLayout (version 2.1.4)
+
+    Internal Imports:
+      - @drawable/bg_card for the card background with elevation and corner radius
+      - @drawable/ic_payment for the theme-aware payment icon
+
+    Accessibility:
+      - Each key element has a content description for screen readers.
+      - ConstraintLayout is set to act as a grouped description area for 
+        payment details. 
+      - Minimum touch target sizes are ensured for interactive elements.
+
+    Data Binding Variables:
+      1) payment (Payment) 
+         - provides transaction details such as formatted amount/date, status,
+           and payment method
+      2) clickListener (PaymentClickListener)
+         - invokes onPaymentClick(payment) when the user clicks the card
+
+    Performance Optimizations:
+      - ConstraintLayout for a flat, optimized view hierarchy 
+      - Minimal nesting (max depth of 3)
+      - Use of match constraints to reduce layout passes
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <!-- Payment data model containing transaction details -->
+        <variable
+            name="payment"
+            type="Payment" />
+
+        <!-- Click listener interface or lambda for handling payment item clicks -->
+        <variable
+            name="clickListener"
+            type="PaymentClickListener" />
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/root_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/global_spacing_small"
+        android:background="@drawable/bg_card"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:elevation="4dp"
+        android:minHeight="48dp"
+        android:onClick="@{() -> clickListener.onPaymentClick(payment)}"
+        app:cardUseCompatPadding="true"
+        app:cardPreventCornerOverlap="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="72dp"
+            android:padding="@dimen/global_spacing_medium"
+            android:contentDescription="Payment transaction details"
+            android:screenReaderFocusable="true"
+            app:layout_constraintWidth_min="0dp">
+
+            <!-- Payment Icon -->
+            <ImageView
+                android:id="@+id/paymentIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="@dimen/global_spacing_small"
+                android:contentDescription="Payment transaction icon"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_payment"
+                android:tint="@color/primary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Payment Amount -->
+            <TextView
+                android:id="@+id/amountText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/global_spacing_medium"
+                android:layout_marginEnd="@dimen/global_spacing_medium"
+                android:contentDescription="Payment amount"
+                android:text="@{payment.formattedAmount}"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/statusText"
+                app:layout_constraintStart_toEndOf="@+id/paymentIcon"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Payment Date -->
+            <TextView
+                android:id="@+id/dateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_spacing_tiny"
+                android:text="@{payment.formattedDate}"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="@+id/amountText"
+                app:layout_constraintTop_toBottomOf="@+id/amountText" />
+
+            <!-- Payment Method -->
+            <TextView
+                android:id="@+id/paymentMethodText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_spacing_tiny"
+                android:text="@{payment.paymentMethod}"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="@+id/dateText"
+                app:layout_constraintTop_toBottomOf="@+id/dateText" />
+
+            <!-- Payment Status -->
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/global_spacing_medium"
+                android:contentDescription="Payment status"
+                android:gravity="center_vertical"
+                android:minHeight="48dp"
+                android:text="@{payment.status}"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+</layout>
