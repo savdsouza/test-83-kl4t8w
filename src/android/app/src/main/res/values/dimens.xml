@@ -1,0 +1,95 @@
+<resources>
+
+    <!--
+        ***************************************************************
+        GLOBAL DIMENSION VALUES
+        Defines core spacing units and global metrics used throughout
+        the application, ensuring alignment with the 8dp baseline grid
+        system and the technical specifications.
+        ***************************************************************
+    -->
+    <dimen name="global_spacing_unit">8dp</dimen>
+    <dimen name="global_spacing_tiny">4dp</dimen>
+    <dimen name="global_spacing_small">8dp</dimen>
+    <dimen name="global_spacing_medium">16dp</dimen>
+    <dimen name="global_spacing_large">24dp</dimen>
+    <dimen name="global_spacing_xlarge">32dp</dimen>
+
+    <!--
+        ***************************************************************
+        TEXT SIZES
+        Implements the typography scale in sp units, adhering to the
+        design system’s 12/14/16/20/24/32px guidelines for uniform text
+        presentation across varying screen densities.
+        ***************************************************************
+    -->
+    <dimen name="text_display">32sp</dimen>
+    <dimen name="text_headline">24sp</dimen>
+    <dimen name="text_title">20sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+    <dimen name="text_caption">14sp</dimen>
+    <dimen name="text_small">12sp</dimen>
+
+    <!--
+        ***************************************************************
+        COMPONENT SIZES
+        Establishes standard sizing for interactive elements consistent
+        with Material Design guidelines and ensuring comprehensive UI
+        consistency and accessibility.
+        ***************************************************************
+    -->
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_min_width">88dp</dimen>
+    <dimen name="input_height">56dp</dimen>
+    <dimen name="toolbar_height">56dp</dimen>
+    <dimen name="bottom_nav_height">56dp</dimen>
+    <dimen name="fab_size">56dp</dimen>
+    <dimen name="icon_size_small">16dp</dimen>
+    <dimen name="icon_size_medium">24dp</dimen>
+    <dimen name="icon_size_large">32dp</dimen>
+
+    <!--
+        ***************************************************************
+        SPACING
+        Defines layout padding and margins based on the 8dp grid system.
+        This approach ensures comprehensive spacing rules for vertical,
+        horizontal, and grid-based layouts to support multiple device
+        breakpoints (≤375px to ≥1024px).
+        ***************************************************************
+    -->
+    <dimen name="content_margin_horizontal">16dp</dimen>
+    <dimen name="content_margin_vertical">16dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="list_item_spacing">8dp</dimen>
+    <dimen name="section_spacing">24dp</dimen>
+    <dimen name="grid_spacing">8dp</dimen>
+
+    <!--
+        ***************************************************************
+        ELEVATIONS
+        Reflects Material elevation values that govern shadows and
+        visual hierarchy, ensuring depth consistency across cards,
+        buttons, toolbars, dialogs, and floating action buttons.
+        ***************************************************************
+    -->
+    <dimen name="card_elevation">2dp</dimen>
+    <dimen name="button_elevation">2dp</dimen>
+    <dimen name="toolbar_elevation">4dp</dimen>
+    <dimen name="fab_elevation">6dp</dimen>
+    <dimen name="bottom_nav_elevation">4dp</dimen>
+    <dimen name="dialog_elevation">8dp</dimen>
+
+    <!--
+        ***************************************************************
+        RADIUS
+        Specifies the corner radii for creating standardized rounded
+        shapes, whether subtle rounding for small elements or fully
+        rounded for pill-shaped components.
+        ***************************************************************
+    -->
+    <dimen name="corner_radius_small">4dp</dimen>
+    <dimen name="corner_radius_medium">8dp</dimen>
+    <dimen name="corner_radius_large">16dp</dimen>
+    <dimen name="corner_radius_full">9999dp</dimen>
+
+</resources>
