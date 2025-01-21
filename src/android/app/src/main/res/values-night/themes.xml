@@ -1,0 +1,65 @@
+<!--
+  Night theme resource definitions for the Dog Walking application.
+  Implements dark theme variant of the design system with OLED-optimized
+  backgrounds, Material Design 3 compliance, and system-wide dark mode
+  synchronization. Adheres to WCAG 2.1 accessibility guidelines.
+  Uses MaterialComponents (com.google.android.material:material:1.9.0).
+-->
+<resources>
+
+    <!--
+        Overriding color resources from the base "colors.xml" for night mode.
+        These values ensure dark backgrounds, higher contrast, and OLED
+        optimization to reduce battery consumption.
+    -->
+    <color name="primary">#90CAF9</color>
+    <color name="primary_dark">#42A5F5</color>
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="error">#CF6679</color>
+    <!--
+        Secondary color serves as the accent in night mode,
+        aligning with colorAccent usage in legacy APIs.
+    -->
+    <color name="secondary">#81C784</color>
+
+    <!--
+        Night theme extending the base MaterialComponents DayNight theme.
+        Provides consistent styling across buttons, cards, text fields, and
+        dialogs, referencing all required exports and ensuring unified dark
+        mode behavior.
+    -->
+    <style name="Theme.DogWalking" parent="Theme.MaterialComponents.DayNight">
+        <!-- Primary brand color for dark mode and interactive elements. -->
+        <item name="colorPrimary">@color/primary</item>
+
+        <!-- Darker variant for status bars or action bars if necessary. -->
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+
+        <!-- Secondary color used as the accent for legacy "colorAccent" references. -->
+        <item name="colorAccent">@color/secondary</item>
+
+        <!-- Base window background, providing an OLED-friendly dark surface. -->
+        <item name="android:windowBackground">@color/background</item>
+
+        <!-- Elevated surface color for cards, sheets, and other Material components. -->
+        <item name="colorSurface">@color/surface</item>
+
+        <!-- Error color for critical states and user feedback in dark mode. -->
+        <item name="colorError">@color/error</item>
+
+        <!-- Primary and secondary text colors ensuring legibility on dark surfaces. -->
+        <item name="textColorPrimary">#FFFFFFFF</item>
+        <item name="textColorSecondary">#B3FFFFFF</item>
+
+        <!--
+            Night variants of component styles inherited from the imported styles.xml,
+            ensuring proper elevation, color states, and dark-friendly visuals.
+        -->
+        <item name="buttonStyle">@style/Widget.App.Button.Night</item>
+        <item name="editTextStyle">@style/Widget.App.EditText.Night</item>
+        <item name="materialCardViewStyle">@style/Widget.App.Card.Night</item>
+        <item name="materialAlertDialogTheme">@style/Widget.App.Dialog.Night</item>
+    </style>
+
+</resources>
