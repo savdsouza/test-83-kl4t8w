@@ -1,0 +1,60 @@
+<!--
+  This drawable resource implements a state-list drawable that adapts
+  to focused, disabled, and enabled states for input fields. It ensures
+  consistent visual design (4dp corner radius, specified stroke widths)
+  and accessible contrast (per the design system).
+  
+  It references @color/primary and @color/surface from the imported
+  colors.xml for focused and default enabled states, and uses
+  #F5F5F5 for disabled backgrounds to clarify state changes.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Focused State: Elevated stroke (2dp) with primary color;
+         Surface background for high-contrast visual feedback. -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <!-- Consistent corner radius for rounded inputs -->
+            <corners android:radius="4dp" />
+            <!-- Stronger stroke width for focus emphasis -->
+            <stroke
+                android:width="2dp"
+                android:color="@color/primary" />
+            <!-- Uses the design system 'surface' color for the fill -->
+            <solid android:color="@color/surface" />
+        </shape>
+    </item>
+
+    <!-- Disabled State: Subtle stroke (1dp) with semi-transparent
+         black color (#1F000000) and gray background (#F5F5F5)
+         to signify disengagement. -->
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <!-- Consistent corner radius for design uniformity -->
+            <corners android:radius="4dp" />
+            <!-- Thinner stroke with low-opacity black for subdued appearance -->
+            <stroke
+                android:width="1dp"
+                android:color="#1F000000" />
+            <!-- Light gray fill to visually represent a disabled field -->
+            <solid android:color="#F5F5F5" />
+        </shape>
+    </item>
+
+    <!-- Default Enabled State: Minimal (1dp) stroke with
+         semi-transparent black color (#1F000000) and the surface
+         color background. -->
+    <item android:state_enabled="true">
+        <shape android:shape="rectangle">
+            <!-- Maintains the same visual corner radius as other states -->
+            <corners android:radius="4dp" />
+            <!-- Subtle stroke for normal interaction state -->
+            <stroke
+                android:width="1dp"
+                android:color="#1F000000" />
+            <!-- Uses the design system 'surface' color for fill consistency -->
+            <solid android:color="@color/surface" />
+        </shape>
+    </item>
+
+</selector>
