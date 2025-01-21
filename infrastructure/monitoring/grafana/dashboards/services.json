@@ -1,0 +1,236 @@
+{
+  "_comment_file_overview": "Grafana dashboard configuration for monitoring all Dog Walking Application microservices. This dashboard reflects health status, performance metrics, business KPIs, and SLA compliance, as specified in the technical requirements.",
+  "_comment_imports": {
+    "internal": [
+      {
+        "name": "prometheus_config",
+        "type": "yaml",
+        "module": "prometheus/prometheus.yml",
+        "members_used": [
+          {
+            "member_name": "scrape_configs",
+            "member_type": "yaml",
+            "import_type": "named"
+          }
+        ],
+        "purpose": "Ensures services are scraped properly in Prometheus."
+      }
+    ],
+    "external": [
+      {
+        "name": "grafana",
+        "package_name": "grafana",
+        "package_version": "9.5.0",
+        "purpose": "Dashboard visualization platform."
+      },
+      {
+        "name": "prometheus",
+        "package_name": "prometheus",
+        "package_version": "2.45.0",
+        "purpose": "Primary metrics data source."
+      }
+    ]
+  },
+  "_comment_requirements_addressed": [
+    {
+      "name": "System Monitoring",
+      "location": "2.4.1/System Monitoring",
+      "description": "Implements comprehensive monitoring for application metrics, logs and traces using Prometheus, ELK Stack, and Jaeger."
+    },
+    {
+      "name": "High Availability",
+      "location": "2.5.1/Infrastructure Requirements",
+      "description": "Monitors multi-AZ deployment with auto-scaling groups and service health checks."
+    },
+    {
+      "name": "Success Criteria Monitoring",
+      "location": "1.2/Success Criteria",
+      "description": "Tracks system uptime (99.9%), user satisfaction (4.5+ rating), and booking completion rate (95%)."
+    }
+  ],
+  "_comment_globals": {
+    "refresh": "10s",
+    "timezone": "browser",
+    "version": 2
+  },
+  "annotations": {
+    "_comment": "Configures annotation layers in Grafana for referencing deployments and other key events.",
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": "Prometheus",
+        "enable": true,
+        "expr": "changes(service_version{job=~\"$service\"}[1m]) > 0",
+        "name": "Deployments",
+        "iconColor": "rgb(255, 96, 96)"
+      }
+    ]
+  },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "refresh": "10s",
+  "timezone": "browser",
+  "title": "Dog Walking Services Overview",
+  "uid": "services-dashboard",
+  "version": 2,
+  "time": {
+    "_comment": "Establishes default time range for the dashboard.",
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "_comment": "User-configurable refresh intervals and quick time range options.",
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d"
+    ]
+  },
+  "panels": [
+    {
+      "_comment": "Panel #1: Displays the health of core microservices by summing the 'up' metrics per job.",
+      "title": "Services Health Status",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(up{job=~\"api-gateway|auth-service|booking-service|payment-service|tracking-service|notification-service\"}) by (job)",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "textMode": "value"
+      }
+    },
+    {
+      "_comment": "Panel #2: Monitors overall SLA compliance, leveraging a 24-hour average uptime ratio multiplied by 100.",
+      "title": "SLA Compliance",
+      "type": "gauge",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "avg_over_time(service_uptime_ratio[24h]) * 100",
+          "legendFormat": "Uptime %"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 4
+      },
+      "options": {
+        "thresholds": [
+          {
+            "color": "red",
+            "value": 0
+          },
+          {
+            "color": "yellow",
+            "value": 99.5
+          },
+          {
+            "color": "green",
+            "value": 99.9
+          }
+        ]
+      }
+    }
+  ],
+  "templating": {
+    "_comment": "Defines dashboard-level variables to filter data dynamically.",
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus"
+      },
+      {
+        "name": "service",
+        "type": "query",
+        "query": "label_values(up, job)",
+        "refresh": 2
+      },
+      {
+        "name": "interval",
+        "type": "interval",
+        "options": [
+          "1m",
+          "5m",
+          "10m",
+          "30m",
+          "1h"
+        ]
+      }
+    ]
+  },
+  "tags": [
+    "services",
+    "monitoring",
+    "overview",
+    "sla"
+  ],
+  "links": [
+    {
+      "title": "Service Documentation",
+      "url": "/docs/services",
+      "targetBlank": true
+    },
+    {
+      "title": "Runbook",
+      "url": "/docs/runbook",
+      "targetBlank": true
+    }
+  ],
+  "_comment_export": {
+    "exports": [
+      {
+        "name": "services_dashboard",
+        "type": "json",
+        "members_exposed": [
+          {
+            "member_name": "dashboard_config",
+            "member_type": "object",
+            "export_type": "default"
+          }
+        ],
+        "purpose": "Grafana dashboard configuration for overall services monitoring."
+      }
+    ],
+    "_comment": "This bucketed export metadata indicates how this dashboard can be shared or imported."
+  }
+}
