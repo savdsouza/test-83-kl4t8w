@@ -1,0 +1,185 @@
+<!--
+  Utilizing MaterialComponents (com.google.android.material:material:1.9.0)
+  for advanced Material Design 3 color system support and theming.
+  This file defines a comprehensive set of color resources aligned with
+  the design system, ensuring compliance with accessibility and contrast
+  standards (WCAG 2.1 AA).
+-->
+
+<resources>
+
+    <!--
+      BRAND PRIMARY
+      - Used to represent the primary brand color throughout the application,
+        including prominent UI elements, headers, and primary actions.
+    -->
+    <color name="primary">#2196F3</color>
+    <!--
+      Darker variant of the primary color for situations requiring increased
+      contrast or an alternate accent in layouts.
+    -->
+    <color name="primary_dark">#1976D2</color>
+    <!--
+      Lighter variant of the primary color for backgrounds or less
+      emphasis on brand accents.
+    -->
+    <color name="primary_light">#BBDEFB</color>
+    <!--
+      Primary Variant (often used interchangeably with primary_dark)
+      for adaptive theming scenarios in Material Design 3.
+    -->
+    <color name="primary_variant">#1976D2</color>
+    <!--
+      For text and icons placed on top of primary-colored backgrounds,
+      ensuring readable contrast (white over #2196F3).
+    -->
+    <color name="on_primary">#FFFFFF</color>
+
+    <!--
+      BRAND SECONDARY
+      - Accent color for complementing the primary brand color in UI components
+        such as FABs, toggles, and secondary action buttons.
+    -->
+    <color name="secondary">#4CAF50</color>
+    <!--
+      Darker variant of the secondary color for alternate shading, pressed states,
+      or additional accent emphasis.
+    -->
+    <color name="secondary_dark">#388E3C</color>
+    <!--
+      Lighter variant of the secondary color for backgrounds or less intense
+      accent usage.
+    -->
+    <color name="secondary_light">#C8E6C9</color>
+    <!--
+      Secondary Variant (often used with custom theming for states requiring an
+      alternate shade).
+    -->
+    <color name="secondary_variant">#388E3C</color>
+    <!--
+      For text or icons placed on top of secondary-colored backgrounds,
+      preserving readability.
+    -->
+    <color name="on_secondary">#FFFFFF</color>
+
+    <!--
+      ERROR COLORS
+      - Used to highlight critical states, error messages, or invalid inputs,
+        ensuring they catch user attention while maintaining compliance with
+        accessibility standards.
+    -->
+    <color name="error">#F44336</color>
+    <!--
+      Darker error shade for contrasting backgrounds or pressed error states.
+    -->
+    <color name="error_dark">#D32F2F</color>
+    <!--
+      Lighter error shade for backgrounds or subtle error highlights
+      without overwhelming the UI.
+    -->
+    <color name="error_light">#FFCDD2</color>
+    <!--
+      For elements that will appear on top of error-colored surfaces
+      to ensure proper visibility (e.g., text in error banners).
+    -->
+    <color name="on_error">#FFFFFF</color>
+
+    <!--
+      BACKGROUND COLORS
+      - Base background colors for screens and secondary sections
+        in light theme layouts.
+    -->
+    <color name="background">#FFFFFF</color>
+    <!--
+      Secondary background color, often used in content containers or
+      alternative sub-backgrounds to create hierarchical separation.
+    -->
+    <color name="background_secondary">#F5F5F5</color>
+
+    <!--
+      SURFACE COLORS
+      - Used for cards, sheets, and other elevated Material components,
+        distinguishing them from general backgrounds.
+    -->
+    <color name="surface">#FFFFFF</color>
+    <!--
+      Variant of the surface color for slight delineation or
+      alternative container surfaces.
+    -->
+    <color name="surface_variant">#F5F5F5</color>
+    <!--
+      Text color intended for use on surfaces, guaranteeing
+      adequate contrast against light backgrounds.
+    -->
+    <color name="on_surface">#212121</color>
+
+    <!--
+      TEXT COLORS
+      - Palette for text styles across the application,
+        ensuring adequate visibility and clarity.
+    -->
+    <color name="text_primary">#212121</color>
+    <!--
+      Lighter text color for secondary or less prominent text,
+      meeting accessibility requirements for appropriate use cases.
+    -->
+    <color name="text_secondary">#757575</color>
+    <!--
+      Text hint color typically seen in placeholders or
+      hint text within input fields.
+    -->
+    <color name="text_hint">#9E9E9E</color>
+    <!--
+      Text color for disabled states, specified with partial alpha
+      to convey reduced emphasis.
+    -->
+    <color name="text_disabled">#61757575</color>
+
+    <!--
+      DIVIDER
+      - Used for separators and dividers in lists or layout sections,
+        providing a subtle visual boundary.
+    -->
+    <color name="divider">#EEEEEE</color>
+
+    <!--
+      INTERACTION / STATE COLORS
+      - Colors related to interactive highlights, overlays, or
+        transient states like ripples, scrims, and overlays.
+    -->
+    <color name="ripple">#33000000</color>
+    <!--
+      Semi-transparent overlay color for dialogs, modals, or other overlays
+      to obscure and focus the user’s attention on a foreground element.
+    -->
+    <color name="scrim">#52000000</color>
+
+    <!--
+      ELEVATION OVERLAYS
+      - Subtle differences in background color for components to
+        simulate depth and layered surfaces.
+    -->
+    <color name="elevation_01">#FFFFFF</color>
+    <color name="elevation_02">#F5F5F5</color>
+    <color name="elevation_03">#EEEEEE</color>
+
+    <!--
+      INTERACTION STATES FOR PRIMARY
+      - Pressed, disabled, and variant states for primary elements,
+        ensuring consistency with brand guidelines and accessible contrast.
+    -->
+    <color name="primary_pressed">#1976D2</color>
+    <!--
+      Alpha-modified color representing primary in a disabled state,
+      providing visual feedback without losing brand identity.
+    -->
+    <color name="primary_disabled">#612196F3</color>
+
+    <!--
+      INTERACTION STATES FOR SECONDARY
+      - Pressed, disabled, and variant states for secondary elements.
+    -->
+    <color name="secondary_pressed">#388E3C</color>
+    <color name="secondary_disabled">#614CAF50</color>
+
+</resources>
