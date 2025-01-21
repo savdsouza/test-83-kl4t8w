@@ -1,0 +1,156 @@
+<!--
+    ********************************************************************************************
+    * File: item_walker.xml
+    * Description: Represents a single walker item in a RecyclerView list, showcasing the walker's
+    *              profile photo, name, non-editable rating, distance, price, and availability chip.
+    *
+    * External Imports (Library Versions):
+    * 1) CardView (androidx.cardview.widget.CardView) - version 1.0.0
+    * 2) ConstraintLayout (androidx.constraintlayout.widget.ConstraintLayout) - version 2.1.4
+    * 3) ShapeableImageView (com.google.android.material.imageview.ShapeableImageView) - version 1.9.0
+    * 4) Chip (com.google.android.material.chip.Chip) - version 1.9.0
+    *
+    * Internal Import:
+    * 1) com.dogwalking.app.ui.components.RatingBar - Custom rating component for displaying walker ratings
+    ********************************************************************************************
+-->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+
+    <!-- Standard medium margin dimension for spacing around the card -->
+    android:layout_margin="@dimen/margin_medium"
+
+    <!-- Standard card elevation for depth, as defined in the dimension resources -->
+    app:cardElevation="@dimen/card_elevation"
+
+    <!-- Standard card corner radius to provide a consistent curved shape -->
+    app:cardCornerRadius="@dimen/card_corner_radius"
+
+    <!-- Applies a selectable ripple foreground when clicked, improving touch feedback -->
+    android:foreground="?attr/selectableItemBackground"
+
+    <!-- Enables focus and click support for better accessibility and user interaction -->
+    android:focusable="true"
+    android:clickable="true">
+
+    <!--
+        ConstraintLayout is used to keep view hierarchies flat, improving performance.
+        All child views will be positioned via constraints for an accessible and neatly
+        arranged layout.
+    -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        <!-- Internal padding to provide spacing inside the card content area -->
+        android:padding="@dimen/padding_medium"
+
+        <!-- Ensures a minimum height to maintain a consistent item size within the list -->
+        android:minHeight="88dp">
+
+        <!--
+            ShapeableImageView to display the walker's circular profile photo.
+            The shape is defined by the Material Design 3 shape style @style/CircularImageView.
+        -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_walker_photo"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="@string/walker_photo_content_description"
+            app:shapeAppearance="@style/CircularImageView"
+
+            <!-- Constraints to position the walker's photo at the start, centered vertically -->
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!--
+            Displays the walker's name in a single line with ellipses for overflow.
+            Uses Material Design 3 TitleMedium text appearance.
+        -->
+        <TextView
+            android:id="@+id/tv_walker_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+
+            <!-- Constraints: this view starts to the right of the photo and
+                 can expand until it reaches the distance TextView on the end -->
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/iv_walker_photo"
+            app:layout_constraintEnd_toStartOf="@+id/tv_walker_distance"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            />
+
+        <!--
+            Non-editable custom RatingBar to display the walker's average rating.
+            The rating bar is set to not respond to user input in the item.
+        -->
+        <com.dogwalking.app.ui.components.RatingBar
+            android:id="@+id/rating_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="yes"
+            app:rb_isEditable="false"
+
+            <!-- Position the rating bar below the walker name, aligned to the same start. -->
+            app:layout_constraintTop_toBottomOf="@+id/tv_walker_name"
+            app:layout_constraintStart_toStartOf="@+id/tv_walker_name"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.0" />
+
+        <!--
+            Displays the physical distance from the user to the walker.
+            Uses BodyMedium text style for improved readability.
+        -->
+        <TextView
+            android:id="@+id/tv_walker_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+
+            <!-- Aligns distance view to the top of the item, anchored to the parent end
+                 while sharing a baseline or alignment with the walker's name. -->
+            app:layout_constraintBaseline_toBaselineOf="@+id/tv_walker_name"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!--
+            Displays the walker's price or rate for a walk.
+            Uses LabelLarge text style to draw user attention to cost details.
+        -->
+        <TextView
+            android:id="@+id/tv_walker_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+
+            <!-- Positioned below the walker's distance text and right-aligned to the parent. -->
+            app:layout_constraintTop_toBottomOf="@+id/tv_walker_distance"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!--
+            Material Chip indicating the walker's availability status (e.g., Available, Busy, etc.).
+            style="@style/Widget.Material3.Chip.Assist" provides standard Material M3 chip styling.
+        -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_availability"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checkable="false"
+            style="@style/Widget.Material3.Chip.Assist"
+
+            <!-- Align the chip below the RatingBar, using the same start position for a neat layout. -->
+            app:layout_constraintTop_toBottomOf="@+id/rating_bar"
+            app:layout_constraintStart_toStartOf="@+id/rating_bar" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
