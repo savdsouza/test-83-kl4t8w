@@ -1,0 +1,167 @@
+{
+  // The 'extends' field allows this TypeScript configuration file to inherit 
+  // and override settings from a base tsconfig file located one level above.
+  // This promotes consistency and reusability across multiple projects or services.
+  "extends": "../tsconfig.json",
+
+  "compilerOptions": {
+    // Specifies the ECMAScript target version for transpilation.
+    // ES2022 enables modern JavaScript features such as top-level await, 
+    // class fields, and improved performance optimizations.
+    "target": "ES2022",
+
+    // Sets the module system for generated JavaScript files to CommonJS,
+    // commonly used in Node.js environments and older bundlers.
+    "module": "CommonJS",
+
+    // Defines the output folder for compiled JavaScript files and related artifacts.
+    // Ensures all build artifacts remain organized and separated from source code.
+    "outDir": "./dist",
+
+    // Specifies the root directory for TypeScript source files.
+    // All TypeScript inputs must reside within this directory for proper compilation.
+    "rootDir": "./src",
+
+    // Establishes the base directory to resolve non-relative module imports.
+    // This allows the use of internal path aliases under 'paths' for maintainability.
+    "baseUrl": "./",
+
+    // Defines path mapping entries to facilitate clean and organized imports.
+    // All references to the given aliases are resolved to the specified relative paths.
+    "paths": {
+      "@/*": ["src/*"],
+      "@payment/*": ["src/payment/*"],
+      "@transactions/*": ["src/transactions/*"],
+      "@security/*": ["src/security/*"]
+    },
+
+    // Enables project 'composite' mode for incremental builds and cross-project references.
+    // Required when using the 'references' property to build dependent projects in sequence.
+    "composite": true,
+
+    // Generates .d.ts declaration files for all TypeScript modules to enable consumption 
+    // by other TypeScript projects. Ensures robust type-checking in dependent projects.
+    "declaration": true,
+
+    // Produces .d.ts.map files that map types back to original source locations.
+    // Helpful for debugging and allowing external consumers to navigate 
+    // the original .ts files in supported IDEs.
+    "declarationMap": true,
+
+    // Generates corresponding .map files for each compiled .js, 
+    // to enable precise debugging of TypeScript in browser devtools or Node.js debuggers.
+    "sourceMap": true,
+
+    // Activates all strict type checking modes in TypeScript.
+    // This is a key practice for reliable enterprise-grade applications.
+    "strict": true,
+
+    // Disallows using the 'any' type implicitly to improve type safety.
+    "noImplicitAny": true,
+
+    // Ensures all null or undefined values are fully accounted for in type checks,
+    // mitigating a large class of runtime errors.
+    "strictNullChecks": true,
+
+    // Enforces strict checking of function parameter and return type compatibility.
+    // Prevents accidental type mismatches or incomplete function usage.
+    "strictFunctionTypes": true,
+
+    // Provides complete safety for .call, .bind, and .apply method usage with typed functions.
+    "strictBindCallApply": true,
+
+    // Ensures that class instance properties are declared and assigned valid values 
+    // within the constructor. Prevents undefined references at runtime.
+    "strictPropertyInitialization": true,
+
+    // Flags variables that are declared but never used, enabling developers 
+    // to maintain lean and consistent code.
+    "noUnusedLocals": true,
+
+    // Similar to 'noUnusedLocals', but specifically for function parameters.
+    // Ensures function signatures remain clean and purposeful.
+    "noUnusedParameters": true,
+
+    // Requires every code path in a function to explicitly return a value 
+    // or terminate in an acceptable way. Helps avoid subtle runtime errors.
+    "noImplicitReturns": true,
+
+    // Disallows fallthrough behavior in switch-case statements 
+    // that could introduce logical bugs if not intended.
+    "noFallthroughCasesInSwitch": true,
+
+    // Enables experimental decorator support, primarily used in frameworks like 
+    // Angular or class-transformer for advanced object manipulation.
+    "experimentalDecorators": true,
+
+    // Emits decorator metadata for advanced reflection-based libraries 
+    // that rely on runtime type data for dependency injection, transformation, etc.
+    "emitDecoratorMetadata": true,
+
+    // Skips type checking of declaration files and libraries in 'node_modules'.
+    // Improves build performance without compromising application correctness.
+    "skipLibCheck": true,
+
+    // Forces consistent file name casing across the project.
+    // Prevents build issues on case-sensitive file systems like Linux.
+    "forceConsistentCasingInFileNames": true,
+
+    // Supports importing .json files as modules, allowing typed usage of JSON data.
+    "resolveJsonModule": true,
+
+    // Enables interoperation with ECMAScript modules, 
+    // allowing default imports from modules with a default export.
+    "esModuleInterop": true,
+
+    // Allows TypeScript to handle rebuilding only changed files 
+    // between builds for faster incremental compilation.
+    "incremental": true,
+
+    // Specifies a path to store information for incremental builds,
+    // so that TypeScript quickly identifies unchanged files.
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+
+    // Uses the 'unknown' type in catch clause variables, encouraging type–safe 
+    // exception handling rather than using 'any'.
+    "useUnknownInCatchVariables": true,
+
+    // Disallows leaving unreachable code paths in the compiled output, 
+    // ensuring only intentionally relevant code is retained.
+    "allowUnreachableCode": false,
+
+    // Enforces that optional properties behave consistently with their declared type, 
+    // preventing subtle usage errors when a property might be omitted.
+    "exactOptionalPropertyTypes": true
+  },
+
+  // Defines which files should be included by the compiler when checking and generating output.
+  // This includes all .ts and .json files within src, and any sub-folder references 
+  // in payment, transactions, and security directories.
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json",
+    "src/payment/**/*",
+    "src/transactions/**/*",
+    "src/security/**/*"
+  ],
+
+  // Specifies patterns or directories that should not be compiled or analyzed by the TypeScript compiler.
+  // Minimizes build times and focuses on relevant source code.
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__mocks__/*",
+    "**/__tests__/*"
+  ],
+
+  // Lists dependent TypeScript projects for project referencing.
+  // With composite = true, TypeScript can build these projects in order 
+  // and detect type definitions from shared modules.
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
+}
