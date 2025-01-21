@@ -1,0 +1,208 @@
+<!--
+    AndroidManifest.xml for the Dog Walking application. This file declares
+    essential information about packages, permissions, features, and components
+    to satisfy security and compatibility requirements (including Android 13+).
+
+    Package: com.dogwalking.app
+    Min SDK: 26
+    Target SDK: 34
+    Compile SDK: 34
+
+    ----------------------------------------------------------------------------
+    The following sections detail each part of the manifest, covering:
+    - <uses-sdk> for explicit SDK version declarations (though typically in Gradle).
+    - <uses-permission> entries for network, location, notifications, alarms, etc.
+    - <uses-feature> entries for required hardware capabilities (GPS, camera).
+    - <application> block with references to the main application class, activities,
+      services, providers, and metadata needed for secure integrations.
+    ----------------------------------------------------------------------------
+-->
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.dogwalking.app">
+
+    <!--
+        Specifies minimum and target API levels. Although many modern Android apps rely on Gradle
+        (build.gradle) for these definitions, this snippet is included here per specification.
+    -->
+    <uses-sdk
+        android:minSdkVersion="26"
+        android:targetSdkVersion="34" />
+
+    <!--
+        Permissions Section:
+        The following <uses-permission> declarations ensure the app has explicit
+        access to functionalities required by the Dog Walking application.
+        Where relevant, version-commented external libraries or usage contexts are noted.
+    -->
+
+    <!-- Permission for general internet access (API calls, WebSocket tracking, etc.). -->
+    <uses-permission
+        android:name="android.permission.INTERNET" />
+
+    <!-- Permission to check network connectivity state (e.g., offline detection). -->
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Permission for precise location used during live GPS tracking. -->
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Permission for approximate location, providing coarser accuracy if chosen. -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!--
+        Permission for background location tracking.
+        Required to maintain location updates when the app is not in the foreground.
+        Uses Google Play Services location (com.google.android.gms:play-services-location:21.0.1).
+    -->
+    <uses-permission
+        android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- Foreground Service permission for Android 9+; ensures compliance with new requirements. -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!--
+        Additional foreground service permission for location on certain APIs.
+        Some OEMs or advanced location-based features might check this variant.
+    -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <!-- Camera permission, enabling photo capture or scanning functionalities. -->
+    <uses-permission
+        android:name="android.permission.CAMERA" />
+
+    <!-- Permission to post user-visible notifications (Android 13+). -->
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+        Permission allowing the app to schedule exact alarms (e.g., timed tasks, future notifications).
+        Must be carefully requested if the app truly needs precise alarm scheduling.
+    -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!--
+        Permission for utilizing a full-screen intent (e.g., heads-up notifications).
+        Typically used for urgent or high-priority events, such as safety-related alerts.
+    -->
+    <uses-permission
+        android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+    <!--
+        Features Section:
+        Ensures that devices lacking specific hardware (GPS, camera) are excluded or handled appropriately.
+        Some of these features must be mandatory (required="true") for proper functionality.
+    -->
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="true" />
+
+    <uses-feature
+        android:name="android.hardware.location.network"
+        android:required="true" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+
+    <!--
+        Autofocus might be optional on some devices. If set to required="false",
+        the app can still run without a guaranteed autofocus unit on the device camera.
+    -->
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
+    <!--
+        Application Block:
+        Declares the main application class (DogWalkingApplication),
+        theme, backups, and critical components: activities, services, providers, etc.
+    -->
+    <application
+        android:name=".DogWalkingApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.DogWalking">
+
+        <!--
+            Activity Declaration:
+            Primary entry point (MainActivity) with singleTask launch mode to
+            avoid multiple instance collisions. Exported to allow launcher visibility.
+        -->
+        <activity
+            android:name="com.dogwalking.app.ui.main.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            Services Section:
+            Declares background or foreground services that provide
+            continuous functionality (e.g., location tracking, messaging).
+        -->
+
+        <!--
+            LocationService for secure background location tracking.
+            Declares foregroundServiceType="location" for Android 10+ compliance.
+        -->
+        <service
+            android:name="com.dogwalking.app.services.LocationService"
+            android:foregroundServiceType="location"
+            android:exported="false"
+            android:enabled="true" />
+
+        <!--
+            MessagingService for handling inbound FCM or push notifications.
+            Not exported to prevent unintended external calls.
+        -->
+        <service
+            android:name="com.dogwalking.app.services.MessagingService"
+            android:exported="false"
+            android:enabled="true" />
+
+        <!--
+            FileProvider:
+            Allows secure sharing of files between this application and
+            other apps or the system (e.g., for camera photos, documents).
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!--
+            MetaData Section:
+            Additional keys needed for Google Maps or Firebase notifications,
+            read at runtime by respective SDKs.
+        -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id" />
+
+    </application>
+
+</manifest>
