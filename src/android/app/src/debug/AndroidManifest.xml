@@ -1,0 +1,30 @@
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" <!-- com.android.tools version: latest -->
+    package="com.dogwalking.app"
+    tools:replace="android:networkSecurityConfig">
+
+    <!--
+        Debug-Specific Permissions for Development & Monitoring
+        (Aligns with System Monitoring, Debugging, and Security Testing)
+    -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.SET_DEBUG_APP" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+
+    <!--
+        Debug Application Overlay:
+        Enables advanced debugging features, secure network configs, and
+        comprehensive monitoring while respecting main manifest inheritance.
+    -->
+    <application
+        android:debuggable="true"
+        android:allowBackup="true"
+        android:networkSecurityConfig="@xml/network_security_config_debug"
+        android:usesCleartextTraffic="true"
+        tools:replace="android:networkSecurityConfig"
+        tools:ignore="HardcodedDebugMode,UnusedAttribute" />
+
+</manifest>
