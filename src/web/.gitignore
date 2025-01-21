@@ -1,0 +1,118 @@
+############################################
+# Git Ignore Configuration for the
+# Dog Walking Web Application Admin Dashboard
+#
+# This file ensures that certain files,
+# directories, and environment-specific
+# items are not tracked by version control,
+# addressing both Development Environment
+# isolation and Security Controls.
+############################################
+
+# -----------------------------------------------------------------------------
+# 1. NPM Dependencies
+# -----------------------------------------------------------------------------
+# Directory containing all npm package dependencies
+node_modules/
+
+# -----------------------------------------------------------------------------
+# 2. Production and Compiled Output
+# -----------------------------------------------------------------------------
+# Production build output directory
+dist/
+# Compiled output directory
+build/
+
+# -----------------------------------------------------------------------------
+# 3. Coverage and Reporting
+# -----------------------------------------------------------------------------
+# Test coverage reports directory
+coverage/
+# NYC code coverage output directory
+.nyc_output/
+
+# -----------------------------------------------------------------------------
+# 4. Build and Development Cache
+# -----------------------------------------------------------------------------
+# Build and development cache directory
+.cache/
+# Temporary files directory
+.temp/
+
+# -----------------------------------------------------------------------------
+# 5. Environment Files
+# -----------------------------------------------------------------------------
+# Environment variables file (sensitive configuration)
+.env
+# Local environment variables file
+.env.local
+# All local environment variable override files
+.env.*.local
+# Development environment variables file
+.env.development
+# Testing environment variables file
+.env.test
+# Production environment variables file
+.env.production
+
+# -----------------------------------------------------------------------------
+# 6. Log and Debug Files
+# -----------------------------------------------------------------------------
+# Log files
+*.log
+# NPM debug log files
+npm-debug.log*
+# Yarn debug log files
+yarn-debug.log*
+# Yarn error log files
+yarn-error.log*
+
+# -----------------------------------------------------------------------------
+# 7. OS and Editor-Specific Files
+# -----------------------------------------------------------------------------
+# macOS system files
+.DS_Store
+# Windows thumbnail cache files
+Thumbs.db
+# JetBrains IDE files
+.idea/
+# Visual Studio Code files
+.vscode/
+# Visual Studio user-specific files
+*.suo
+# Node Tools for Visual Studio files
+*.ntvs*
+# Node.js project files
+*.njsproj
+# Visual Studio solution files
+*.sln
+# IDE workspace configuration files
+*.workspace
+# Vim swap files
+*.sw?
+
+# -----------------------------------------------------------------------------
+# 8. Yarn Files and Lock Files
+# -----------------------------------------------------------------------------
+# Plug'n'Play dependency files
+.pnp.*
+# Yarn files and cache
+.yarn/*
+# NPM lock file (when using Yarn)
+package-lock.json
+
+# -----------------------------------------------------------------------------
+# 9. Testing Snapshots and Storybook
+# -----------------------------------------------------------------------------
+# Jest test snapshot directory
+__snapshots__/
+# Built Storybook files
+storybook-static/
+
+# -----------------------------------------------------------------------------
+# 10. Miscellaneous
+# -----------------------------------------------------------------------------
+# Bundle analyzer report files
+stats.html
+# TypeScript incremental build info
+tsconfig.tsbuildinfo
