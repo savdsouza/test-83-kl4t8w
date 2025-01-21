@@ -1,0 +1,243 @@
+<!--
+  Layout resource file for the Add Dog screen, implementing a comprehensive form for creating or
+  updating a dog's profile. This layout fulfills the following requirements:
+  1. Dog Profile Management: Collects and validates comprehensive dog data, including name, breed,
+     birth date, weight, and medical information.
+  2. Design System Implementation: Adheres to an 8dp baseline grid, Material Design components,
+     consistent typography, color palette usage, and background drawables for inputs.
+  3. Accessibility Standards: Provides descriptive content descriptions for crucial interactive
+     elements, label hints for text fields, and adequate touch targets.
+
+  -----------------------------------------------------------------------------------------------
+  External Imports (Version Comments and Purpose):
+    - androidx.constraintlayout.widget.ConstraintLayout (2.1.4): Root container ensuring
+      responsive design alignment via Constrained views.
+    - androidx.core.widget.NestedScrollView (1.9.0): Enhanced scroll handling with nested child
+      views, preventing layout overlap and preserving smooth form interaction.
+    - com.google.android.material.textfield.TextInputLayout (1.9.0): Material Design container
+      for text fields with validation, outlined styles, and accessibility guidelines.
+    - com.google.android.material.textfield.TextInputEditText (1.9.0): Specialized EditText
+      supporting enhanced input handling within TextInputLayout.
+
+  -----------------------------------------------------------------------------------------------
+  Internal Imports:
+    - com.dogwalking.app.ui.components.CustomButton: Custom styled button with setLoading and
+      setEnabled functions for submission feedback and disabled states.
+    - @drawable/bg_card: Card background with corner radius and simulated elevation for dog photo
+      container.
+    - @drawable/bg_input: Background drawable supporting focused, disabled, and default states for
+      input fields.
+
+  -----------------------------------------------------------------------------------------------
+  Notes:
+    - The ConstraintLayout is padded by 16dp as specified, with system window fitting and clipped
+      children disabled.
+    - A NestedScrollView anchors above the save button, ensuring large forms remain scrollable.
+    - Each text field follows Material guidelines, employing text hints, accessible font sizes,
+      and "bg_input" for background styling.
+    - Accessibility includes content descriptions for the dog photo ImageView, the upload button,
+      and the save button, matching the specification's hints.
+
+  -----------------------------------------------------------------------------------------------
+-->
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:fitsSystemWindows="true"
+    android:clipToOutline="false"
+    android:clipChildren="false">
+
+    <!-- Scrollable container for the dog profile form fields -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollAddDog"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/btnSave"
+        android:clipToPadding="false"
+        android:scrollbars="none">
+
+        <!-- Linear container holding photo upload section and text input fields,
+             maintaining vertical stacking with consistent spacing. -->
+        <LinearLayout
+            android:id="@+id/layoutAddDogFields"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Container styled as a card background to display dog photo and photo-upload action -->
+            <LinearLayout
+                android:id="@+id/layoutPhotoContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_card"
+                android:padding="16dp">
+
+                <ImageView
+                    android:id="@+id/ivDogPhoto"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center_horizontal"
+                    android:contentDescription="Dog profile photo. Double tap to change"
+                    android:scaleType="centerCrop" />
+
+                <com.dogwalking.app.ui.components.CustomButton
+                    android:id="@+id/btnUploadPhoto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:contentDescription="Upload dog photo button"
+                    android:text="Upload Photo"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.5sp" />
+            </LinearLayout>
+
+            <!-- Dog name input field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutDogName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input"
+                app:errorEnabled="true"
+                app:hintEnabled="true"
+                style="?attr/textInputStyle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDogName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter your dog's name"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:lineHeight="24sp"
+                    android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Dog breed input field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBreed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input"
+                app:errorEnabled="true"
+                app:hintEnabled="true"
+                style="?attr/textInputStyle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etBreed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter your dog's breed"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:lineHeight="24sp"
+                    android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Dog birth date input field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutBirthDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input"
+                app:errorEnabled="true"
+                app:hintEnabled="true"
+                style="?attr/textInputStyle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etBirthDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Select your dog's birth date"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:lineHeight="24sp"
+                    android:inputType="date" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Dog weight input field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutWeight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input"
+                app:errorEnabled="true"
+                app:hintEnabled="true"
+                style="?attr/textInputStyle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etWeight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter your dog's weight in kilograms"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:lineHeight="24sp"
+                    android:inputType="numberDecimal" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Dog medical info input field (multi-line) -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutMedicalInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input"
+                app:errorEnabled="true"
+                app:hintEnabled="true"
+                style="?attr/textInputStyle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMedicalInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter any medical conditions or special care requirements"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:lineHeight="24sp"
+                    android:inputType="textMultiLine"
+                    android:gravity="top" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Save button pinned to the bottom of the screen, uses CustomButton to support
+         loading states and disabled states if needed. -->
+    <com.dogwalking.app.ui.components.CustomButton
+        android:id="@+id/btnSave"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="16dp"
+        android:text="Save"
+        android:contentDescription="Save dog profile button"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.5sp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
