@@ -1,0 +1,44 @@
+// go.sum - Dependency checksums for the tracking-service
+// -----------------------------------------------------------------------------
+// This file stores cryptographic hashes (SHA-256, base64-encoded) of all direct
+// module dependencies. These checksums ensure supply chain security by allowing
+// the Go toolchain to verify that each module version has not been tampered with.
+// Any mismatch in these checksums will block usage of the compromised module,
+// helping to protect against supply chain attacks.
+//
+// Verification Process (High-Level):
+// 1. Compute the module’s SHA-256 hash.
+// 2. Encode the hash in base64 format, prefixed with "h1:".
+// 3. Compare against the entries below during builds, CI/CD, and audits.
+// 4. Block usage if verification fails and alert security teams.
+// -----------------------------------------------------------------------------
+//
+// Module: github.com/eclipse/paho.mqtt.golang v1.4.3
+// Purpose: MQTT client for real-time location updates.
+github.com/eclipse/paho.mqtt.golang v1.4.3 h1:XLtA9TkvZVlH2wAIht27Nlsx0HkVzE19u9dN2x4VpUk=
+github.com/eclipse/paho.mqtt.golang v1.4.3/go.mod h1:tP3K5pGTKmklvdCTgs83cSxxgG4mMGgz6TnCsl5x39E=
+
+// Module: github.com/gorilla/websocket v1.5.0
+// Purpose: WebSocket support for real-time client communication.
+github.com/gorilla/websocket v1.5.0 h1:Dt7Z25U97dtuoFW4qawlQMhxXAugqbsYuOns1TrKl+8=
+github.com/gorilla/websocket v1.5.0/go.mod h1:x++6j7Zx7CICD2gpXnM8nHyZGQeXbHkAurM2WInYj6Q=
+
+// Module: github.com/jackc/pgx/v5 v5.4.3
+// Purpose: PostgreSQL/TimescaleDB driver for location data storage.
+github.com/jackc/pgx/v5 v5.4.3 h1:Z6qosctrZh2fs9W9RDZecjgQH6Ff7MyXBA3rs9D5p+c=
+github.com/jackc/pgx/v5 v5.4.3/go.mod h1:uc+xs0S7V9cGeO98ZjvjeH1bTTWq8RrK0zFXvipKjeg=
+
+// Module: github.com/prometheus/client_golang v1.16.0
+// Purpose: Native Prometheus metrics for monitoring and performance insights.
+github.com/prometheus/client_golang v1.16.0 h1:n3sKLrp5NNzPL+4KCNCQBpVPqXTvSKMKrtJ2IA7Fjuc=
+github.com/prometheus/client_golang v1.16.0/go.mod h1:TCkfx9A/k6mIWem3KTi3f06+3uqVI51WmC7lHHu1JaY=
+
+// Module: github.com/spf13/viper v1.16.0
+// Purpose: Configuration management for environment variables and files.
+github.com/spf13/viper v1.16.0 h1:ccXjJb/5JNUCeN3C3xt/4eypR54YJONUpACEnjcEX0k=
+github.com/spf13/viper v1.16.0/go.mod h1:+qGSGJPo9KfMMZ3cMe78rnIt1Heverq6R2v8rWueFBQ=
+
+// Module: go.uber.org/zap v1.25.0
+// Purpose: High-performance, structured logging for real-time events.
+go.uber.org/zap v1.25.0 h1:CMaXbeeFdBpTC1OATX4nPwh3W5w0MtrlwWiGYPProk4=
+go.uber.org/zap v1.25.0/go.mod h1:LlTMufI0S1t81sEFi7nZDEZOGBBo4aT5fK06LZ0T+OQ=
