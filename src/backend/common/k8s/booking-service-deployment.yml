@@ -1,0 +1,219 @@
+################################################################################
+# Kubernetes Deployment for the Booking Service
+# --------------------------------------------------------------------------------
+# This file defines a highly available, production-grade Kubernetes Deployment
+# for the Booking Service, which manages walk bookings, scheduling, and user
+# availability features. It aligns with the deployment and scaling strategies
+# outlined in the technical specification, including:
+#   - Zero-downtime rolling updates (RollingUpdate strategy)
+#   - Horizontal scaling capabilities (initial replicas = 3, with potential HPA)
+#   - Resource requests and limits to handle up to 10,000 active users
+#   - Liveness and readiness probes for proactive health monitoring
+#   - Pod anti-affinity rules ensuring distribution across nodes
+#   - Integration with Prometheus metrics via annotations
+#
+# External Import:
+#   apiVersion: apps/v1  --> (Kubernetes 1.28)
+#
+# Internal Imports:
+#   configmap.yml        --> ConfigMap named 'booking-service-config'
+#   secrets.yml          --> Secret named 'booking-service-secrets'
+#
+# Usage:
+#   kubectl apply -f booking-service-deployment.yml
+################################################################################
+apiVersion: apps/v1 # Kubernetes 1.28
+kind: Deployment
+metadata:
+  ##############################################################################
+  # Basic metadata for identifying and tracking the Deployment within the
+  # dogwalking namespace. Labels and annotations help with resource management
+  # and ensure clarity across the DevOps processes.
+  ##############################################################################
+  name: booking-service
+  namespace: dogwalking
+  labels:
+    app: booking-service
+    component: backend
+    part-of: dogwalking
+    version: latest
+    managed-by: kubectl
+    environment: production
+  annotations:
+    kubernetes.io/change-cause: "Initial deployment"
+    deployment.kubernetes.io/revision: "1"
+spec:
+  ##############################################################################
+  # Replicas indicate the desired number of Pods. We begin with 3 replicas
+  # for fault tolerance. An external HPA can scale this further based on
+  # CPU/memory metrics (e.g., min 2, max 10 replicas).
+  ##############################################################################
+  replicas: 3
+
+  ##############################################################################
+  # Strategy configures how updates are rolled out to ensure zero downtime.
+  # - type: RollingUpdate
+  # - maxSurge: 1   (One extra Pod can be added during an update)
+  # - maxUnavailable: 0 (No Pods are taken offline before new Pods start)
+  ##############################################################################
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  ##############################################################################
+  # The selector ensures the Deployment tracks only the Pods that match the
+  # specified labels ("app: booking-service"). In the template below, we
+  # apply matching labels so the Deployment can manage them properly.
+  ##############################################################################
+  selector:
+    matchLabels:
+      app: booking-service
+
+  template:
+    metadata:
+      labels:
+        app: booking-service
+        component: backend
+        version: latest
+      ############################################################################
+      # Annotations for Prometheus monitoring and checksum references, which
+      # trigger rolling updates when ConfigMaps or Secrets change. For instance,
+      # setting 'checksum/config' to a new value ensures Pods restart if the
+      # underlying config changes.
+      ############################################################################
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8082"
+        checksum/config: "${CONFIG_CHECKSUM}"
+        checksum/secrets: "${SECRETS_CHECKSUM}"
+    spec:
+      ############################################################################
+      # Within spec.containers, we define each container’s image, ports, environment
+      # variables, probes, and resource requirements. We also define security
+      # statements ensuring the container is run as a non-root user with a read-only
+      # root filesystem.
+      ############################################################################
+      containers:
+        - name: booking-service
+          image: dogwalking/booking-service:latest
+          imagePullPolicy: Always
+
+          ########################################################################
+          # Container port definitions. Exposes port 8082 for HTTP traffic, which
+          # includes health endpoints (/actuator/health) and the metrics endpoint
+          # (/actuator/prometheus).
+          ########################################################################
+          ports:
+            - containerPort: 8082
+              name: http
+              protocol: TCP
+
+          ########################################################################
+          # Environment variables passed to the 'booking-service' container.
+          # Some are static (e.g., SPRING_PROFILES_ACTIVE), while others pull
+          # from ConfigMaps and Secrets for secure management.
+          ########################################################################
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SERVER_PORT
+              value: "8082"
+            - name: MONGODB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: booking-service-config
+                  key: mongodb-host
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: booking-service-secrets
+                  key: mongodb-username
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: booking-service-secrets
+                  key: mongodb-password
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: booking-service-config
+                  key: kafka-bootstrap-servers
+
+          ########################################################################
+          # Resource requests and limits ensure reliable performance and help the
+          # Kubernetes scheduler make placement decisions. This configuration
+          # handles up to ~10,000 active users per the technical specifications:
+          #   - requests: guaranteed minimum CPU/memory
+          #   - limits: maximum CPU/memory usage
+          ########################################################################
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+
+          ########################################################################
+          # Probes:
+          # - livenessProbe: Determines if the container is still running. If it
+          #   fails, Kubernetes restarts the Pod.
+          # - readinessProbe: Determines if the container is ready to serve traffic.
+          #   Pods failing readiness are removed from Service endpoints.
+          ########################################################################
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          ########################################################################
+          # Security Context. Runs the container as a non-root user (runAsUser=1000)
+          # with no privilege escalation and a read-only root filesystem. This meets
+          # recommended best practices for container security in production.
+          ########################################################################
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+      ##########################################################################
+      # Graceful termination allows the container to shut down cleanly by giving
+      # it time (e.g., 60 seconds) to handle in-flight requests.
+      ##########################################################################
+      terminationGracePeriodSeconds: 60
+
+      ##########################################################################
+      # Pod anti-affinity rules to distribute Pods across nodes, reducing the
+      # likelihood that one node failure brings down multiple instances of the
+      # Booking Service. This helps achieve high availability targets.
+      ##########################################################################
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - booking-service
+                topologyKey: kubernetes.io/hostname
