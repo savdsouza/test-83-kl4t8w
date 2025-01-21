@@ -1,0 +1,186 @@
+################################################################################
+# Kubernetes Deployment, Service, HPA, and PDB for the Notification Service
+# ------------------------------------------------------------------------------
+# This file is validated against the Kubernetes v1.28 API (see external import).
+# It deploys, configures, and secures the Python-based notification-service
+# to handle multi-channel notifications for email, push, and SMS. It provides
+# enhanced availability (HA) via rolling updates, affinity, anti-affinity,
+# and Pod Disruption Budgets (PDBs), complying with:
+# - Multi-Channel Notifications (2. SYSTEM ARCHITECTURE/2.1 High-Level Architecture)
+# - Emergency Response Protocol (<5 minutes for P0)
+# - System Uptime (99.9% availability)
+#
+# Imports:
+# - notification-config from configmaps.yaml (envFrom ConfigMapRef)
+# - notification-secrets from secrets.yaml (envFrom SecretRef)
+#
+# Key Notes:
+# - Minimum of 3 replicas for immediate failover and critical alert handling.
+# - Aggressive health checks (startup, readiness, liveness) ensure fast recovery.
+# - Horizontal Pod Autoscaler and PDB enforce zero-downtime maintenance.
+# - Rolling updates guarantee continuity for P0 alerts and push notifications.
+################################################################################
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: notification-service
+  labels:
+    app: notification-service
+    component: notifications
+    part-of: dog-walking-platform
+    criticality: high
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      priorityClassName: high-priority
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: notification-service
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - notification-service
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: notification-service
+          image: dogwalking/notification-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+              name: http
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 2
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            failureThreshold: 30
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          envFrom:
+            - configMapRef:
+                name: notification-config
+            - secretRef:
+                name: notification-secrets
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: notification-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: notification-service
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: notification-service-hpa
+  namespace: notification-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: notification-service
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 300
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: notification-service-pdb
+  namespace: notification-service
+spec:
+  minAvailable: 75%
+  selector:
+    matchLabels:
+      app: notification-service
