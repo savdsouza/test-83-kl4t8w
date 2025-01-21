@@ -1,0 +1,63 @@
+<!--
+  ----------------------------------------------------------------------------
+  Material Design-Compliant Vector Drawable: ic_location
+  ----------------------------------------------------------------------------
+  This vector drawable provides a standardized location marker icon for maps,
+  location selection interfaces, and real-time tracking visualizations in the
+  Dog Walking Mobile Application. It supports:
+    • Dynamic tinting via ?attr/colorControlNormal.
+    • Accessibility requirements (suggest pairing with contentDescription in usage).
+    • Right-to-left (RTL) layout mirroring via autoMirrored="true".
+    • Minimum touch target guidance of 48dp (implemented at the layout level).
+    • Optimal rendering performance through a single path with minimal complexity.
+    • Compatibility with Android 8.0 (API 26) and above, alongside VectorDrawableCompat.
+
+  Usage Contexts:
+    • Map location markers for displaying walker and dog positions.
+    • Location selection interfaces for setting walk boundaries.
+    • Active walk tracking views for real-time position updating.
+    • Location permission request dialogs.
+    • Navigation/routing interfaces requiring location-based visual elements.
+
+  Performance Optimizations:
+    • Single path element reduces memory usage and improves rendering efficiency.
+    • Pixel-aligned viewport (24x24) ensures crisp display across all densities.
+    • Minimal attribute overhead ensures reduced resource parsing time.
+
+  Attributes Breakdown:
+    • android:width="24dp" and android:height="24dp"
+      Ensures a standard icon size, scaling neatly with density.
+    • android:viewportWidth="24.0" and android:viewportHeight="24.0"
+      Establishes a 24x24 unit drawing space for pixel alignment.
+    • android:tint="?attr/colorControlNormal"
+      Utilizes the active theme's normal control color, adapting to both light and dark modes.
+    • android:autoMirrored="true"
+      Automatically mirrors the vector for RTL locales.
+    • path android:fillColor="@android:color/white"
+      Renders pure white fill by default, modifiable via tint or theme overlays.
+
+  Export & Purpose:
+    • Provided as a default drawable named 'ic_location' for consistent use across the app.
+    • Exposes a vector drawable member for referencing in layouts, menus, and custom views.
+  ----------------------------------------------------------------------------
+-->
+
+<?xml version="1.0" encoding="utf-8"?>
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0"
+    android:tint="?attr/colorControlNormal"
+    android:autoMirrored="true">
+
+    <!--
+      Path Definition:
+      The single path element forming the location pin with an inner circle.
+      Coordinates follow the (0,0) to (24,24) viewport.
+    -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13c0,-3.87 -3.13,-7 -7,-7zM12,11.5c-1.38,0 -2.5,-1.12 -2.5,-2.5s1.12,-2.5 2.5,-2.5 2.5,1.12 2.5,2.5 -1.12,2.5 -2.5,2.5z"/>
+</vector>
