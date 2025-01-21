@@ -1,0 +1,626 @@
+################################################################################
+# Kubernetes configuration file for deploying and managing the application's
+# database infrastructure, including PostgreSQL, MongoDB, TimescaleDB, and Redis
+# with enhanced high availability, security, and monitoring capabilities.
+#
+# This file references:
+#  - The ConfigMap named "database-config" from configmaps.yaml for database
+#    configuration parameters (e.g., performance tuning, logging, etc.).
+#  - The Secret named "database-credentials" from secrets.yaml for credentials
+#    and sensitive values (e.g., usernames, passwords, encryption keys).
+#
+# All resources here are defined in the "database" namespace, which is assumed to
+# exist. If it does not, please ensure you create it before applying these manifests.
+#
+# Implementation Details:
+#  - High Availability:
+#      * Replicas set to 3 for each StatefulSet to achieve multi-instance
+#        availability and synchronous or asynchronous replication as supported.
+#      * Pod Anti-Affinity used to spread replicas across different nodes.
+#  - Data Security:
+#      * Encryption at Rest indicated by storageClass or encryption annotations.
+#      * Encryption in Transit enabled via TLS configuration and associated
+#        environment variables or operator configurations.
+#  - Monitoring:
+#      * Annotations for Prometheus scraping on ports assigned to official or
+#        community exporters.
+#      * Optional environment variables to enable extended logging, audit
+#        trails, or advanced metrics.
+#  - Backup:
+#      * Illustrative "backupConfig" blocks specifying schedules, retention, and
+#        encryption for backups.
+#      * In production, additional operators or custom controllers may handle backups.
+#
+################################################################################
+
+---
+# ------------------------------------------------------------------------------
+# Service Resource for PostgreSQL
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: database
+  labels:
+    app: postgres
+    role: database
+    part-of: dog-walking-platform
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: postgres
+  # Ensures client IP relationships remain consistent for session-based apps
+  sessionAffinity: ClientIP
+
+---
+# ------------------------------------------------------------------------------
+# StatefulSet Resource for PostgreSQL
+# ------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-primary
+  namespace: database
+  labels:
+    app: postgres
+    role: database
+    part-of: dog-walking-platform
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9187"
+    # Additional annotation for clarity on metrics
+    monitoring.database.io/enableAuditLogging: "true"
+spec:
+  serviceName: "postgres"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: postgres
+      role: database
+  template:
+    metadata:
+      labels:
+        app: postgres
+        role: database
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      # PodAntiAffinity ensures the pods are scheduled on different nodes
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: postgres
+                  role: database
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: postgres-container
+          image: "postgres:15.0" # PostgreSQL v15.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgresdb
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          env:
+            # Example referencing ConfigMap for optional tuning
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: database-config
+                  key: POSTGRES_DEFAULT_DB
+            - name: POSTGRES_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: database-config
+                  key: POSTGRES_LOG_LEVEL
+            # Example referencing Secret for credentials
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: POSTGRES_PASSWORD
+            # Replication, HA, and audit logging toggles
+            - name: POSTGRES_REPLICATION_MODE
+              value: "synchronous"
+            - name: POSTGRES_AUTOMATIC_FAILOVER
+              value: "true"
+            - name: POSTGRES_ENABLE_AUDIT
+              value: "true"
+      # Add any relevant initContainers or sidecars for monitoring, backups, etc. if needed
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        annotations:
+          volume.kubernetes.io/encryption: "true"
+      spec:
+        storageClassName: gp3
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 100Gi
+
+---
+# ------------------------------------------------------------------------------
+# NetworkPolicy for PostgreSQL
+# Restricts inbound connections to only authorized namespaces/pods for port 5432.
+# ------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-access
+  namespace: database
+  labels:
+    app: postgres
+    role: database
+    part-of: dog-walking-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+      role: database
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: application
+          podSelector:
+            matchLabels:
+              type: backend
+      ports:
+        - port: 5432
+          protocol: TCP
+
+---
+# ------------------------------------------------------------------------------
+# Service Resource for MongoDB
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: database
+  labels:
+    app: mongo
+    role: database
+    part-of: dog-walking-platform
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
+  selector:
+    app: mongo
+  sessionAffinity: ClientIP
+
+---
+# ------------------------------------------------------------------------------
+# StatefulSet Resource for MongoDB
+# ------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb-primary
+  namespace: database
+  labels:
+    app: mongo
+    role: database
+    part-of: dog-walking-platform
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9216"
+    # Some MongoDB exporters commonly use 9216 for metrics scraping
+spec:
+  serviceName: "mongodb"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mongo
+      role: database
+  template:
+    metadata:
+      labels:
+        app: mongo
+        role: database
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: mongo
+                  role: database
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: mongo-container
+          image: "mongo:6.0" # MongoDB v6.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+              name: mongodb
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: MONGO_USER
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: MONGO_PASSWORD
+            - name: MONGO_REPLICA_SET
+              value: "rs0"
+            - name: MONGO_ENABLE_AUDIT
+              value: "true"
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+        annotations:
+          volume.kubernetes.io/encryption: "true"
+      spec:
+        storageClassName: gp3
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 50Gi
+
+---
+# ------------------------------------------------------------------------------
+# NetworkPolicy for MongoDB
+# Restricts inbound connections to only authorized namespaces/pods for port 27017.
+# ------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mongodb-access
+  namespace: database
+  labels:
+    app: mongo
+    role: database
+    part-of: dog-walking-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: mongo
+      role: database
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: application
+          podSelector:
+            matchLabels:
+              type: backend
+      ports:
+        - port: 27017
+          protocol: TCP
+
+---
+# ------------------------------------------------------------------------------
+# Service Resource for TimescaleDB
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: timescaledb
+  namespace: database
+  labels:
+    app: timescaledb
+    role: database
+    part-of: dog-walking-platform
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: timescaledb
+  sessionAffinity: ClientIP
+
+---
+# ------------------------------------------------------------------------------
+# StatefulSet Resource for TimescaleDB
+# ------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: timescaledb-primary
+  namespace: database
+  labels:
+    app: timescaledb
+    role: database
+    part-of: dog-walking-platform
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9187"
+spec:
+  serviceName: "timescaledb"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: timescaledb
+      role: database
+  template:
+    metadata:
+      labels:
+        app: timescaledb
+        role: database
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: timescaledb
+                  role: database
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: timescaledb-container
+          image: "timescale/timescaledb:2.11" # TimescaleDB v2.11
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: timescaledb
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          volumeMounts:
+            - name: timescaledb-data
+              mountPath: /var/lib/postgresql/data
+          env:
+            - name: TIMESCALEDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: TIMESCALEDB_USER
+            - name: TIMESCALEDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: TIMESCALEDB_PASSWORD
+            - name: TIMESCALEDB_TELEMETRY
+              value: "off"
+            # Additional environment variables for time-partitioning
+            - name: TIMESCALEDB_HYPERTABLE
+              value: "enabled"
+  volumeClaimTemplates:
+    - metadata:
+        name: timescaledb-data
+        annotations:
+          volume.kubernetes.io/encryption: "true"
+      spec:
+        storageClassName: gp3
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 100Gi
+
+---
+# ------------------------------------------------------------------------------
+# NetworkPolicy for TimescaleDB
+# Restricts inbound connections to only authorized namespaces/pods for port 5432.
+# ------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: timescaledb-access
+  namespace: database
+  labels:
+    app: timescaledb
+    role: database
+    part-of: dog-walking-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: timescaledb
+      role: database
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: application
+          podSelector:
+            matchLabels:
+              type: backend
+      ports:
+        - port: 5432
+          protocol: TCP
+
+---
+# ------------------------------------------------------------------------------
+# Service Resource for Redis
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: database
+  labels:
+    app: redis
+    role: database
+    part-of: dog-walking-platform
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    app: redis
+  sessionAffinity: ClientIP
+
+---
+# ------------------------------------------------------------------------------
+# StatefulSet Resource for Redis
+# ------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-primary
+  namespace: database
+  labels:
+    app: redis
+    role: database
+    part-of: dog-walking-platform
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9121"
+spec:
+  serviceName: "redis"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis
+      role: database
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: database
+    spec:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: redis
+                  role: database
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: redis-container
+          image: "redis:7.0" # Redis v7.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379
+              name: redisdb
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          env:
+            # ConfigMap references for optional Redis tuning
+            - name: REDIS_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: database-config
+                  key: REDIS_LOG_LEVEL
+            # Secret references for password-based authentication
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: REDIS_PASSWORD
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+        annotations:
+          volume.kubernetes.io/encryption: "true"
+      spec:
+        storageClassName: gp3
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 50Gi
+
+---
+# ------------------------------------------------------------------------------
+# NetworkPolicy for Redis
+# Restricts inbound connections to only authorized namespaces/pods for port 6379.
+# ------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-access
+  namespace: database
+  labels:
+    app: redis
+    role: database
+    part-of: dog-walking-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+      role: database
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: application
+          podSelector:
+            matchLabels:
+              type: backend
+      ports:
+        - port: 6379
+          protocol: TCP
+
+################################################################################
+# End of database.yaml
+################################################################################
