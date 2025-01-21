@@ -1,0 +1,151 @@
+################################################################################
+# Kubernetes Ingress YAML for Dog Walking Platform
+# ------------------------------------------------------------------------------
+# This manifest configures external access for the dog walking platform services
+# through the API Gateway, enabling:
+#   1) TLS termination via cert-manager (letsencrypt-prod)
+#   2) Routing rules for the Auth Service and API Gateway
+#   3) Comprehensive security policies (WAF, advanced security headers, rate
+#      limiting, CORS)
+#   4) High availability with load balancing
+#   5) Monitoring annotations for external observability (Prometheus, Datadog)
+################################################################################
+
+apiVersion: networking.k8s.io/v1  # kubernetes@v1.28
+kind: Ingress
+metadata:
+  name: dogwalking-ingress
+  namespace: dogwalking
+  labels:
+    app.kubernetes.io/name: dogwalking-ingress
+    app.kubernetes.io/part-of: dogwalking-platform
+    app.kubernetes.io/component: ingress
+    environment: "${ENVIRONMENT}"
+  annotations:
+    ############################################################################
+    # Ingress Class & TLS Management
+    ############################################################################
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    ############################################################################
+    # External DNS Annotations
+    # - The following configures DNS updates and record TTL for the Ingress
+    ############################################################################
+    external-dns.alpha.kubernetes.io/hostname: "api.dogwalking.com"
+    external-dns.alpha.kubernetes.io/ttl: "60"
+
+    ############################################################################
+    # SSL/TLS Protocols & Cipher Suites
+    # - Enforce strict security by allowing only TLS 1.3 and secure ciphers
+    ############################################################################
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+    ############################################################################
+    # Body, Read, and Send Timeout Controls
+    # - Restricts max request body size and sets read/send timeouts
+    ############################################################################
+    nginx.ingress.kubernetes.io/proxy-body-size: "8m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+
+    ############################################################################
+    # CORS Configuration
+    # - Allow specified origins, methods, credentials
+    ############################################################################
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://*.dogwalking.com"
+
+    ############################################################################
+    # Advanced Security Headers
+    # - X-Frame-Options, X-Content-Type-Options, X-XSS-Protection,
+    #   Content-Security-Policy, Strict-Transport-Security
+    ############################################################################
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload";
+
+    ############################################################################
+    # Rate Limiting Annotations
+    # - Limits requests per second and per minute
+    ############################################################################
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-rpm: "100"
+
+    ############################################################################
+    # Web Application Firewall (WAF)
+    # - Practical protection with OWASP Core Rule Set
+    # - Additional rule sets or custom rules can be appended in real systems
+    ############################################################################
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
+
+    ############################################################################
+    # Load Balancing & Session Persistence
+    # - Use EWMA balancing method and upstream hashing by remote address
+    ############################################################################
+    nginx.ingress.kubernetes.io/load-balance: "ewma"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$remote_addr"
+
+    ############################################################################
+    # Monitoring Annotations
+    # - Prometheus and Datadog scraping hints
+    ############################################################################
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9913"
+    prometheus.io/path: "/metrics"
+    prometheus.io/scheme: "https"
+    grafana-dashboard: "ingress-nginx/nginx-ingress"
+    datadog.com/enable: "true"
+    datadog.com/metrics: "true"
+
+spec:
+  ##########################################################################
+  # TLS Configuration
+  # - The provided secret must contain the TLS certificate and key for
+  #   api.dogwalking.com, managed by cert-manager.
+  ##########################################################################
+  tls:
+    - hosts:
+        - api.dogwalking.com
+      secretName: dogwalking-tls
+
+  ##########################################################################
+  # Host-based Routing Rules
+  ##########################################################################
+  rules:
+    - host: api.dogwalking.com
+      http:
+        paths:
+          ######################################################################
+          # Auth Service Path
+          # - For endpoints related to user authentication (JWT, OAuth2)
+          # - references the Kubernetes Service "auth-service" on port 4000
+          ######################################################################
+          - path: /api/v1/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 4000
+
+          ######################################################################
+          # API Gateway Path
+          # - For other core API operations routed through the gateway
+          # - references the Kubernetes Service "api-gateway" on port 3000
+          ######################################################################
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 3000
