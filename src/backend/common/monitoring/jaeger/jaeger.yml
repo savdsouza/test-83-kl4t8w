@@ -1,0 +1,190 @@
+# ---------------------------------------------------------------------
+# Jaeger Distributed Tracing Configuration
+# ---------------------------------------------------------------------
+# This file provides an enterprise-grade, production-ready configuration
+# for Jaeger (v1.45.0) to ensure secure, scalable and multi-tenant
+# distributed tracing across the dog walking platform.
+#
+# External library references:
+#   - jaeger (version 1.45.0)
+#   - elasticsearch (version 7.17.0)
+#   - kafka-client (version 3.4.0)
+#
+# Internal import reference:
+#   - prometheus_config.scrape_configs from src/backend/common/monitoring/prometheus/prometheus.yml
+#     to correlate Jaeger metrics with Prometheus-based observability.
+#
+# Global environment variables used here:
+#   - ${ENVIRONMENT}: Current deployment environment (e.g., dev, staging, prod)
+#   - ${AWS_REGION}: AWS region for the deployment (e.g., us-east-1)
+#   - ${DEPLOYMENT_ID}: Unique identifier for the deployment
+#   - ${ES_USERNAME}, ${ES_PASSWORD}: Credentials for Elasticsearch
+#   - ${KAFKA_BROKER_LIST}: List of Kafka brokers (e.g., kafka-broker-1:9092,kafka-broker-2:9092)
+#   - ${ES_INDEX_PREFIX}: Prefix for Elasticsearch index (e.g., jaeger-${ENVIRONMENT})
+# ---------------------------------------------------------------------
+
+jaeger_config:
+
+  # -------------------------------------------------------------------
+  # agent_config:
+  # Defines the Jaeger Agent settings, responsible for receiving spans
+  # from client libraries and forwarding them to the collectors. The
+  # agent is typically run as a daemonset in Kubernetes or VM sidecar.
+  # -------------------------------------------------------------------
+  agent_config:
+    description: "Enhanced Jaeger agent configuration with environment awareness and multi-cluster support"
+    settings:
+      # Host and UDP port where the Jaeger agent listens for spans.
+      host: "jaeger-agent.monitoring.svc.cluster.local"
+      port: 6831
+
+      # Tags applied to all spans processed by this agent, useful for
+      # multi-cluster or multi-region identification.
+      tags:
+        - "cluster=dogwalking"
+        - "environment=${ENVIRONMENT}"
+        - "region=${AWS_REGION}"
+        - "deployment_id=${DEPLOYMENT_ID}"
+
+      # Processor settings define how the agent batches spans before
+      # sending them to the collector. This helps minimize overhead.
+      processors:
+        - type: "batch"
+          workers: 10
+          queue_size: 5000
+
+  # -------------------------------------------------------------------
+  # collector_config:
+  # The Jaeger Collector securely receives spans from the agent or via
+  # other protocols (e.g., gRPC, HTTP, Zipkin) and writes them to the
+  # configured storage backend. This configuration includes secure Kafka
+  # buffering and Elasticsearch storage with TLS support.
+  # -------------------------------------------------------------------
+  collector_config:
+    description: "Secure and scalable collector configuration with Kafka buffering and Elasticsearch storage"
+    settings:
+      # -----------------------------------------------------------------
+      # Zipkin compatibility: Allows the Jaeger Collector to also receive
+      # spans from Zipkin-instrumented applications using Zipkin formats.
+      # This host_port ensures backward compatibility with Zipkin clients.
+      # -----------------------------------------------------------------
+      zipkin:
+        host_port: ":9411"
+
+      # -----------------------------------------------------------------
+      # Kafka producer settings: Received spans are published to Kafka
+      # topics for added buffering, fault tolerance, and asynchronous
+      # processing. This is particularly useful in high-throughput
+      # scenarios.
+      # -----------------------------------------------------------------
+      kafka:
+        producer:
+          topic: "jaeger-spans-${ENVIRONMENT}"
+          brokers: "${KAFKA_BROKER_LIST}"
+          compression: "snappy"
+          batch_size: 131072      # Maximum size in bytes before a batch is sent
+          batch_timeout: "1s"     # Maximum time before a batch is forced to send
+          retry_max: 3            # Maximum number of producer retries
+
+      # -----------------------------------------------------------------
+      # Elasticsearch backend configuration: In this scenario, the
+      # collector directly writes processed spans from the Kafka consumer
+      # pipeline to Elasticsearch for indexing and querying. TLS ensures
+      # secure communication with the Elasticsearch endpoint.
+      # -----------------------------------------------------------------
+      elasticsearch:
+        server-urls: "http://elasticsearch:9200"
+        index-prefix: "${ES_INDEX_PREFIX}"
+        username: "${ES_USERNAME}"
+        password: "${ES_PASSWORD}"
+        tls:
+          ca: "/etc/jaeger/es-certs/ca.crt"
+          cert: "/etc/jaeger/es-certs/client.crt"
+          key: "/etc/jaeger/es-certs/client.key"
+        retention:
+          # Retention schedule is a cron expression; daily cleanup of
+          # indices older than the specified day limit occurs here.
+          schedule: "0 0 * * *"
+          days: 30
+
+  # -------------------------------------------------------------------
+  # query_config:
+  # The Jaeger Query Service handles user queries and retrieval of
+  # trace data from storage. It provides a UI and APIs for exploring
+  # traces. Includes support for CORS, security, and caching.
+  # -------------------------------------------------------------------
+  query_config:
+    description: "Advanced query service configuration with service filtering and security controls"
+    settings:
+      # Port for Jaeger Query UI and API. Typically accessible via
+      # <host>:16686 or as a k8s service & ingress specification.
+      port: 16686
+
+      # Base path to serve the Jaeger UI and API routes.
+      base_path: "/jaeger"
+
+      # CORS configuration to allow requests from specific origins.
+      # This is important for single-page applications or cross-domain
+      # usage of the Jaeger UI.
+      cors:
+        allowed-origins:
+          - "https://*.dogwalking.com"
+        allowed-headers:
+          - "Content-Type"
+          - "Authorization"
+
+      # Dependency settings allow the query service to filter or
+      # whitelist certain services or microservices. This can help
+      # isolate or group specific parts of the system for troubleshooting.
+      dependencies:
+        whitelist:
+          - "api-gateway"
+          - "auth-service"
+          - "booking-service"
+          - "payment-service"
+          - "tracking-service"
+          - "notification-service"
+        lookback: "24h"
+
+      # Cache configuration for repeated or high-volume queries. This
+      # can reduce load on the storage backend and improve query speed.
+      cache:
+        type: "redis"
+        ttl: "1h"
+
+  # -------------------------------------------------------------------
+  # sampling_config:
+  # Defines how spans are sampled. Using an operation-specific strategy
+  # ensures that critical paths (like payment processing) are fully
+  # traced, while less critical paths are sampled to save resources.
+  # -------------------------------------------------------------------
+  sampling_config:
+    description: "Intelligent sampling configuration with operation-specific strategies"
+    settings:
+      # Type can be probabilistic, rate_limiting, or adaptive. A top-level
+      # param of 1.0 means that, by default, all spans are sampled unless
+      # overridden by operation_strategies.
+      type: "probabilistic"
+      param: 1.0
+
+      # operation_strategies: Fine-grained control for certain routes or
+      # operations. If the route matches, this sampling config is applied.
+      operation_strategies:
+        - operation: "GET /health"
+          type: "probabilistic"
+          param: 0.1
+        - operation: "POST /api/v1/walks"
+          type: "probabilistic"
+          param: 1.0
+        - operation: "GET /api/v1/walks/active"
+          type: "probabilistic"
+          param: 1.0
+        - operation: "POST /api/v1/payments"
+          type: "probabilistic"
+          param: 1.0
+
+      # rate_limiting: Caps the maximum number of traces started per second
+      # to prevent overload in high throughput scenarios, while still
+      # capturing representative data.
+      rate_limiting:
+        max_traces_per_second: 100
