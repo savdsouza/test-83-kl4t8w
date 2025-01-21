@@ -1,0 +1,132 @@
+{
+  "info": {
+    "version": 1,
+    "author": "dog-walking-app"
+  },
+  "properties": {
+    "provides-namespace": true
+  },
+  "color-assets": [
+    {
+      "asset-name": "Primary",
+      "colors": [
+        {
+          "idiom": "universal",
+          "color": {
+            "color-space": "srgb",
+            "components": {
+              "red": "0.1294",
+              "green": "0.5882",
+              "blue": "0.9529",
+              "alpha": "1.0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "asset-name": "Secondary",
+      "colors": [
+        {
+          "idiom": "universal",
+          "color": {
+            "color-space": "srgb",
+            "components": {
+              "red": "0.2980",
+              "green": "0.6863",
+              "blue": "0.3137",
+              "alpha": "1.0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "asset-name": "Error",
+      "colors": [
+        {
+          "idiom": "universal",
+          "color": {
+            "color-space": "srgb",
+            "components": {
+              "red": "0.9569",
+              "green": "0.2627",
+              "blue": "0.2118",
+              "alpha": "1.0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "asset-name": "Background",
+      "colors": [
+        {
+          "idiom": "universal",
+          "color": {
+            "color-space": "srgb",
+            "components": {
+              "red": "1.0000",
+              "green": "1.0000",
+              "blue": "1.0000",
+              "alpha": "1.0"
+            }
+          }
+        },
+        {
+          "idiom": "universal",
+          "appearances": [
+            {
+              "appearance": "luminosity",
+              "value": "dark"
+            }
+          ],
+          "color": {
+            "color-space": "srgb",
+            "components": {
+              "red": "0.9608",
+              "green": "0.9608",
+              "blue": "0.9608",
+              "alpha": "1.0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "asset-name": "Text",
+      "colors": [
+        {
+          "idiom": "universal",
+          "color": {
+            "color-space": "srgb",
+            "components": {
+              "red": "0.1294",
+              "green": "0.1294",
+              "blue": "0.1294",
+              "alpha": "1.0"
+            }
+          }
+        },
+        {
+          "idiom": "universal",
+          "appearances": [
+            {
+              "appearance": "luminosity",
+              "value": "dark"
+            }
+          ],
+          "color": {
+            "color-space": "srgb",
+            "components": {
+              "red": "0.4588",
+              "green": "0.4588",
+              "blue": "0.4588",
+              "alpha": "1.0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
