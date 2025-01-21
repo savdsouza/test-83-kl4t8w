@@ -1,0 +1,155 @@
+{
+  // Compiler options for the authentication service, enforcing strict type checking,
+  // modern JavaScript features, secure coding practices, and advanced debugging capabilities.
+  "compilerOptions": {
+    // Specifies ECMAScript target version as the latest stable specification (ES2022).
+    "target": "ES2022",
+
+    // Uses CommonJS module resolution for Node.js compatibility.
+    "module": "CommonJS",
+
+    // Includes ES2022 library definitions, enabling modern language features.
+    "lib": [
+      "ES2022"
+    ],
+
+    // Defines the output directory for compiled JavaScript files.
+    "outDir": "./dist",
+
+    // Sets the root directory for source files.
+    "rootDir": "./src",
+
+    // Enables TypeScript's strictest type-checking options to reduce potential vulnerabilities.
+    "strict": true,
+
+    // Allows default imports from modules with no default export (commonly used in Node.js).
+    "esModuleInterop": true,
+
+    // Skips type checks for .d.ts files in node_modules to speed up compilation.
+    "skipLibCheck": true,
+
+    // Ensures that file name casing is enforced consistently across the codebase.
+    "forceConsistentCasingInFileNames": true,
+
+    // Configures Node.js-compatible module resolution strategy.
+    "moduleResolution": "node",
+
+    // Allows importing JSON modules directly, essential for configuration files.
+    "resolveJsonModule": true,
+
+    // Generates .d.ts declaration files for library consumers or downstream services.
+    "declaration": true,
+
+    // Produces corresponding .map files for each .js output, aiding debugging.
+    "sourceMap": true,
+
+    // Strips out all comments from the output JavaScript to secure and minimize output.
+    "removeComments": true,
+
+    // Disallows variables of type 'any' unless explicitly declared.
+    "noImplicitAny": true,
+
+    // Enforces strict rules for checking null and undefined values, preventing runtime errors.
+    "strictNullChecks": true,
+
+    // Ensures that function call type signatures are strictly enforced.
+    "strictFunctionTypes": true,
+
+    // Checks that bind, call, and apply method arguments match function signature definitions.
+    "strictBindCallApply": true,
+
+    // Verifies that a class's instance properties are initialized in the constructor or declared with definite assignment.
+    "strictPropertyInitialization": true,
+
+    // Disallows the use of 'this' keywords in functions where this is undefined.
+    "noImplicitThis": true,
+
+    // Inserts 'use strict' at the beginning of each compiled module.
+    "alwaysStrict": true,
+
+    // Reports variables that are declared but never used, improving code clarity.
+    "noUnusedLocals": true,
+
+    // Reports parameters that are never used, enhancing maintainability.
+    "noUnusedParameters": true,
+
+    // Ensures that all code paths in a function return a value, preventing unhandled scenarios.
+    "noImplicitReturns": true,
+
+    // Prevents unexpected fallthrough behavior in switch statements.
+    "noFallthroughCasesInSwitch": true,
+
+    // Facilitates default imports in a synthetic manner, aligning with modern JavaScript practices.
+    "allowSyntheticDefaultImports": true,
+
+    // Emits metadata for decorated declarations, necessary for reflection-based libraries.
+    "emitDecoratorMetadata": true,
+
+    // Enables the experimental support for decorators in TypeScript (commonly used with frameworks).
+    "experimentalDecorators": true,
+
+    // Sets the base directory for resolving non-relative module imports.
+    "baseUrl": ".",
+
+    // Provides mapping entries for module path aliases used within the authentication service.
+    "paths": {
+      "*": [
+        "node_modules/*"
+      ],
+      "@auth/*": [
+        "src/*"
+      ],
+      "@types/*": [
+        "src/types/*"
+      ],
+      "@models/*": [
+        "src/models/*"
+      ],
+      "@controllers/*": [
+        "src/controllers/*"
+      ],
+      "@middleware/*": [
+        "src/middleware/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ]
+    },
+
+    // Tells TypeScript to save .tsbuildinfo files for faster incremental builds.
+    "incremental": true,
+
+    // Makes this project compatible with project references by generating project metadata.
+    "composite": true,
+
+    // Enables output of diagnostic information during compilation, aiding in troubleshooting.
+    "diagnostics": true,
+
+    // Preserves const enums in the generated code to prevent inlining where necessary.
+    "preserveConstEnums": true,
+
+    // Reduces final bundle size by importing helper functions from 'tslib' instead of inlining them.
+    "importHelpers": true,
+
+    // Provides human-readable output in the terminal, improving the developer experience.
+    "pretty": true
+  },
+
+  // The list of files or directories that TypeScript should include in the build process.
+  "include": [
+    "src/**/*",
+    "src/**/*.json"
+  ],
+
+  // The list of files or directories to exclude from compilation to optimize build performance
+  // and cleanly separate test or coverage files from production source.
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/*",
+    "**/__mocks__/*",
+    "coverage"
+  ]
+}
