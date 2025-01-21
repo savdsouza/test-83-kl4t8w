@@ -1,0 +1,133 @@
+/**
+ * .prettierrc - Prettier Configuration File
+ * 
+ * This configuration file defines comprehensive code formatting standards
+ * for the Dog Walking web application, ensuring consistent code style across
+ * the development team. It addresses:
+ *   1) Code Quality Standards (Ref: 2. SYSTEM ARCHITECTURE/2.5 Deployment Architecture/2.5.1 Infrastructure Requirements)
+ *      - Enforce consistent code formatting rules to maintain high-quality, production-ready code.
+ *   2) Development Standards (Ref: 4.5 DEVELOPMENT & DEPLOYMENT/4.5.2 Development Tools)
+ *      - Standardize development configurations and enhance overall developer productivity.
+ *
+ * External Library:
+ *   - Prettier @ ^3.0.0 (industry-standard code formatter)
+ *
+ * By exporting named members and a default configuration object, we ensure
+ * maximum flexibility for integration in various build systems or scripts.
+ */
+
+/**
+ * @member {number} printWidth
+ * Maximum line length the printer will wrap on.
+ */
+export const printWidth = 100;
+
+/**
+ * @member {number} tabWidth
+ * Number of spaces each indentation level uses.
+ */
+export const tabWidth = 2;
+
+/**
+ * @member {boolean} useTabs
+ * If true, indentation uses tabs instead of spaces.
+ */
+export const useTabs = false;
+
+/**
+ * @member {boolean} semi
+ * If true, adds a semicolon at the end of every statement.
+ */
+export const semi = true;
+
+/**
+ * @member {boolean} singleQuote
+ * If true, uses single quotes instead of double quotes.
+ */
+export const singleQuote = true;
+
+/**
+ * @member {string} trailingComma
+ * Controls printing of trailing commas in multiline lists/objects.
+ * Options: 'none' | 'es5' | 'all'
+ */
+export const trailingComma = 'es5';
+
+/**
+ * @member {boolean} bracketSpacing
+ * If true, prints spaces between brackets in object literals.
+ */
+export const bracketSpacing = true;
+
+/**
+ * @member {boolean} bracketSameLine
+ * If true, puts the > of a multi-line JSX element at the end of the last line.
+ */
+export const bracketSameLine = false;
+
+/**
+ * @member {string} arrowParens
+ * Controls when parentheses are required for arrow function parameters.
+ * Options: 'always' | 'avoid'
+ */
+export const arrowParens = 'avoid';
+
+/**
+ * @member {string} endOfLine
+ * Enforces a consistent end-of-line character.
+ * Options: 'lf' | 'crlf' | 'cr' | 'auto'
+ */
+export const endOfLine = 'lf';
+
+/**
+ * @member {boolean} jsxSingleQuote
+ * If true, uses single quotes instead of double quotes in JSX.
+ */
+export const jsxSingleQuote = false;
+
+/**
+ * @member {string} proseWrap
+ * How Prettier wraps prose.
+ * Options: 'always' | 'never' | 'preserve'
+ */
+export const proseWrap = 'preserve';
+
+/**
+ * @member {string} quoteProps
+ * Changes when properties in objects are quoted.
+ * Options: 'as-needed' | 'consistent' | 'preserve'
+ */
+export const quoteProps = 'as-needed';
+
+/**
+ * @member {string} htmlWhitespaceSensitivity
+ * How Prettier treats whitespace in HTML.
+ * Options: 'css' | 'strict' | 'ignore'
+ */
+export const htmlWhitespaceSensitivity = 'css';
+
+/**
+ * Comprehensive Prettier configuration object 
+ * defining code formatting rules for consistent code style.
+ */
+export const prettierConfig = {
+  printWidth,
+  tabWidth,
+  useTabs,
+  semi,
+  singleQuote,
+  trailingComma,
+  bracketSpacing,
+  bracketSameLine,
+  arrowParens,
+  endOfLine,
+  jsxSingleQuote,
+  proseWrap,
+  quoteProps,
+  htmlWhitespaceSensitivity,
+};
+
+/**
+ * Default export for convenient usage in build or editor configurations.
+ */
+export default prettierConfig;
