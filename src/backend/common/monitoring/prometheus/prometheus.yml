@@ -1,0 +1,120 @@
+# ---------------------------------------------------------------------
+# Prometheus configuration for version 2.45.0
+# This file provides a comprehensive, production-grade setup
+# for monitoring the dog walking platform's microservices,
+# including multi-AZ support and advanced service discovery.
+# ---------------------------------------------------------------------
+
+global:
+  # -------------------------------------------------------------------
+  # Global configuration:
+  # - scrape_interval: Interval between scrapes of metrics endpoints
+  # - evaluation_interval: Interval for rule evaluations
+  # - scrape_timeout: Maximum time to wait before considering a scrape failure
+  # - external_labels: Additional labels applied to all metrics for identification
+  # -------------------------------------------------------------------
+  scrape_interval: "15s"
+  evaluation_interval: "15s"
+  scrape_timeout: "10s"
+  external_labels:
+    environment: "${ENVIRONMENT}"
+    region: "${AWS_REGION}"
+    cluster: "${CLUSTER_NAME}"
+    application: "dogwalking-platform"
+
+# ---------------------------------------------------------------------
+# Scrape configurations:
+# Defines which targets to monitor and how to collect their metrics.
+# Includes advanced Kubernetes service discovery and relabeling.
+# ---------------------------------------------------------------------
+scrape_configs:
+  # ---------------------------------------------------------
+  # Job: api-gateway
+  # - Discovers all pods labeled with app=api-gateway
+  # - Checks pods in the 'dogwalking' namespace
+  # - Uses port 9090 for metrics
+  # ---------------------------------------------------------
+  - job_name: "api-gateway"
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - "dogwalking"
+        selectors:
+          - role: "service"
+            label: "app=api-gateway"
+    metrics_path: "/metrics"
+    scheme: "http"
+    relabel_configs:
+      - source_labels: ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+        action: "keep"
+        regex: "true"
+      - source_labels: ["__meta_kubernetes_pod_container_port_number"]
+        action: "keep"
+        regex: "9090"
+
+  # ---------------------------------------------------------
+  # Job: auth-service
+  # - Discovers all pods labeled with app=auth-service
+  # - Checks pods in the 'dogwalking' namespace
+  # - Drops metrics that match "process_*" to reduce clutter
+  # - Honors existing labels to preserve original metric data
+  # ---------------------------------------------------------
+  - job_name: "auth-service"
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - "dogwalking"
+        selectors:
+          - role: "service"
+            label: "app=auth-service"
+    metrics_path: "/metrics"
+    scheme: "http"
+    honor_labels: true
+    metrics_relabel_configs:
+      - source_labels: ["__name__"]
+        regex: "process_.*"
+        action: "drop"
+
+  # ---------------------------------------------------------
+  # Job: booking-service
+  # - Discovers pods labeled with app=booking-service
+  # - Checks pods in the 'dogwalking' namespace
+  # - Uses /actuator/prometheus for Spring Boot metrics
+  # - Has a shorter scrape interval for more frequent data
+  # ---------------------------------------------------------
+  - job_name: "booking-service"
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - "dogwalking"
+        selectors:
+          - role: "service"
+            label: "app=booking-service"
+    metrics_path: "/actuator/prometheus"
+    scheme: "http"
+    honor_timestamps: true
+    scrape_interval: "10s"
+
+# ---------------------------------------------------------------------
+# Alerting configuration:
+# Defines how Prometheus finds and communicates with Alertmanager.
+# ---------------------------------------------------------------------
+alerting:
+  alertmanagers:
+    - kubernetes_sd_configs:
+        - role: pod
+          namespaces:
+            names:
+              - "monitoring"
+          selectors:
+            - role: "service"
+              label: "app=alertmanager"
+      path_prefix: "/"
+      scheme: "http"
+      timeout: "10s"
+      api_version: "v2"
+      follow_redirects: true
+      enable_http2: true
