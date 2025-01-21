@@ -1,0 +1,241 @@
+<!--
+    File: fragment_register.xml
+    Description: 
+      Material Design 3 compliant registration form layout containing:
+       1) A title label indicating "Register"
+       2) Email input field with outlined box style and helper/error text
+       3) Password input field with displayed password toggle and length counter
+       4) Radio buttons for user type selection ("Owner" or "Walker")
+       5) A custom button for registration, employing a Material 3 style
+       6) A clickable TextView prompting existing users to log in
+       
+    Technical References:
+      - ConstraintLayout (androidx.constraintlayout.widget:2.1.4) for responsive design.
+      - Material Components (com.google.android.material:material:1.9.0) for TextInputLayouts,
+        TextInputEditTexts, and RadioButtons.
+      - CustomButton (com.dogwalking.app.ui.components.CustomButton) for an enterprise-ready
+        configurable Material button with loading states.
+      - All dimension, color, and string references align with the enterprise design system
+        specified in the project (e.g., @dimen/spacing_large, @string/register_title, etc.).
+      - The layout is heavily commented to comply with production-level code clarity and
+        maintainability standards.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    <!-- 
+         Third-Party (External) Library Version Comment:
+         androidx.constraintlayout.widget:2.1.4
+         Provides constraint-based positioning, enabling responsiveness for different screen sizes.
+    -->
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    <!-- 
+         Padding ensures a comfortable margin from screen edges. 
+         clipToPadding and clipChildren set to false to avoid clipping 
+         child views, helpful when animating edges or transitions.
+    -->
+    android:padding="@dimen/spacing_large"
+    android:clipToPadding="false"
+    android:clipChildren="false">
+
+    <!-- 
+         Title TextView 
+         Serves as an accessibility heading. 
+         Uses the app_font_bold (declared in fonts) with a 24sp textSize 
+         and ?attr/colorOnSurface for consistent Material theming.
+    -->
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/register_title"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:fontFamily="@font/app_font_bold"
+        android:accessibilityHeading="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- 
+         TextInputLayout (for Email) 
+         Material 3 OutlinedBox style with error/helper text enabled. 
+         The start icon can display an email icon for visual context. 
+         Margin top references spacing_large from the design system.
+         
+         Third-Party (External) Library Version Comment:
+         com.google.android.material:material:1.9.0
+         for TextInputLayout & Theme.Material3 support.
+    -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/emailInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+
+        app:layout_constraintTop_toBottomOf="@id/titleText"
+        app:errorEnabled="true"
+        app:helperTextEnabled="true"
+        app:startIconDrawable="@drawable/ic_email"
+        app:startIconContentDescription="@string/email_icon_description">
+
+        <!-- 
+             TextInputEditText (for Email) 
+             Configured for single-line email input with IME action "Next".
+             The maxLines attribute ensures the field doesn't expand beyond one line. 
+        -->
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/emailInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/email_hint"
+            android:inputType="textEmailAddress"
+            android:imeOptions="actionNext"
+            android:maxLines="1" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 
+         TextInputLayout (for Password) 
+         Style: OutlinedBox with passwordToggle for reveal/hide. 
+         Counter is enabled with maxLength=20, plus helper/error text. 
+         The start icon can display a lock icon for password context.
+    -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/passwordInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+
+        app:layout_constraintTop_toBottomOf="@id/emailInputLayout"
+        app:passwordToggleEnabled="true"
+        app:errorEnabled="true"
+        app:helperTextEnabled="true"
+        app:counterEnabled="true"
+        app:counterMaxLength="20"
+        app:startIconDrawable="@drawable/ic_lock"
+        app:startIconContentDescription="@string/password_icon_description">
+
+        <!-- 
+             TextInputEditText (for Password) 
+             Uses maxLength=20 alongside counter to inform the user 
+             of the chosen complexity constraints. 
+             IME action set to "Done" for finalizing input.
+        -->
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/passwordInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password_hint"
+            android:inputType="textPassword"
+            android:imeOptions="actionDone"
+            android:maxLines="1"
+            android:maxLength="20" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 
+         RadioGroup for user type selection ("Owner" / "Walker"). 
+         Horizontal layout with center alignment. 
+         Margin top references spacing_large from the design system.
+    -->
+    <RadioGroup
+        android:id="@+id/userTypeGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        app:layout_constraintTop_toBottomOf="@id/passwordInputLayout">
+
+        <!-- 
+             MaterialRadioButton for "Owner" 
+             - Checked by default to speed up user signup flows. 
+             - minHeight ensures a comfortable touch target. 
+             - Padding aligns with design system spacing.
+             
+             Library Reference:
+             MaterialRadioButton (com.google.android.material:material:1.9.0)
+        -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/ownerRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/user_type_owner"
+            android:checked="true"
+            android:minHeight="48dp"
+            android:paddingStart="@dimen/spacing_medium"
+            android:textColor="?attr/colorOnSurface" />
+
+        <!-- 
+             MaterialRadioButton for "Walker" 
+             - Laid out to the right of "Owner" with an additional spacing margin. 
+        -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/walkerRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/user_type_walker"
+            android:layout_marginStart="@dimen/spacing_large"
+            android:minHeight="48dp"
+            android:paddingStart="@dimen/spacing_medium"
+            android:textColor="?attr/colorOnSurface" />
+
+    </RadioGroup>
+
+    <!-- 
+         CustomButton for Registration 
+         Uses an enterprise-grade custom button class defined in the 
+         com.dogwalking.app.ui.components package. 
+         - style: Material 3 button style
+         - minHeight: 56dp for consistent large tap targets
+         - marginTop references spacing_large from design system
+         - Constrain top to userTypeGroup and bottom to loginPrompt for fluid vertical spacing.
+         
+         Internal Import:
+         com.dogwalking.app.ui.components.CustomButton
+         Purpose: Advanced Material button with loading states and extended functionality.
+    -->
+    <com.dogwalking.app.ui.components.CustomButton
+        android:id="@+id/registerButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="@string/register_button"
+        android:minHeight="56dp"
+        style="@style/Widget.Material3.Button"
+
+        app:layout_constraintTop_toBottomOf="@id/userTypeGroup"
+        app:layout_constraintBottom_toTopOf="@id/loginPrompt" />
+
+    <!-- 
+         TextView prompting user to login if they already have an account. 
+         - Clickable and focusable for accessibility (navigates to Login). 
+         - Uses selectableItemBackground to visualize touch feedback. 
+         - Centered horizontally between start/end constraints.
+    -->
+    <TextView
+        android:id="@+id/loginPrompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/login_prompt"
+        android:textColor="?attr/colorPrimary"
+        android:padding="@dimen/spacing_small"
+        android:minHeight="48dp"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
+
+        app:layout_constraintTop_toBottomOf="@id/registerButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
