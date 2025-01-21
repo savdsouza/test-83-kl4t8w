@@ -1,0 +1,82 @@
+<!--
+  bg_button.xml
+
+  This file defines the state-aware background drawable for the application's custom button component.
+  It implements Material Design principles with:
+    • Primary color (#2196F3) for default state
+    • Darker shade (#1976D2) for pressed state
+    • Gray (#BDBDBD) for disabled state (with alpha 0.5)
+    • Consistent corner radius of 8dp
+    • State-based ripple effect
+    • Enter/exit fade durations of 100ms for smooth transitions
+    • Intended elevation concept (2dp default, 4dp pressed, 0dp disabled) is
+      documented in comments, acknowledging shape drawables do not inherently
+      support hardware elevation. This logic is typically handled in layout or
+      Material components.
+
+  External Resource Reference:
+    - Using android:drawable from Android (latest version) for state-based rendering
+      and color management.
+
+  Requirements Addressed:
+    • Matches button design and interactive states from the technical specifications
+    • Provides a reusable, state-aware drawable with proper color and corner radius
+-->
+
+<selector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:enterFadeDuration="100"
+    android:exitFadeDuration="100">
+    
+    <!-- Pressed State 
+         - Color: #1976D2 (darker version of primary)
+         - Corner Radius: 8dp
+         - Target "elevation": 4dp (commented for reference; shape drawables don't apply real elevation)
+         - Rapid visual feedback on press
+    -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <!-- Rounded corners at 8dp for Material Design compliance -->
+            <corners android:radius="8dp"/>
+            <!-- Darker shade for pressed feedback -->
+            <solid android:color="#1976D2"/>
+            <!-- Elevation concept: 4dp (handled at runtime if needed) -->
+        </shape>
+    </item>
+
+    <!-- Disabled State 
+         - Color: #BDBDBD
+         - Corner Radius: 8dp
+         - Alpha: 0.5 for translucent disabled effect
+         - Target "elevation": 0dp (commented for reference)
+    -->
+    <item
+        android:state_enabled="false"
+        android:alpha="0.5">
+        <shape android:shape="rectangle">
+            <!-- Rounded corners remain consistent at 8dp -->
+            <corners android:radius="8dp"/>
+            <!-- Gray color to indicate disablement -->
+            <solid android:color="#BDBDBD"/>
+            <!-- Elevation concept: 0dp (not rendered in shape directly) -->
+        </shape>
+    </item>
+
+    <!-- Default (Enabled) State 
+         - Color: #2196F3 (primary)
+         - Corner Radius: 8dp
+         - Ripple color: #FFFFFF for highlight on touch
+         - Target "elevation": 2dp (commented for reference)
+    -->
+    <item>
+        <ripple android:color="#FFFFFFFF">
+            <shape android:shape="rectangle">
+                <!-- Smooth 8dp corner radius for consistent button shape -->
+                <corners android:radius="8dp"/>
+                <!-- Primary brand color for default state -->
+                <solid android:color="#2196F3"/>
+                <!-- Elevation concept: 2dp (typically set in layout or via MaterialTheme) -->
+            </shape>
+        </ripple>
+    </item>
+</selector>
