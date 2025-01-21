@@ -1,0 +1,104 @@
+###############################################################################
+# iOS Git Ignore File
+# Comprehensive .gitignore configuration for an iOS project,
+# covering build artifacts, IDE files, dependency directories,
+# CI artifacts, sensitive files, and more.
+###############################################################################
+
+###############################################################################
+# Build Artifacts
+###############################################################################
+# Ignore iOS build output and archives
+build/
+DerivedData/
+*.ipa
+*.app
+*.xcframework
+*.xcresult
+
+# Debug symbol artifacts
+*.dSYM
+*.dSYM.zip
+
+###############################################################################
+# Dependency Management
+###############################################################################
+# CocoaPods
+Pods/
+Pods/Manifest.lock
+
+# Carthage
+Carthage/
+Carthage/Build
+Carthage/Checkouts
+
+# Swift Package Manager
+Package.resolved
+
+###############################################################################
+# IDE Files and Project Settings
+###############################################################################
+# Xcode project files
+*.pbxuser
+*.xcodeproj/*
+
+# Retain main project.pbxproj and shared data if needed
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+
+# Xcode workspace data (ignore all unless specifically needed)
+*.xcworkspace
+xcshareddata/
+xcuserdata/
+*.xcuserstate
+
+# Various Xcode mode and perspective files
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+###############################################################################
+# System Files
+###############################################################################
+# macOS system files
+.DS_Store
+
+# Vim swap and backup files
+*.swp
+*.swo
+
+# Moved-aside, header map
+*.moved-aside
+*.hmap
+
+# Nib backup files
+*~.nib
+
+###############################################################################
+# Sensitive Files
+###############################################################################
+# API keys, credentials, and provisioning profiles
+*.p12
+*.cer
+*.mobileprovision
+.env*
+
+# Service-specific configuration
+**/GoogleService-Info.plist
+**/MapKit-Info.plist
+**/Stripe-Info.plist
+**/BackgroundCheck-Info.plist
+**/PushNotifications/*.p8
+**/Secrets/*.plist
+
+###############################################################################
+# CI Artifacts
+###############################################################################
+# Fastlane-generated files and directories
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Xcode result bundles (repeated to ensure coverage)
+*.xcresult
