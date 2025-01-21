@@ -1,0 +1,140 @@
+<!--
+  File: themes.xml
+  Description:
+    Defines the main application theme and its variants following
+    Material Design guidelines and the app’s design system
+    specifications. Implements a comprehensive styling system
+    for colors, typography, and components in compliance with
+    the Dog Walking application's design framework.
+
+  Dependencies:
+    - com.google.android.material:material:1.9.0
+      (Base Material Design theme and components)
+    - @color resources imported from colors.xml
+    - @style resources imported from styles.xml
+-->
+
+<resources>
+
+    <!--
+      Theme.DogWalking
+      ------------------------------------------------
+      This is the main application theme designed to unify
+      the look and feel of the Dog Walking application’s
+      user interface. It extends:
+        Theme.MaterialComponents.Light.NoActionBar (v1.9.0)
+      from the Material Components library to leverage
+      Material-based features, consistent color theming,
+      and modern UI patterns.
+
+      Requirements Addressed:
+        - Design System Implementation (colors, typography, etc.)
+        - Theme Support (light theme variant)
+        - Component Styling (buttons, text inputs, cards)
+    -->
+    <style name="Theme.DogWalking" parent="Theme.MaterialComponents.Light.NoActionBar">
+
+        <!--
+          colorPrimary:
+            The primary brand color used for the app bar,
+            primary action buttons, and other prominent UI elements.
+            Sourced from @color/primary in colors.xml.
+        -->
+        <item name="colorPrimary">@color/primary</item>
+
+        <!--
+          colorPrimaryDark:
+            Darker variant of the primary color, traditionally used
+            for the status bar or scenarios requiring increased contrast.
+            Sourced from @color/primary_dark in colors.xml.
+        -->
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+
+        <!--
+          colorSecondary:
+            Secondary brand color used for complementary UI accents,
+            FABs, toggles, or secondary action items.
+            Sourced from @color/secondary in colors.xml.
+        -->
+        <item name="colorSecondary">@color/secondary</item>
+
+        <!--
+          colorError:
+            Error color for highlighting validation issues, critical
+            error states, or invalid input fields in the UI.
+            Sourced from @color/error in colors.xml.
+        -->
+        <item name="colorError">@color/error</item>
+
+        <!--
+          android:windowBackground:
+            Base window background color for all application screens,
+            ensuring a neutral, clean surface behind UI content.
+            Sourced from @color/background in colors.xml.
+        -->
+        <item name="android:windowBackground">@color/background</item>
+
+        <!--
+          android:windowLightStatusBar:
+            Enables a light status bar with dark icons/text
+            when true; aligns with a predominantly bright
+            overall theme.
+        -->
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!--
+          android:navigationBarColor:
+            Defines the navigation bar color at the bottom of
+            the screen on supported devices. Setting it to
+            @color/background ensures consistent UI appearance.
+        -->
+        <item name="android:navigationBarColor">@color/background</item>
+
+        <!--
+          textAppearanceHeadline1:
+            Reference to a large headline style for major
+            headers or significant textual content, mapped
+            to the design system’s largest text size.
+            Points to @style/TextAppearance.App.Headline1
+            in styles.xml.
+        -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.App.Headline1</item>
+
+        <!--
+          textAppearanceBody1:
+            Reference to the primary body text style used
+            for most standard informational text blocks.
+            Points to @style/TextAppearance.App.Body1
+            in styles.xml.
+        -->
+        <item name="textAppearanceBody1">@style/TextAppearance.App.Body1</item>
+
+        <!--
+          buttonStyle:
+            Default style applied to Button components,
+            ensuring consistent elevation, ripple effects,
+            and accessible touch targets throughout the app.
+            Mapped to @style/Widget.App.Button in styles.xml.
+        -->
+        <item name="buttonStyle">@style/Widget.App.Button</item>
+
+        <!--
+          editTextStyle:
+            Default style for text input fields, providing
+            a standardized approach to hint text, error states,
+            and material-filled box styling.
+            Mapped to @style/Widget.App.EditText in styles.xml.
+        -->
+        <item name="editTextStyle">@style/Widget.App.EditText</item>
+
+        <!--
+          materialCardViewStyle:
+            Defines the default appearance for MaterialCardView,
+            including elevation, corner radius, and background.
+            Mapped to @style/Widget.App.Card in styles.xml.
+        -->
+        <item name="materialCardViewStyle">@style/Widget.App.Card</item>
+
+    </style>
+
+</resources>
