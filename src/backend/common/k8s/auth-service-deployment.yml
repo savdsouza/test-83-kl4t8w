@@ -1,0 +1,220 @@
+################################################################################
+# Auth Service Deployment YAML
+# ------------------------------------------------------------------------------
+# This file defines the enterprise-grade Kubernetes deployment for the
+# Authentication Service, addressing:
+# 1) Node.js-based JWT, OAuth2, and RBAC methodologies with enhanced security.
+# 2) Advanced container orchestration, resource limits, and health probes.
+# 3) Security context enforcing non-root user, read-only filesystem, and secure
+#    volume mounts within a restricted environment.
+#
+# External Import:
+#   - Using kubernetes v1.28 for advanced orchestration APIs.
+#
+# Internal Import Reference:
+#   - auth.config.ts (JWT, OAuth2, and RBAC) - Volumes and environment variables
+#     are provided to align with the private/public key usage.
+################################################################################
+
+################################################################################
+# Kubernetes Deployment for the Authentication Microservice
+# ------------------------------------------------------------------------------
+# - Ensures rolling updates with zero downtime.
+# - Utilizes strict security context and resource management.
+# - Integrates with Prometheus for metrics scraping.
+################################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: dog-walking
+  labels:
+    app: auth-service
+    component: backend
+    tier: authentication
+    version: v1
+  annotations:
+    kubernetes.io/change-cause: "Initial deployment of auth service"
+    security.policy/version: "v1.2"
+spec:
+  # Replicas represent the initial number of pods (auto-scaled further via HPA).
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+        security.tier: restricted
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
+        prometheus.io/path: "/metrics"
+        vault.hashicorp.com/agent-inject: "true"
+    spec:
+      ##########################################################################
+      # Pod-Level Security Context
+      # ------------------------------------------------------------------------
+      # Enforces non-root user and read-only filesystem to reduce attack surface.
+      ##########################################################################
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+      ##########################################################################
+      # Container Specification
+      # ------------------------------------------------------------------------
+      # - Utilizes a hardened image.
+      # - Defines resource requests/limits for CPU and Memory.
+      # - Comprehensive health checks for liveness, readiness, and startup.
+      ##########################################################################
+      containers:
+        - name: auth-service
+          image: "dog-walking/auth-service:latest"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+              protocol: TCP
+              name: http
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            failureThreshold: 30
+            periodSeconds: 10
+          ######################################################################
+          # Volume Mounts
+          # --------------------------------------------------------------------
+          # 1) jwt-keys: Holds private & public keys for JWT (secret-based).
+          # 2) tmp: In-memory volume for ephemeral data.
+          ######################################################################
+          volumeMounts:
+            - name: jwt-keys
+              mountPath: /etc/keys
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+              readOnly: false
+          ######################################################################
+          # Environment Variables
+          # --------------------------------------------------------------------
+          # Link container paths to the Auth config for JWT keys.
+          ######################################################################
+          env:
+            - name: JWT_PRIVATE_KEY_PATH
+              value: "/etc/keys/jwt.key"
+            - name: JWT_PUBLIC_KEY_PATH
+              value: "/etc/keys/jwt.pub"
+      ##########################################################################
+      # Volumes Definition
+      # ------------------------------------------------------------------------
+      # 1) jwt-keys: Sourced from 'jwt-keys' secret mapped as read-only.
+      # 2) tmp: Ephemeral in-memory volume for improved performance and security.
+      ##########################################################################
+      volumes:
+        - name: jwt-keys
+          secret:
+            secretName: jwt-keys
+            defaultMode: 256
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+      ##########################################################################
+      # Service Account
+      # ------------------------------------------------------------------------
+      # The pod runs with a dedicated service account for fine-grained RBAC.
+      ##########################################################################
+      serviceAccountName: auth-service-sa
+      terminationGracePeriodSeconds: 60
+
+---
+################################################################################
+# HorizontalPodAutoscaler (HPA)
+# ------------------------------------------------------------------------------
+# Implements advanced auto-scaling based on CPU and memory utilization.
+# - Minimum replicas: 3
+# - Maximum replicas: 10
+# - Target CPU Utilization: 70%
+# - Target Memory Utilization: 80%
+# - Scale Down Stabilization: 5 minutes
+################################################################################
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: auth-service-hpa
+  namespace: dog-walking
+  labels:
+    app: auth-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: auth-service
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  ##############################################################################
+  # Behavior Section
+  # ---------------------------------------------------------------------------
+  # Provides fine-grained control over scale-down behavior to avoid rapid
+  # fluctuations. Stabilization window is set to 5 minutes (300 seconds).
+  ##############################################################################
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+      selectPolicy: "Max"
