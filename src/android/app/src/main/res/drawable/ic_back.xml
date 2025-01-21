@@ -1,0 +1,74 @@
+<!--
+    This vector drawable resource defines a back/return navigation arrow icon.
+    It follows the Material Design guidelines, supports accessibility requirements,
+    and adheres to the project's design system specifications. 
+    Below are high-detail comments and references to ensure clarity, compliance,
+    and enterprise-grade readiness.
+
+    ===========================================================================
+    EXTERNAL IMPORTS (Versioning & Purpose)
+    ===========================================================================
+    - android.graphics.drawable.VectorDrawable (version: latest)
+      Provides native support for scalable vector graphics on Android.
+
+    - androidx.vectordrawable.graphics.drawable.VectorDrawableCompat (version: 1.1.0)
+      Ensures backward compatibility for vector drawables on older Android devices.
+
+    ===========================================================================
+    COMPLIANCE & COMPATIBILITY
+    ===========================================================================
+    - minSdkVersion: 21 (Vector drawable compatibility)
+    - targetSdkVersion: 33
+    - android:autoMirrored="true" ensures RTL layout support
+    - android:tint="?attr/colorControlNormal" for dynamic theming
+    - Accessibility: contentDescription attribute for screen readers
+    - Design System: 24dp icon size, 48dp recommended touch target externally
+    - Animation references (pressedFeedback, rippleEffect, etc.) are
+      typically handled by surrounding layouts or separate selectors.
+
+    ===========================================================================
+    LICENSE & SECURITY NOTES
+    ===========================================================================
+    - No sensitive data is stored here. 
+    - This resource can be freely used throughout the application without risk.
+    - Ensure usage with proper UI states or background resources for 
+      pressed and ripple effects as specified in design guidelines.
+-->
+
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    <!-- Vector dimensions meet the 24dp Material standard icon size. -->
+    android:width="24dp"
+    android:height="24dp"
+
+    <!-- Defines the canvas size for the vector paths. -->
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0"
+
+    <!-- 
+         Auto-mirroring supports Right-To-Left (RTL) layouts. 
+         Tint allows theme-based color control using attribute colorControlNormal.
+    -->
+    android:autoMirrored="true"
+    android:tint="?attr/colorControlNormal"
+
+    <!-- 
+         contentDescription is provided for accessibility, 
+         though typically used by ImageView in layouts. 
+         Tools ignore ensures no warnings about overriding contentDescription 
+         in this resource context.
+    -->
+    android:contentDescription="@string/back_button"
+    tools:ignore="ContentDescription">
+
+    <!-- 
+         Primary path data defining the standard "back arrow" shape.
+         fillColor is set to black, subject to tint override at runtime.
+    -->
+    <path
+        android:fillColor="@android:color/black"
+        android:pathData="M20,11H7.83l5.59,-5.59L12,4l-8,8l8,8l1.41,-1.41L7.83,13H20v-2z" />
+
+</vector>
