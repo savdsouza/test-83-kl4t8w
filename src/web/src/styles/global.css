@@ -1,0 +1,269 @@
+/* ==========================================================================
+   GLOBAL IMPORTS
+   ==========================================================================
+   Importing shared variables and application-wide theme styling to maintain
+   consistent design tokens (colors, typography, spacing) and theme classes.
+*/
+@import url("../styles/variables.css");
+@import url("../styles/theme.css");
+
+/* ==========================================================================
+   BASE RESET & GLOBAL ELEMENT STYLES
+   ==========================================================================
+   1. Reset box-sizing to border-box.
+   2. Remove default margin and padding.
+   3. Improve tap highlight behavior on touch devices.
+   4. Establish consistent typography and smooth scrolling.
+   5. Set default colors and backgrounds derived from design tokens.
+   6. Apply structural improvements to images, lists, and interactive elements.
+*/
+
+/* Global box-sizing reset and minimal text highlight adjustments */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* HTML defaults:
+   - Set a 16px base font size for consistent scaling.
+   - Enable smooth scrolling for anchor jump transitions.
+   - Improve font-smoothing on macOS for enhanced rendering.
+*/
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* BODY defaults:
+   - Leverage primary font family and normal line-height.
+   - Apply text color and background color from design tokens.
+   - Optimize speed for text rendering in modern browsers.
+*/
+body {
+  font-family: var(--font-family-primary, system-ui);
+  line-height: var(--line-height-normal, 1.5);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  text-rendering: optimizeSpeed;
+}
+
+/* Headings:
+   - Use a bold weight for strong emphasis.
+   - Provide bottom spacing for content flow.
+   - Optionally define custom line-height for large headings.
+*/
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-md);
+  line-height: var(--line-height-heading, 1.2);
+}
+
+/* Anchor links:
+   - Default color set to primary brand color.
+   - No text decoration by default.
+   - Include transition for hover/focus states.
+   - Remove outlines for better usability styling.
+*/
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: var(--transition-normal);
+  outline: none;
+}
+
+/* Anchor hover/focus:
+   - Darker primary color for hover or focus-visible.
+   - Underline to indicate interactivity.
+*/
+a:hover,
+a:focus-visible {
+  color: var(--color-primary-dark, #1976D2);
+  text-decoration: underline;
+}
+
+/* Media elements:
+   - Display block format ensures layout predictability.
+   - Constrain max-width and ensure auto height scaling.
+   - content-visibility optimizes off-screen assets.
+*/
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  content-visibility: auto;
+}
+
+/* Unordered and ordered lists:
+   - Remove default list-style to allow custom bullet styling.
+   - Remove default padding-left for consistent spacing.
+*/
+ul,
+ol {
+  list-style: none;
+  padding-left: 0;
+}
+
+/* Button defaults:
+   - No border by default for a cleaner canvas.
+   - Inherit font settings from the parent.
+   - Cursor pointer for clarity.
+   - Provide baseline padding and minimum interactive sizes.
+*/
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ==========================================================================
+   UTILITY CLASSES
+   ==========================================================================
+   Exported utility classes for layout containment, text alignment,
+   visibility toggling, and accessibility features.
+*/
+
+/* Main content container with responsive max-width and horizontal padding */
+.container {
+  width: 100%;
+  max-width: var(--container-max-width, 1200px);
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+  contain: content;
+}
+
+/* Center-align text, useful for headings or sections requiring centered content */
+.text-center {
+  text-align: center;
+}
+
+/* Completely hide an element visually and remove it from layout flow */
+.hidden {
+  display: none !important;
+}
+
+/* Hide an element visually while keeping it accessible to screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip navigation link for keyboard/screen reader users */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  z-index: 9999;
+  padding: var(--spacing-md);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: top 0.3s ease-in-out;
+}
+
+/* ==========================================================================
+   MEDIA QUERIES
+   ==========================================================================
+   Responsive breakpoints and specialized queries to accommodate user
+   preferences or device limitations. Ensures an adaptive layout.
+*/
+
+/* 1. Reduced motion media query:
+   - Disable smooth scrolling.
+   - Shorten any animation or transition durations drastically.
+*/
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 2. Mobile styles (max-width: var(--breakpoint-sm)):
+   - Tighter container padding.
+   - Larger touch targets for buttons.
+*/
+@media (max-width: var(--breakpoint-sm)) {
+  .container {
+    padding: 0 var(--spacing-sm);
+  }
+  button {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* 3. Tablet styles (min-width: var(--breakpoint-md)):
+   - Increase container side padding for better layout use on tablets.
+*/
+@media (min-width: var(--breakpoint-md)) {
+  .container {
+    padding: 0 var(--spacing-lg);
+  }
+}
+
+/* 4. Desktop styles (min-width: var(--breakpoint-lg)):
+   - Enforce a 1200px max container width for large displays.
+*/
+@media (min-width: var(--breakpoint-lg)) {
+  .container {
+    max-width: 1200px;
+  }
+}
+
+/* 5. Print styles:
+   - White background, black text for printing clarity.
+   - Hide no-print elements.
+   - Underline links and show URL after links for reference.
+*/
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .no-print {
+    display: none;
+  }
+  a {
+    text-decoration: underline;
+  }
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+}
+
+/* ==========================================================================
+   EXPORT DECLARATIONS
+   ==========================================================================
+   Exporting base global styles (default) and utility classes (named) for
+   use throughout the entire web application.
+   [Global Styles] -> Base Element Styles
+   [Utility Classes] -> .container, .text-center, .hidden, .visually-hidden, .skip-link
+========================================================================== */
