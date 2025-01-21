@@ -1,0 +1,244 @@
+################################################################################
+# Kubernetes Deployment for Notification Service
+# ------------------------------------------------------------------------------
+# This file defines a highly available and production-ready Deployment resource
+# for the Dog Walking Platform’s Notification Service. The Notification Service
+# provides multi-channel notifications (push, email, SMS) and supports real-time
+# capabilities, including critical P0 emergency notifications that must be
+# delivered within < 5 minutes. It is built upon Python 3.11-slim (see comment
+# near image reference) and integrates seamlessly with the platform’s logging
+# and monitoring settings to fulfill the enterprise requirements of zero-downtime
+# updates, multi-AZ deployment, strict security best practices, and comprehensive
+# observability.
+#
+# Comprehensive Explanation of Key Sections:
+# - metadata: Contains naming, labeling, and annotations. Labels are used for
+#   service discovery, monitoring, and resource grouping. Annotations store
+#   metadata such as deployment change-cause and Prometheus scraping points.
+# - spec:replicas: Defines how many pod replicas we run simultaneously (3),
+#   ensuring high availability. With Multi-AZ configs, this helps meet the
+#   ~99.9% uptime requirement.
+# - strategy:rollingUpdate: Ensures zero-downtime updates by incrementally
+#   updating pods (maxSurge=1, maxUnavailable=0).
+# - selector: Matches pods for this Deployment via label (app: notification-service).
+# - template: The core Pod specification for each replica, including:
+#        1) Metadata with labels and Prometheus scrape annotations.
+#        2) Spec.affinity: Pod anti-affinity to distribute pods across zones.
+#        3) Spec.securityContext: Runs the container as a non-root user, with
+#           readOnlyRootFilesystem set to true for improved security.
+#        4) spec.containers: Full definition of the container:
+#            - name & image: "notification-service:latest" # Built from python:3.11-slim
+#            - ports: Container listening on port 8000 (named "http").
+#            - env: Standard environment variables for Python operation, logging,
+#              and unbuffered output.
+#            - resources: CPU/memory requests and limits for stable performance.
+#            - livenessProbe/readinessProbe: Health checks hitting /health to
+#              ensure the container is both live and ready.
+#            - volumeMounts: Mounts a logs directory, a config directory
+#              referencing the configMap (with "logging-config" + "monitoring-config"),
+#              and a /tmp directory for ephemeral uses.
+#        5) spec.volumes: Three volumes are declared: "logs" (emptyDir), "config"
+#           (maps to named keys in "notification-service-config" for logging
+#           and monitoring), and "tmp" (emptyDir).
+#
+# Exports Provided (IE3):
+# - health endpoint at /health for liveness/readiness
+# - notifications endpoint for multi-channel notifications
+# - notifications/emergency endpoint for mission-critical P0 emergencies
+# - metrics endpoint at /metrics for Prometheus
+################################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  ##############################################################################
+  # METADATA
+  # --------------------------------------------------------------------------
+  # - name: Unique identifier for the deployment resource.
+  # - namespace: Logical grouping of resources within Kubernetes.
+  # - labels: Used for grouping and identifying the deployment across the system.
+  # - annotations: Key-value metadata to track deployment changes and configure
+  #   Prometheus scraping behavior for metrics.
+  ##############################################################################
+  name: notification-service
+  namespace: dogwalking
+  labels:
+    app: notification-service
+    component: notifications
+    part-of: dogwalking-platform
+    version: "1.0.0"
+  annotations:
+    kubernetes.io/change-cause: "Initial deployment of notification service"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+
+spec:
+  ##############################################################################
+  # DEPLOYMENT SPECIFICATION
+  # --------------------------------------------------------------------------
+  # - replicas: Defines how many pod replicas to run at any given time for this
+  #   microservice. A value of 3 ensures fault tolerance and meets high availability
+  #   requirements.
+  # - strategy:rollingUpdate: Manages updates to pods in a rolling manner,
+  #   guaranteeing zero downtime by controlling surge/up availability.
+  # - selector: Ties this Deployment to pods that match the specified label selector.
+  ##############################################################################
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: notification-service
+
+  template:
+    ##########################################################################
+    # POD TEMPLATE METADATA
+    # ------------------------------------------------------------------------
+    # The metadata section for each replica. Contains labels and annotations
+    # including Prometheus scraping instructions for runtime metrics.
+    ##########################################################################
+    metadata:
+      labels:
+        app: notification-service
+        component: notifications
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+
+    spec:
+      ########################################################################
+      # POD AFFINITY & SECURITY
+      # ----------------------------------------------------------------------
+      # - affinity: Enforces that pods prefer to run in different zones
+      #   (via podAntiAffinity). This spreads the pods across availability zones,
+      #   fortifying resilience for mission-critical emergency notifications.
+      # - securityContext: Ensures the process is run as a non-root user
+      #   (runAsUser=1000) + readOnlyRootFilesystem for defense in depth.
+      ########################################################################
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: topology.kubernetes.io/zone
+                labelSelector:
+                  matchLabels:
+                    app: notification-service
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+        readOnlyRootFilesystem: true
+
+      ########################################################################
+      # CONTAINERS
+      # ----------------------------------------------------------------------
+      # The "notification-service" container:
+      #   - Built from python:3.11-slim (see comment by image reference).
+      #   - Listens on port 8000, uses environment variables for:
+      #       * PYTHONPATH, PYTHONUNBUFFERED => typical Python best practice
+      #       * LOG_LEVEL => adjustable log verbosity
+      #   - Probes: liveness + readiness on /health
+      #   - Resource requests/limits + volumes for logs, config, and /tmp.
+      ########################################################################
+      containers:
+        - name: notification-service
+          # External import reference:
+          #  -> This container is built from python:3.11-slim at build time,
+          #     but currently tagged and deployed as notification-service:latest
+          image: "notification-service:latest"  # Built from python:3.11-slim
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          env:
+            - name: PYTHONPATH
+              value: "/app"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: LOG_LEVEL
+              value: "INFO"
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          ####################################################################
+          # Liveness Probe
+          # ------------------------------------------------------------------
+          # Periodically checks /health; if it fails repeatedly, Kubernetes
+          # restarts the container. This ensures the notification service
+          # recovers quickly if it becomes unresponsive.
+          ####################################################################
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          ####################################################################
+          # Readiness Probe
+          # ------------------------------------------------------------------
+          # Periodically checks /health; if the container is not 'ready',
+          # it’s pulled out of service to avoid sending traffic to it prematurely.
+          ####################################################################
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+      ########################################################################
+      # VOLUMES
+      # ----------------------------------------------------------------------
+      # - logs: An emptyDir volume for ephemeral log writing (collected
+      #   externally if needed).
+      # - config: A ConfigMap-based volume providing the Notification Service
+      #   with access to the "logging-config" and "monitoring-config" for
+      #   uniform logging and metrics instrumentation across the platform.
+      # - tmp: Ephemeral /tmp directory for any transient files or caching needs.
+      ########################################################################
+      volumes:
+        - name: logs
+          emptyDir: {}
+
+        - name: config
+          configMap:
+            name: notification-service-config
+            items:
+              # Using the named members "logging-config" and "monitoring-config"
+              # from the imported configmap.yml.
+              - key: "logging-config"
+                path: "logging-config.json"
+              - key: "monitoring-config"
+                path: "monitoring-config.json"
+
+        - name: tmp
+          emptyDir: {}
