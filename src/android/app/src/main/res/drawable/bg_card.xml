@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    This drawable resource defines a Material Design-compliant card background
+    with a simulated 2dp elevation effect using a layer-list. It references the
+    standardized background color and corner radius from the design system to
+    ensure consistent appearance across the application's card-based layouts.
+
+    Internal Imports:
+      - @color/background from src/android/app/src/main/res/values/colors.xml
+      - @dimen/corner_radius_medium from src/android/app/src/main/res/values/dimens.xml
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        The first item emulates the card's 2dp elevated shadow by offsetting
+        a dark rectangle behind the main surface. This provides a subtle
+        static shadow visual commonly seen in Material Design.
+    -->
+    <item
+        android:left="2dp"
+        android:top="2dp"
+        android:right="2dp"
+        android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <!--
+                A semi-transparent black color contributes to the shadow
+                appearance under the card. Adjust the alpha channel to
+                tweak shadow intensity if necessary.
+            -->
+            <solid android:color="#26000000" />
+            <!--
+                Ensures the shadow behind the card maintains identical
+                roundness, preserving a uniform shape.
+            -->
+            <corners android:radius="@dimen/corner_radius_medium" />
+        </shape>
+    </item>
+
+    <!--
+        The second item forms the card's main surface, displaying the
+        standard background color and corner radius for a coherent,
+        reusable card background throughout the app.
+    -->
+    <item>
+        <shape android:shape="rectangle">
+            <!--
+                References the primary background color resource from
+                colors.xml, maintaining brand consistency in light theme.
+            -->
+            <solid android:color="@color/background" />
+            <!--
+                The medium corner radius dimension ensures adherence to
+                the design system’s recommended rounding for card components.
+            -->
+            <corners android:radius="@dimen/corner_radius_medium" />
+        </shape>
+    </item>
+
+</layer-list>
