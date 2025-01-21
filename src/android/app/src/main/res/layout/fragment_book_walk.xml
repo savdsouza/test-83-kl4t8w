@@ -1,0 +1,322 @@
+<!--
+    fragment_book_walk.xml
+    ----------------------------------------------------------------------------
+    This layout file defines the booking screen interface where users can:
+      • View nearby walkers on a map (MapComponent)
+      • Enter their location and desired date/time
+      • Review and select available walkers (RecyclerView)
+      • Check pricing and finalize payments
+      • Confirm the booking in a secure, accessible manner
+
+    REQUIREMENTS ADDRESSED:
+      1) Booking System (real-time availability, instant matching, schedule management)
+      2) Financial Operations (secure payments, automated billing, transaction history)
+      3) Enhanced Accessibility (focus order, content descriptions, error handling)
+      4) Responsive Design (portrait/landscape dimensions for the map, scrollable layout)
+
+    INTERNAL IMPORTS USAGE:
+      • com.dogwalking.app.ui.components.MapComponent
+           - setLocation(...)      : Bound in code to display user/walker location
+           - setErrorState(...)    : Bound in code to handle map-related errors
+           - setLoadingState(...)  : Bound in code to display/hide loading indicator
+      • com.dogwalking.app.ui.components.RatingBar
+           - rating property       : Displays the numeric rating in star format
+           - setAccessibilityDescription(...) : (Defined in code usage, ensures accessible rating)
+
+    EXTERNAL DEPENDENCIES (with commented versions near imports, conceptually):
+      • androidx.core.widget.NestedScrollView v1.9.0
+      • androidx.constraintlayout.widget.ConstraintLayout v2.1.4
+      • com.google.android.material.card.MaterialCardView v1.9.0
+      • androidx.recyclerview.widget.RecyclerView v1.3.0
+      • com.google.android.material.progressindicator.CircularProgressIndicator (Material lib)
+      • com.google.android.material.textview.MaterialTextView (Material lib)
+      • com.google.android.material.textfield.TextInputLayout / TextInputEditText (Material lib)
+      • com.google.android.material.button.MaterialButton (Material lib)
+
+    DIMENSION REFERENCES:
+      • @dimen/map_height_portrait     : Default map height in portrait orientation
+      • @dimen/map_height_landscape    : Default map height in landscape orientation
+
+    STYLE REFERENCES:
+      • @style/Widget.App.ErrorView        : Custom style for error message text
+      • @style/Widget.App.LoadingIndicator : Custom style for loading spinner
+
+    ACCESSIBILITY SUPPORT:
+      • Content Descriptions:
+         - map_view: "Map showing nearby available dog walkers"
+         - location_input: "Enter your location for dog walking service"
+         - datetime_selector: "Select date and time for dog walking"
+         - walker_list: "List of available dog walkers in your area"
+         - Additional elements use descriptive text or button labels
+      • Focus order: location_input → datetime_selector → walker_list → price_summary → book_button
+         Implemented using android:nextFocusForward and related attributes where applicable
+-->
+
+
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/fragment_book_walk_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".ui.book.BookWalkFragment">
+
+    <!--
+        The NestedScrollView serves as the primary scroll container to ensure
+        accessibility on smaller devices. It expands to occupy the full screen 
+        and allows scrolling through all child views if needed.
+    -->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraint_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_large">
+
+        <!--
+            MAP COMPONENT
+            ----------------------------------------------------------------------------
+            Custom view: com.dogwalking.app.ui.components.MapComponent
+            Used to render the map with dynamic walker locations, real-time 
+            tracking data, and advanced error/loading states. The height is
+            defined by a dimension reference suitable for portrait mode. For
+            landscape variations, a separate resource folder or runtime logic 
+            might override this dimension.
+        -->
+        <com.dogwalking.app.ui.components.MapComponent
+            android:id="@+id/map_view"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/map_height_portrait"
+
+            android:contentDescription="Map showing nearby available dog walkers"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:ignore="MissingPrefix"
+            tools:loading="true" />
+
+        <!--
+            LOADING INDICATOR
+            ----------------------------------------------------------------------------
+            CircularProgressIndicator (design lib) with a custom style to show 
+            loading states (e.g., while fetching walker locations or pricing).
+            By default, it is invisible or GONE, toggled in code if needed.
+        -->
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progress_indicator"
+            style="@style/Widget.App.LoadingIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:visibility="gone"
+            android:focusable="false"
+            android:contentDescription="@string/empty"
+
+            app:layout_constraintTop_toTopOf="@+id/map_view"
+            app:layout_constraintBottom_toBottomOf="@+id/map_view"
+            app:layout_constraintStart_toStartOf="@+id/map_view"
+            app:layout_constraintEnd_toEndOf="@+id/map_view"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <!--
+            ERROR VIEW
+            ----------------------------------------------------------------------------
+            Displays error messages (e.g., map load failure or network issue).
+            Sets the style to Widget.App.ErrorView, typically includes text color, 
+            font, and sizing. This view is hidden by default and shown when an 
+            error should be surfaced to the user.
+        -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/error_view"
+            style="@style/Widget.App.ErrorView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            android:layout_marginTop="@dimen/padding_large"
+            android:visibility="gone"
+            android:text="@string/error_generic"
+            android:contentDescription="@string/error_generic"
+
+            app:layout_constraintTop_toBottomOf="@+id/map_view"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Unable to load map data. Please tap retry." />
+
+        <!--
+            LOCATION INPUT
+            ----------------------------------------------------------------------------
+            A text field for the user to specify their address or area for 
+            dog walking services. The TextInputLayout provides floating label 
+            and error support. The user navigates here first in the focus order.
+        -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/location_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            android:contentDescription="Enter your location for dog walking service"
+            android:hint="@string/label_location"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:nextFocusForward="@+id/datetime_selector"
+
+            app:layout_constraintTop_toBottomOf="@+id/error_view"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:layout_marginTop="@dimen/padding_large">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/location_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:imeOptions="actionNext"
+                android:inputType="textPostalAddress|textCapWords"
+                tools:ignore="Autofill" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--
+            DATE/TIME SELECTOR
+            ----------------------------------------------------------------------------
+            A button or clickable area allowing the user to specify the date 
+            and time for the dog walk session. Follows the location_input in 
+            logical focus order.
+        -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/datetime_selector"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            android:contentDescription="Select date and time for dog walking"
+            android:text="@string/label_select_date_time"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:nextFocusForward="@+id/walker_list"
+
+            app:layout_constraintTop_toBottomOf="@+id/location_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/padding_large" />
+
+        <!--
+            LIST OF AVAILABLE WALKERS
+            ----------------------------------------------------------------------------
+            A RecyclerView that displays dynamic data about nearby walkers, 
+            each potentially decorated with a rating bar, walker name, distance, etc.
+            The user navigates here after specifying date/time.
+        -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/walker_list"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            android:contentDescription="List of available dog walkers in your area"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:nextFocusForward="@+id/price_summary_card"
+
+            app:layout_constraintTop_toBottomOf="@+id/datetime_selector"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/padding_large"
+            tools:listitem="@layout/item_walker_option" />
+
+        <!--
+            PRICE SUMMARY AND RATING CARD
+            ----------------------------------------------------------------------------
+            A MaterialCardView wrapping pricing information for the selected 
+            walker/time slot, along with a read-only custom RatingBar showing 
+            the walker's rating. The user navigates here after finishing with 
+            the walker_list. The layout is flexible and typically updated in code
+            to reflect the chosen walker's details and cost.
+        -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/price_summary_card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:nextFocusForward="@+id/book_button"
+
+            app:layout_constraintTop_toBottomOf="@+id/walker_list"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/padding_large"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium">
+
+                <!--
+                    PRICE TEXT
+                    Show the cost of the walk, retrieved from the backend. 
+                    E.g., "$15.00" or "Estimated Price: $20.00" 
+                -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/price_summary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_price_summary"
+                    tools:text="$15.00" />
+
+                <!--
+                    CUSTOM RATING BAR
+                    ----------------------------------------------------------------------------
+                    Displays the selected walker's rating with star icons. The property 'rating'
+                    is a direct usage from the imported component. Marked read-only to avoid 
+                    user manipulation. The accessibility description is also set to ensure
+                    screen readers convey the walker's rating meaningfully.
+                -->
+                <com.dogwalking.app.ui.components.RatingBar
+                    android:id="@+id/selected_walker_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:contentDescription="@string/walker_rating_desc"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+
+                    app:rb_rating="4.5"
+                    app:rb_isEditable="false"
+                    app:rb_maxStars="5"
+                    app:rb_stepSize="0.5"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!--
+            BOOK BUTTON
+            ----------------------------------------------------------------------------
+            A MaterialButton that finalizes the booking process. This is typically 
+            the last element in the focus order, confirming all selected options.
+        -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/book_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+
+            android:contentDescription="@string/confirm_booking"
+            android:text="@string/confirm_booking"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:layout_marginTop="@dimen/padding_large"
+
+            app:layout_constraintTop_toBottomOf="@+id/price_summary_card"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
