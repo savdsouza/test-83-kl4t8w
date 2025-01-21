@@ -1,0 +1,150 @@
+name: "Web CI/CD"
+
+# --------------------------------------------------------------------------------
+# GitHub Actions workflow configuration for building, testing, and deploying
+# the Dog Walking web application admin dashboard with enhanced security
+# and performance optimizations.
+# --------------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+    paths:
+      - "src/web/**"
+  pull_request:
+    branches: [ "main", "develop" ]
+    paths:
+      - "src/web/**"
+
+# --------------------------------------------------------------------------------
+# Define environment-wide variables for Node.js version and sensitive configuration.
+# These environment variables help ensure consistent builds across all jobs.
+# --------------------------------------------------------------------------------
+env:
+  NODE_VERSION: "18.x" # Matches the Node.js >=18.0.0 engine requirement.
+  VITE_API_URL: "${{ secrets.VITE_API_URL }}" # Provided by project secrets for production builds.
+
+jobs:
+  # ------------------------------------------------------------------------------
+  # build-and-test: Performs code checkout, dependency management, security scans,
+  # type checking, linting, testing (with coverage), and final build process.
+  # ------------------------------------------------------------------------------
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # --------------------------------------------------------------------------
+      # Step 1: Check out the repository to ensure the workflow has code access.
+      # --------------------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch the entire history for accurate commit references.
+
+      # --------------------------------------------------------------------------
+      # Step 2: Set up Node.js environment with caching capabilities.
+      # --------------------------------------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+          cache: "npm"
+
+      # --------------------------------------------------------------------------
+      # Step 3: Cache npm dependencies to improve build performance.
+      # Restores cache if available; saves it after fresh install.
+      # --------------------------------------------------------------------------
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: "~/.npm"
+          key: "${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}"
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # --------------------------------------------------------------------------
+      # Step 4: Install dependencies using npm ci (clean install).
+      # This ensures a consistent environment and checks for lockfile integrity.
+      # --------------------------------------------------------------------------
+      - name: Install dependencies
+        working-directory: "src/web"
+        run: npm ci
+
+      # --------------------------------------------------------------------------
+      # Step 5: Run a security audit to identify known vulnerabilities in dependencies.
+      # This helps ensure safe libraries with up-to-date security patches.
+      # --------------------------------------------------------------------------
+      - name: Security scan
+        working-directory: "src/web"
+        run: npm audit --audit-level=moderate
+
+      # --------------------------------------------------------------------------
+      # Step 6: Perform a TypeScript type check to catch potential compile-time errors
+      # before proceeding to further steps.
+      # --------------------------------------------------------------------------
+      - name: Type check
+        working-directory: "src/web"
+        run: npm run typecheck
+
+      # --------------------------------------------------------------------------
+      # Step 7: Lint the code to enforce code style, best practices, and avoid
+      # common pitfalls that linters detect.
+      # --------------------------------------------------------------------------
+      - name: Lint
+        working-directory: "src/web"
+        run: npm run lint
+
+      # --------------------------------------------------------------------------
+      # Step 8: Run automated tests with coverage enabled to ensure code quality.
+      # The --maxWorkers=2 limits concurrency to optimize resource usage.
+      # --------------------------------------------------------------------------
+      - name: Run tests
+        working-directory: "src/web"
+        run: npm run test -- --coverage --maxWorkers=2
+
+      # --------------------------------------------------------------------------
+      # Step 9: Build the production-ready artifacts using the configured script.
+      # VITE_API_URL is passed for environment-dependent configuration.
+      # --------------------------------------------------------------------------
+      - name: Build
+        working-directory: "src/web"
+        run: npm run build
+        env:
+          VITE_API_URL: "${{ secrets.VITE_API_URL }}"
+
+  # ------------------------------------------------------------------------------
+  # deploy: Deploys the previously built artifacts to AWS S3 and invalidates
+  # CloudFront cache to ensure the latest files are served to end-users.
+  # This job only runs on the main branch and depends on a successful build.
+  # ------------------------------------------------------------------------------
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      # --------------------------------------------------------------------------
+      # Step 1: Configure AWS credentials for access to S3 and CloudFront services.
+      # Credentials are securely stored in GitHub Secrets.
+      # --------------------------------------------------------------------------
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          aws-secret-access-key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          aws-region: "${{ secrets.AWS_REGION }}"
+
+      # --------------------------------------------------------------------------
+      # Step 2: Sync the compiled build artifacts from the local dist directory
+      # to the configured S3 bucket, removing files that no longer exist locally.
+      # --------------------------------------------------------------------------
+      - name: Upload to S3
+        run: aws s3 sync src/web/dist/ "s3://${{ secrets.AWS_S3_BUCKET }}" --delete
+
+      # --------------------------------------------------------------------------
+      # Step 3: Invalidate CloudFront distribution to immediately purge old caches
+      # and ensure end-users receive the updated content.
+      # --------------------------------------------------------------------------
+      - name: Invalidate CloudFront
+        run: aws cloudfront create-invalidation --distribution-id "${{ secrets.AWS_CLOUDFRONT_ID }}" --paths "/*"
