@@ -1,0 +1,67 @@
+<!--
+    dialog_loading.xml
+    Layout resource file defining the UI structure for a loading dialog.
+
+    This file:
+    1. Implements a theme-aware and accessible loading UI aligned with Material Design guidelines.
+    2. Uses ConstraintLayout (androidx.constraintlayout:constraintlayout:2.1.4) as the root container.
+    3. Leverages CircularProgressIndicator from the Material library (com.google.android.material:material:1.9.0).
+    4. Exposes two views for further binding/usage:
+       - progressIndicator (CircularProgressIndicator)
+       - messageText (TextView)
+    5. Complies with specifications for dimension, color, accessibility, RTL support,
+       and dynamic theming across light/dark modes.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/spacing_medium"
+    android:background="@color/background"
+    android:elevation="4dp"
+    android:theme="@style/Theme.MaterialComponents.DayNight"
+    android:importantForAccessibility="yes"
+    android:layoutDirection="locale">
+
+    <!-- Circular loading indicator (com.google.android.material.progressindicator.CircularProgressIndicator 1.9.0)
+         Exposed as 'progressIndicator' for usage in dialog or code-behind classes -->
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:contentDescription="@string/loading_progress_description"
+        android:elevation="2dp"
+        android:layerType="hardware"
+        android:theme="@style/Widget.MaterialComponents.CircularProgressIndicator"
+        app:indicatorSize="48dp"
+        app:trackThickness="4dp"
+
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- TextView for optional loading message, exposed as 'messageText'.
+         Hidden by default (visibility: gone) until set explicitly in code.
+         Supports accessibilityLiveRegion for dynamic screen reader updates. -->
+    <TextView
+        android:id="@+id/messageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:textSize="@dimen/text_body"
+        android:textColor="@color/text_primary"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:accessibilityLiveRegion="polite"
+
+        app:layout_constraintTop_toBottomOf="@id/progressIndicator"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
