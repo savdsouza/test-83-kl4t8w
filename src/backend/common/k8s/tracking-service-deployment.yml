@@ -1,0 +1,319 @@
+###############################################################################
+# Kubernetes Deployment, Service, HPA, and NetworkPolicy for the Tracking Service
+# This file provides a highly detailed, production-ready configuration that
+# implements:
+# 1) Real-time location tracking with MQTT broker integration
+# 2) High Availability (HA) using pod anti-affinity, HPA autoscaling, and
+#    rolling updates
+# 3) Container security context with restricted privileges
+# 4) Environment variable injection from Kubernetes Secrets
+# 5) Comprehensive health checks for liveness and readiness
+# 6) Network policy enforcement for secure ingress/egress
+###############################################################################
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracking-service
+  namespace: dog-walking
+  labels:
+    app.kubernetes.io/name: tracking-service
+    app.kubernetes.io/component: location-tracking
+    app.kubernetes.io/instance: v1
+    app.kubernetes.io/part-of: dog-walking-platform
+    app.kubernetes.io/managed-by: k8s-deployments
+spec:
+  ###########################################################################
+  # Number of replicas. This will be overridden or managed by the HPA but
+  # sets the initial state and minimum capacity requirements.
+  ###########################################################################
+  replicas: 3
+
+  ###########################################################################
+  # Rolling update strategy for zero-downtime deployments
+  ###########################################################################
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+  ###########################################################################
+  # Selector must match the labels on the pod template to ensure correct
+  # association between the Deployment and the resulting pods.
+  ###########################################################################
+  selector:
+    matchLabels:
+      app: tracking-service
+
+  ###########################################################################
+  # Pod template specifying container definitions, security context,
+  # and advanced configuration to meet enterprise requirements.
+  ###########################################################################
+  template:
+    metadata:
+      labels:
+        app: tracking-service
+
+      #########################################################################
+      # Annotations for service mesh injection, Prometheus scraping, etc.
+      #########################################################################
+      annotations:
+        sidecar.istio.io/inject: "true"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+
+    spec:
+      #########################################################################
+      # PodSecurityContext for enforcing restricted privileges across the pod.
+      #########################################################################
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+
+      #########################################################################
+      # Affinity rules ensuring pods are spread across different nodes for HA.
+      #########################################################################
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: tracking-service
+                topologyKey: kubernetes.io/hostname
+
+      #########################################################################
+      # Define the main container for the real-time tracking microservice.
+      #########################################################################
+      containers:
+        - name: tracking-service
+          image: ghcr.io/dog-walking-platform/tracking-service:1.0.0
+          imagePullPolicy: IfNotPresent
+
+          #####################################################################
+          # Additional securityContext limiting capabilities and filesystem.
+          #####################################################################
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+
+          #####################################################################
+          # Ports for HTTP API (8080), metrics (9090), and MQTT (1883).
+          #####################################################################
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 9090
+              name: metrics
+            - containerPort: 1883
+              name: mqtt
+
+          #####################################################################
+          # Environment variables including credentials from Kubernetes Secrets
+          # and fixed configuration for real-time location tracking.
+          #####################################################################
+          env:
+            # TimescaleDB credentials for storing location data
+            - name: TIMESCALE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: TIMESCALE_USERNAME
+            - name: TIMESCALE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: TIMESCALE_PASSWORD
+            - name: TIMESCALE_SSL_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: TIMESCALE_SSL_CERT
+
+            # MQTT credentials and TLS for broker connectivity
+            - name: MQTT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secrets
+                  key: MQTT_USERNAME
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secrets
+                  key: MQTT_PASSWORD
+            - name: MQTT_TLS_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secrets
+                  key: MQTT_TLS_CERT
+            - name: MQTT_TLS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secrets
+                  key: MQTT_TLS_KEY
+
+            # Assigned ports as environment variables for consistency
+            - name: MQTT_PORT
+              value: "1883"
+            - name: API_PORT
+              value: "8080"
+            - name: METRICS_PORT
+              value: "9090"
+
+          #####################################################################
+          # Resource requests and limits define performance and cost parameters.
+          #####################################################################
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          #####################################################################
+          # Liveness and readiness probes referencing the health check path
+          # to ensure comprehensive service health validation.
+          #####################################################################
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+---
+
+###############################################################################
+# Service exposing the Tracking Service to internal traffic. Ports for
+# HTTP inquiries, MQTT broker interactions, and metrics are declared here.
+###############################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracking-service
+  namespace: dog-walking
+  labels:
+    app.kubernetes.io/name: tracking-service
+    app.kubernetes.io/component: location-tracking
+spec:
+  selector:
+    app: tracking-service
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http
+    - port: 1883
+      targetPort: 1883
+      name: mqtt
+    - port: 9090
+      targetPort: 9090
+      name: metrics
+
+---
+
+###############################################################################
+# Horizontal Pod Autoscaler using CPU utilization as a scaling metric.
+# Dynamically adjusts the number of replicas to handle varying workload demands.
+###############################################################################
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tracking-service-hpa
+  namespace: dog-walking
+  labels:
+    app.kubernetes.io/name: tracking-service
+    app.kubernetes.io/component: location-tracking
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tracking-service
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+---
+
+###############################################################################
+# NetworkPolicy restricting ingress and egress for enhanced security.
+# Allows selective inbound traffic (HTTP, MQTT, Metrics) and controlled
+# outbound traffic (database connections, MQTT broker, and metrics).
+###############################################################################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tracking-service-network-policy
+  namespace: dog-walking
+  labels:
+    app.kubernetes.io/name: tracking-service
+    app.kubernetes.io/component: location-tracking
+spec:
+  podSelector:
+    matchLabels:
+      app: tracking-service
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ###########################################################################
+  # Ingress: Allows traffic from pods within the same namespace, which can 
+  # include the API Gateway or other core services. Ports 8080, 1883, 9090
+  # are opened to match the container's exposures.
+  ###########################################################################
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: tracking-service
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 1883
+        - protocol: TCP
+          port: 9090
+
+  ###########################################################################
+  # Egress: Allows outbound connections to the database, MQTT broker,
+  # and external monitoring if needed. Example ports shown (5432 for
+  # TimescaleDB, 1883 for MQTT, 9090 for metrics).
+  ###########################################################################
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 1883
+        - protocol: TCP
+          port: 9090
