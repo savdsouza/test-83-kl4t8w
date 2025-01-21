@@ -1,0 +1,202 @@
+<!--
+    Layout file for displaying detailed walker profile information including
+    ratings, reviews, availability, and booking options. This file complies
+    with the technical specification's requirements related to user management,
+    enhanced walker rating display, material design components, and responsive 
+    design breakpoints. Includes references to external libraries with their 
+    versions indicated in comments.
+-->
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/walker_profile_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:clipChildren="false"
+
+    tools:context=".ui.walkerprofile.WalkerProfileFragment"
+    tools:ignore="MissingPrefix">
+
+    <!--
+        Using androidx.constraintlayout:constraintlayout:2.1.4
+        as the primary container for a responsive layout that
+        supports different screen sizes.
+    -->
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_profile"
+        style="@style/Widget.App.Card"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/global_spacing_medium"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:cardUseCompatPadding="true">
+
+        <!--
+            Using com.google.android.material:material:1.9.0
+            MaterialCardView to group walker profile content 
+            within a styled card.
+        -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/global_spacing_medium">
+
+            <!-- Profile Image -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profile_image"
+                android:layout_width="@dimen/profile_image_size"
+                android:layout_height="@dimen/profile_image_size"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/profile_image_description"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MaterialComponents.Circle"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+
+            <!-- Verification Badge -->
+            <ImageView
+                android:id="@+id/verification_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/verification_badge_description"
+                android:src="@drawable/ic_verification_badge"
+                android:visibility="visible"
+                tools:ignore="MissingConstraints" />
+
+            <!-- Walker Name with headline style -->
+            <TextView
+                android:id="@+id/walker_name"
+                style="@style/TextAppearance.App.Headline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_spacing_medium"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/walker_name_placeholder"
+                android:textAlignment="center"
+                tools:ignore="MissingConstraints" />
+
+            <!-- Rating Bar for enhanced walker rating display -->
+            <RatingBar
+                android:id="@+id/rating_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:isIndicator="true"
+                android:numStars="5"
+                android:rating="4.5"
+                android:stepSize="0.5"
+                tools:ignore="MissingConstraints" />
+
+            <!-- Review Count TextView -->
+            <TextView
+                android:id="@+id/review_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/global_spacing_tiny"
+                android:text="@string/review_count_placeholder"
+                android:textAppearance="@style/TextAppearance.App.Body2"
+                android:textAlignment="center"
+                tools:ignore="MissingConstraints" />
+
+            <!-- Availability Status -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/availability_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_spacing_medium"
+                android:layout_gravity="center_horizontal"
+                android:textAppearance="@style/TextAppearance.App.Body1"
+                android:textColor="@color/secondary"
+                android:text="@string/availability_status_placeholder"
+                tools:ignore="MissingConstraints" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- RecyclerView for Walk History -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/walk_history"
+        style="@style/Widget.App.RecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/global_spacing_medium"
+        android:layout_marginEnd="@dimen/global_spacing_medium"
+        android:layout_marginTop="@dimen/global_spacing_medium"
+        app:layout_constraintTop_toBottomOf="@id/card_profile"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/book_walk_button"
+        tools:listitem="@layout/item_walk_history"
+        tools:ignore="MissingPrefix" />
+
+    <!-- Book Walk Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/book_walk_button"
+        style="@style/Widget.App.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/global_spacing_medium"
+        android:layout_marginEnd="@dimen/global_spacing_medium"
+        android:layout_marginBottom="@dimen/global_spacing_large"
+        android:text="@string/book_walk_button_label"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/contact_button"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        tools:ignore="MissingConstraints" />
+
+    <!-- Contact Walker Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/contact_button"
+        style="@style/Widget.App.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/global_spacing_medium"
+        android:layout_marginBottom="@dimen/global_spacing_large"
+        android:text="@string/contact_button_label"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/book_walk_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        android:layout_margin="@dimen/global_spacing_medium"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        style="?android:attr/progressBarStyleLarge" />
+
+    <!-- Error View for displaying issues such as network errors -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/error_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/global_spacing_medium"
+        android:visibility="gone"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.App.Error"
+        android:text="@string/error_generic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
