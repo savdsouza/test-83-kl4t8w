@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    XML Animation Resource: fade_in.xml
+    ------------------------------------------------------------
+    Description:
+      Defines a hardware-accelerated alpha animation that smoothly
+      transitions UI elements from fully transparent (0%) to fully
+      opaque (100%). This is aligned with Material Design principles
+      for smooth UI transitions.
+
+    Requirements Addressed:
+      1) Smooth UI Transitions (Reference: 3.1 User Interface Design)
+         - Uses accelerate-decelerate interpolation for a natural
+           pacing curve.
+         - Respects system animation settings and adjusts speed as
+           per accessibility preferences.
+
+    Dependencies:
+      - android.view.animation (default) for core Android framework
+        animation support and built-in interpolator definitions.
+
+    Performance & Accessibility:
+      - Hardware acceleration is leveraged if enabled in the
+        application or Activity, minimizing UI thread impact.
+      - Interpolator set to @android:interpolator/accelerate_decelerate
+        for shared, system-level optimization.
+      - Animation scale respects user motion sensitivity settings.
+
+    Usage Contexts:
+      - Fragment transitions, dialog appearances, view visibility
+        changes, loading state transitions, etc.
+      - Reusable fade-in effect that can be applied via Android’s
+        animation APIs, providing minimal code duplication.
+
+    Exported Resource: fade_in
+      - Provides a default alpha animation property accessible
+        within this module, ensuring consistent fade-in behavior
+        across the app’s UI layer.
+-->
+<alpha
+    xmlns:android="http://schemas.android.com/apk/res/android"
+
+    <!-- Animation property: alpha -->
+    android:fromAlpha="0.0"
+    android:toAlpha="1.0"
+
+    <!-- Duration in milliseconds (300) ensures smooth but quick fade-in -->
+    android:duration="300"
+
+    <!-- Retains final opacity of 100% once animation completes -->
+    android:fillAfter="true"
+
+    <!-- Utilize Android’s accelerate-decelerate interpolator for natural pacing -->
+    android:interpolator="@android:interpolator/accelerate_decelerate" />
