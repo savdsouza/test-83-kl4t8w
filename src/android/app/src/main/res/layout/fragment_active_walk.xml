@@ -1,0 +1,272 @@
+<!--
+  #######################################################################
+  # Android Layout: fragment_active_walk.xml
+  #
+  # Description:
+  # This file defines the UI structure for the "Active Walk Screen," which
+  # includes a custom MapComponent for real-time tracking, controls for
+  # walk interactions (timer, progress, photo capture), an emergency button,
+  # and an overlay for error handling. It also incorporates enhanced
+  # accessibility features such as TalkBack navigation ordering, content
+  # descriptions, and live region announcements.
+  #
+  # Requirements Addressed:
+  # 1) Active Walk Screen (visual layout, real-time tracking, actions).
+  # 2) Real-time Features (MapComponent with updates, secure data flow).
+  # 3) Security Layer (emergency overlay, permission error states).
+  #
+  # Dependencies and Imports:
+  # - ConstraintLayout (androidx.constraintlayout:constraintlayout:2.1.4)
+  # - Material Components (com.google.android.material:material:1.9.0)
+  # - Internal Resource Files:
+  #    * colors.xml for theming (e.g., @color/background_overlay)
+  #    * dimens.xml for spacing and sizing (e.g., @dimen/spacing_large, etc.)
+  # - Custom View:
+  #    * com.dogwalking.app.ui.components.MapComponent (error state and
+  #      location callback methods are leveraged in code behind)
+  #
+  # Accessibility Implementation:
+  # - Each interactive control has a meaningful contentDescription.
+  # - ImportantForAccessibility="yes" on key elements.
+  # - Accessibility traversal order set via accessibilityTraversalBefore/After.
+  # - Live regions (polite or assertive) for progress and error states.
+  #
+  # Error Handling Overlay:
+  # - MaterialCardView with ID @+id/errorOverlay for displaying critical
+  #   errors like map loading, permission denial, or GPS disabled.
+  # - Shown/hidden dynamically and can incorporate a retry action.
+  #
+  # Strictly following the JSON specification, we generate an extremely
+  # detailed and production-oriented layout file.
+  #######################################################################
+-->
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    <!-- Root view attributes per specification -->
+    android:id="@+id/activeWalkRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:importantForAccessibility="yes"
+    android:focusable="true"
+    android:clickable="true">
+
+    <!--
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Custom MapComponent - Real-time Tracking View
+        Imported from: com.dogwalking.app.ui.components.MapComponent
+          (Enhanced map with error handling, location updates)
+        Library Versions Mentioned:
+          - com.google.android.gms.maps:21.0.1
+          - com.google.maps.android.clustering:21.0.1
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -->
+    <com.dogwalking.app.ui.components.MapComponent
+        android:id="@+id/mapView"
+
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+
+        <!-- Accessibility-related attributes -->
+        android:importantForAccessibility="yes"
+        android:contentDescription="Real-time map showing current walk route and location"
+        android:accessibilityLiveRegion="none"  <!-- Map does not require live announcements -->
+
+        <!-- Constraint rules to anchor to parent and position above progress bar -->
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/walkProgress"
+
+        />
+
+    <!--
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Emergency Button
+        Provides a quick emergency action for critical incidents.
+        Material Design library: com.google.android.material.button.MaterialButton (v1.9.0)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/emergencyButton"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        <!-- Accessibility and content description per specification -->
+        android:importantForAccessibility="yes"
+        android:contentDescription="Emergency assistance button"
+        android:accessibilityTraversalBefore="@+id/walkTimerText"
+
+        android:text="@string/emergency"  <!-- Typically "Emergency" or localizable string -->
+        android:textSize="@dimen/text_title"
+        android:layout_margin="@dimen/spacing_large"
+
+        <!-- Style referencing primary or error themes if needed -->
+        style="?attr/materialButtonOutlinedStyle"
+        app:cornerRadius="@dimen/corner_radius_medium"
+        android:textAllCaps="true"
+
+        <!-- Constraint rules placing the button near top-end (right) of screen -->
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <!--
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        TextView for Walk Timer
+        Displays the current walk duration or time elapsed. Uses textTitle dimension.
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -->
+    <TextView
+        android:id="@+id/walkTimerText"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:importantForAccessibility="yes"
+        android:contentDescription="Current walk duration"
+        android:accessibilityTraversalAfter="@+id/emergencyButton"
+
+        android:text="00:00"
+        android:textSize="@dimen/text_title"
+        android:textColor="@color/text_primary"
+
+        android:layout_marginStart="@dimen/spacing_large"
+        android:layout_marginTop="@dimen/spacing_large"
+
+        app:layout_constraintTop_toBottomOf="@id/emergencyButton"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <!--
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Linear Progress Indicator
+        Material library: com.google.android.material.progressindicator (v1.9.0)
+        Show real-time walk completion or active progress updates.
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -->
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/walkProgress"
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+
+        android:importantForAccessibility="yes"
+        android:contentDescription="Walk progress indicator"
+        android:accessibilityLiveRegion="polite"
+        android:accessibilityTraversalAfter="@+id/walkTimerText"
+
+        android:indeterminate="false"
+        android:progress="25"  <!-- Example default progress -->
+        android:max="100"
+
+        <!-- Reflect the advanced accessibility principle: stateDescription is managed in code -->
+        style="@style/Widget.MaterialComponents.LinearProgressIndicator"
+        android:trackColor="?attr/colorOnSurface"
+        android:progressTint="@color/primary"
+
+        app:layout_constraintTop_toBottomOf="@+id/mapView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <!--
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Take Photo Button
+        Allows capturing a photo of the dog mid-walk. Could be used for status updates.
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/takePhotoButton"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:importantForAccessibility="yes"
+        android:contentDescription="Take photo of dog"
+        android:accessibilityTraversalAfter="@+id/walkProgress"
+
+        android:text="@string/take_photo"
+        android:textSize="@dimen/text_body"
+        android:layout_marginStart="@dimen/spacing_large"
+        android:layout_marginTop="@dimen/spacing_large"
+
+        style="?attr/materialButtonOutlinedStyle"
+        app:cornerRadius="@dimen/corner_radius_medium"
+
+        app:layout_constraintTop_toBottomOf="@+id/walkProgress"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <!--
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        End Walk Button
+        Terminates the current active walking session.
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/endWalkButton"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:importantForAccessibility="yes"
+        android:contentDescription="End current walk"
+        android:accessibilityTraversalAfter="@+id/takePhotoButton"
+
+        android:text="@string/end_walk"
+        android:textSize="@dimen/text_body"
+        android:layout_marginTop="@dimen/spacing_large"
+
+        style="?attr/materialButtonOutlinedStyle"
+        app:cornerRadius="@dimen/corner_radius_medium"
+
+        app:layout_constraintTop_toBottomOf="@+id/walkProgress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintMarginEnd="@dimen/spacing_large"
+        />
+
+    <!--
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Error Overlay
+        Implemented as a MaterialCardView for visually indicating errors and
+        offering a retry action. It's initially set to "gone" and is toggled
+        when map or permission errors occur. This container:
+         - @id/errorOverlay
+         - Has a background overlay color resource from colors.xml
+         - Elevation from dimens.xml
+         - Additional UI elements can appear inside (e.g., text, retry button).
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/errorOverlay"
+
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+
+        android:visibility="gone"
+        android:importantForAccessibility="yes"
+        android:contentDescription="Error state indicator"
+        android:accessibilityLiveRegion="assertive"
+
+        android:layout_margin="@dimen/spacing_large"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="@dimen/elevation_card"
+        android:backgroundTint="@color/background_overlay"
+
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Optional internal text or retry button could be placed here based on error states.
+             The JSON specification references 'retry_action', 'error_message', etc. They can be
+             integrated programmatically at runtime. -->
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
