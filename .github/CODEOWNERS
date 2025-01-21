@@ -1,0 +1,50 @@
+# Default owners for unspecified files with global oversight
+* @dog-walking/maintainers
+
+# Android mobile application ownership with security team oversight
+src/android/** @dog-walking/android-team @dog-walking/mobile-security
+
+# iOS mobile application ownership with security team oversight
+src/ios/** @dog-walking/ios-team @dog-walking/mobile-security
+
+# Backend services ownership with architecture team oversight
+src/backend/** @dog-walking/backend-team @dog-walking/architecture-team
+
+# API Gateway service ownership with mandatory security review
+src/backend/api-gateway/** @dog-walking/backend-team @dog-walking/api-team @dog-walking/security-team
+
+# Authentication service ownership with security and compliance review
+src/backend/auth-service/** @dog-walking/backend-team @dog-walking/security-team @dog-walking/compliance-team
+
+# Payment service ownership with security and compliance review
+src/backend/payment-service/** @dog-walking/backend-team @dog-walking/security-team @dog-walking/compliance-team
+
+# Location tracking service ownership with privacy team review
+src/backend/tracking-service/** @dog-walking/backend-team @dog-walking/privacy-team
+
+# Web application ownership with security review
+src/web/** @dog-walking/web-team @dog-walking/security-team
+
+# CI/CD workflow ownership with security validation
+.github/workflows/** @dog-walking/devops-team @dog-walking/security-team
+
+# Infrastructure configuration ownership with security and architecture review
+infrastructure/** @dog-walking/devops-team @dog-walking/security-team @dog-walking/architecture-team
+
+# Docker configuration ownership with security review
+**/Dockerfile @dog-walking/devops-team @dog-walking/security-team
+
+# Security configuration ownership with compliance review
+**/security/** @dog-walking/security-team @dog-walking/compliance-team
+
+# Monitoring configuration ownership with SRE and security review
+**/monitoring/** @dog-walking/devops-team @dog-walking/sre-team @dog-walking/security-team
+
+# Test suite ownership with security validation
+**/tests/** @dog-walking/qa-team @dog-walking/security-team
+
+# Database configuration ownership with security review
+**/database/** @dog-walking/dba-team @dog-walking/security-team
+
+# Technical documentation ownership with architecture review
+**/docs/** @dog-walking/tech-writers @dog-walking/architecture-team
