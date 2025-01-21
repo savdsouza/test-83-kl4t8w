@@ -1,0 +1,223 @@
+<!--
+    nav_graph_auth.xml
+
+    Navigation graph XML file (AndroidX Navigation 2.7.0) defining the secure authentication flow.
+    This graph addresses the following:
+      1) Authentication Flow (7.1.1), including transitions among login, registration, and password
+         reset with proper animations and potential biometric authentication support.
+      2) Authentication Methods (7.1.2), facilitating email/password, biometric, and potential social
+         authentication flows via specialized fragments.
+      3) User Management (1.3 Scope/Core Features), organizing roles (owner/walker) and verification
+         systems within a cohesive navigation structure.
+
+    INTERNAL IMPORT REFERENCES:
+      - com.dogwalking.app.ui.auth.LoginFragment
+        → Contains secure login logic (handleBiometricAuth, etc.)
+      - com.dogwalking.app.ui.auth.RegisterFragment
+        → Contains user registration logic (validateUserInput, etc.)
+
+    EXTERNAL IMPORTS:
+      - androidx.navigation:2.7.0
+      - androidx.biometric:1.2.0 (supporting biometric authentication within fragments)
+
+    GLOBAL ATTRIBUTES:
+      - app:startDestination="@id/loginFragment"
+      - app:defaultNavHost="true"
+
+    EXTENSIVE DETAILS:
+      - Defines all fragments (loginFragment, registerFragment, passwordResetFragment, plus an example
+        verificationFragment) needed for a robust auth sequence.
+      - Provides argument definitions ensuring dynamic data passage (e.g., email for deep-linking).
+      - Implements multi-step transitions with custom animations.
+      - Demonstrates popUpTo usage for clearing the back stack when navigating to mainActivity.
+      - Includes deep links for opening login and registration flows from external URIs, enabling
+        advanced integration with other apps or the system UI (e.g., ACTION_VIEW).
+
+    SECURITY & ACCESSIBILITY SUPPORT:
+      - The flow ensures each fragment can handle security validations (biometric, password checks).
+      - Labels and placeholders can be employed for screen-reader compatibility (set in each fragment).
+
+    NOTE ON MAIN ACTIVITY:
+      - The "mainActivity" is defined as a destination activity for final navigation after successful
+        login. Its actual implementation lies elsewhere (com.dogwalking.app.ui.MainActivity).
+-->
+
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/nav_graph_auth"
+    app:startDestination="@id/loginFragment"
+    app:defaultNavHost="true">
+
+    <!--
+        LOGIN FRAGMENT DESTINATION:
+        - ID: @+id/loginFragment
+        - NAME: com.dogwalking.app.ui.auth.LoginFragment
+        - LABEL for clarity: "Login Screen"
+        - ARGUMENTS:
+            - email (string, nullable) for deep-linking (dogwalking://auth/login/{email})
+        - ACTIONS:
+            1) action_login_to_register
+               → Navigates to registerFragment with slide animations.
+            2) action_login_to_main
+               → Navigates to mainActivity, clearing back stack (popUpToInclusive).
+            3) action_login_to_password_reset
+               → Navigates to passwordResetFragment with upward slide/fade-out animations.
+        - DEEP LINKS:
+            - dogwalking://auth/login/{email} with ACTION_VIEW
+              enabling direct app invocation for login flows with pre-filled email.
+    -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.dogwalking.app.ui.auth.LoginFragment"
+        android:label="Login Screen"
+        tools:layout="@layout/fragment_login">
+
+        <!-- Argument: 'email' passed to pre-fill or handle deep-linked login -->
+        <argument
+            android:name="email"
+            app:argType="string"
+            android:defaultValue="@null"
+            android:nullable="true" />
+
+        <!-- Deep-link for direct login invocation with optional email param -->
+        <deepLink
+            app:uri="dogwalking://auth/login/{email}"
+            app:action="ACTION_VIEW" />
+
+        <!--
+            ACTION: Navigate to registerFragment
+            - ID: action_login_to_register
+            - Animated transitions: slide in from right, slide out to left, etc.
+        -->
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <!--
+            ACTION: Navigate to mainActivity
+            - ID: action_login_to_main
+            - popUpTo="@id/nav_graph_auth" inclusive to clear prior fragments
+            - Fade-in/out animation for activity transition
+        -->
+        <action
+            android:id="@+id/action_login_to_main"
+            app:destination="@+id/mainActivity"
+            app:popUpTo="@id/nav_graph_auth"
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+
+        <!--
+            ACTION: Navigate to passwordResetFragment
+            - ID: action_login_to_password_reset
+            - Slide up introduction, fade-out exit
+        -->
+        <action
+            android:id="@+id/action_login_to_password_reset"
+            app:destination="@+id/passwordResetFragment"
+            app:enterAnim="@anim/slide_up"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
+
+    <!--
+        REGISTER FRAGMENT DESTINATION:
+        - ID: @+id/registerFragment
+        - NAME: com.dogwalking.app.ui.auth.RegisterFragment
+        - LABEL: "Registration Screen"
+        - ARGUMENTS:
+            - userType (string) defaultValue="OWNER"
+        - ACTIONS:
+            1) action_register_to_login (slides in from left, out to right)
+            2) action_register_to_verification (slides in right, out left)
+        - DEEP LINKS:
+            - dogwalking://auth/register?type={userType} with ACTION_VIEW
+              enabling external invocation for user onboarding flows.
+    -->
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.dogwalking.app.ui.auth.RegisterFragment"
+        android:label="Registration Screen"
+        tools:layout="@layout/fragment_register">
+
+        <!-- Argument: 'userType' indicates if user registering is OWNER or WALKER -->
+        <argument
+            android:name="userType"
+            app:argType="string"
+            android:defaultValue="OWNER" />
+
+        <!-- Deep-link for direct registration invocation with optional user type param -->
+        <deepLink
+            app:uri="dogwalking://auth/register?type={userType}"
+            app:action="ACTION_VIEW" />
+
+        <!--
+            ACTION: Navigate back to loginFragment
+            - ID: action_register_to_login
+            - Slide in left, slide out right
+        -->
+        <action
+            android:id="@+id/action_register_to_login"
+            app:destination="@id/loginFragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right" />
+
+        <!--
+            ACTION: Navigate to a verificationFragment
+            - ID: action_register_to_verification
+            - Slide in right, exit left
+            - This hypothetical screen handles user ID checks, background checks, etc.
+        -->
+        <action
+            android:id="@+id/action_register_to_verification"
+            app:destination="@+id/verificationFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
+    </fragment>
+
+    <!--
+        PASSWORD RESET FRAGMENT DESTINATION:
+        - ID: @+id/passwordResetFragment
+        - NAME: com.dogwalking.app.ui.auth.PasswordResetFragment
+        - LABEL: "Password Reset Screen"
+        - Potential screen for recovering user accounts via email or security checks.
+        - Exported per the specification's 'members_exposed' list for passwordResetFragment.
+    -->
+    <fragment
+        android:id="@+id/passwordResetFragment"
+        android:name="com.dogwalking.app.ui.auth.PasswordResetFragment"
+        android:label="Password Reset Screen"
+        tools:layout="@layout/fragment_password_reset" />
+
+    <!--
+        VERIFICATION FRAGMENT DESTINATION:
+        - ID: @+id/verificationFragment
+        - NAME: com.dogwalking.app.ui.auth.VerificationFragment
+        - LABEL: "Verification Screen"
+        - A hypothetical step in advanced user sign-up flows (e.g., background check).
+    -->
+    <fragment
+        android:id="@+id/verificationFragment"
+        android:name="com.dogwalking.app.ui.auth.VerificationFragment"
+        android:label="Verification Screen"
+        tools:layout="@layout/fragment_verification" />
+
+    <!--
+        MAIN ACTIVITY DESTINATION:
+        - ID: @+id/mainActivity
+        - NAME: com.dogwalking.app.ui.MainActivity
+        - Serves as the post-login screen or primary authenticated area of the app.
+        - Reached from loginFragment with the action_login_to_main, clearing previous stack.
+    -->
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="com.dogwalking.app.ui.MainActivity"
+        android:label="Main Activity"
+        tools:ignore="UnusedNavigation" />
+</navigation>
