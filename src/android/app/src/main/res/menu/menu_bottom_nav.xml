@@ -1,0 +1,113 @@
+<!--
+  ------------------------------------------------------------------------------
+  FILE: menu_bottom_nav.xml
+  PATH: src/android/app/src/main/res/menu
+  ------------------------------------------------------------------------------
+  DESCRIPTION:
+    Defines the bottom navigation menu structure for the main application,
+    leveraging Material Design version 1.9.0 (com.google.android.material:material:1.9.0)
+    components to provide a fully accessible, theme-aware, and state-preserving
+    navigation system. This menu integrates with the Android Jetpack Navigation
+    framework (or a custom navigation solution) to allow deep linking and route
+    transitions to designated fragments or destinations.
+
+  REQUIREMENTS & IMPLEMENTATION DETAILS:
+    • Consistent with the technical specification sections:
+      [6.1] Navigation Elements and [6.2] Core Screen Layouts.
+    • Each <item> correlates with an accessible menu entry:
+      - Home
+      - Walks
+      - Dogs
+      - Profile
+    • Icons (@drawable/ic_home, @drawable/ic_walk, @drawable/ic_dog, @drawable/ic_profile)
+      are Material-aligned vectors with state list animations.
+    • contentDescription attributes ensure that TalkBack and other screen readers
+      can properly identify navigation targets for users with accessibility needs.
+    • app:destination attributes indicate the logical navigation destinations
+      (homeFragment, walkListFragment, dogListFragment, profileFragment) for
+      state preservation and deep linking support.
+
+  ACCESSIBILITY:
+    • Each item includes android:contentDescription for screen readers.
+    • Tapping areas in runtime layouts must meet the recommended 48dp minimum.
+
+  ORDER & PRIORITY:
+    • android:orderInCategory is specified to arrange menu items in the correct order.
+
+  EXPORTS:
+    • Each item’s ID (e.g., navigation_home) is made available for reference and
+      state handling throughout the application.
+
+  ------------------------------------------------------------------------------
+-->
+
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!--
+      HOME MENU ITEM
+      - ID: navigation_home
+      - Displays the home screen with an overview or landing page.
+      - Uses @drawable/ic_home for its icon, referencing a vector drawable
+        with state-based coloring (selected vs. unselected).
+      - contentDescription: Assists accessibility services in announcing "Home."
+      - app:destination: Ties this item to the homeFragment destination.
+    -->
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_home"
+        android:title="@string/home_title"
+        android:contentDescription="@string/home_content_description"
+        app:destination="@id/homeFragment"
+        android:orderInCategory="1" />
+
+    <!--
+      WALKS MENU ITEM
+      - ID: navigation_walks
+      - Displays a list of scheduled and available walks for dog owners or walkers.
+      - Uses @drawable/ic_walk, a vector resource representing walking activity.
+      - contentDescription: Assists accessibility services in announcing "Walks."
+      - app:destination: Ties this item to the walkListFragment destination.
+    -->
+    <item
+        android:id="@+id/navigation_walks"
+        android:icon="@drawable/ic_walk"
+        android:title="@string/walks_title"
+        android:contentDescription="@string/walks_content_description"
+        app:destination="@id/walkListFragment"
+        android:orderInCategory="2" />
+
+    <!--
+      DOGS MENU ITEM
+      - ID: navigation_dogs
+      - Shows dog profiles, including details and options for each pet.
+      - Uses @drawable/ic_dog, a theme-aware vector drawable reflecting a dog icon.
+      - contentDescription: Assists accessibility services in announcing "Dogs."
+      - app:destination: Ties this item to the dogListFragment destination.
+    -->
+    <item
+        android:id="@+id/navigation_dogs"
+        android:icon="@drawable/ic_dog"
+        android:title="@string/dogs_title"
+        android:contentDescription="@string/dogs_content_description"
+        app:destination="@id/dogListFragment"
+        android:orderInCategory="3" />
+
+    <!--
+      PROFILE MENU ITEM
+      - ID: navigation_profile
+      - Navigates to the user’s profile screen, handling account and settings.
+      - Uses @drawable/ic_profile, a vector drawable showing a user silhouette.
+      - contentDescription: Assists accessibility services in announcing "Profile."
+      - app:destination: Ties this item to the profileFragment destination.
+    -->
+    <item
+        android:id="@+id/navigation_profile"
+        android:icon="@drawable/ic_profile"
+        android:title="@string/profile_title"
+        android:contentDescription="@string/profile_content_description"
+        app:destination="@id/profileFragment"
+        android:orderInCategory="4" />
+
+</menu>
