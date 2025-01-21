@@ -1,0 +1,221 @@
+################################################################################
+# Booking Service Kubernetes Deployment and Service Manifest
+# ------------------------------------------------------------------------------
+# This file deploys the Java-based Booking Service microservice that handles
+# scheduling, availability, and management of dog walking sessions in the
+# Dog Walking Platform. It addresses the following key requirements:
+#   1) Service Architecture (Java/Spring Boot, high availability, rolling updates)
+#   2) Containerization (production-ready container configuration, security context)
+#   3) High Availability (multi-replica setup, zero-downtime updates, readiness probes)
+#
+# References:
+#   - Kubernetes API Version: v1.28
+#   - ConfigMap: booking-service-config (imported from configmaps.yaml)
+#   - Secret: booking-service-secrets (imported from secrets.yaml)
+#   - Code instrumentation for Prometheus monitoring (port: 8082)
+#   - Enhanced security with runAsNonRoot, readOnlyRootFilesystem, and restricted capabilities
+#
+# This manifest includes two primary objects:
+#   1) A Deployment resource for the Booking Service
+#   2) A Service resource to expose the Booking Service internally
+#
+################################################################################
+
+################################################################################
+# DEPLOYMENT: Booking Service
+# ------------------------------------------------------------------------------
+# apiVersion: apps/v1
+# kind: Deployment
+# ------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # Unique name for this deployment within "booking-service" namespace
+  name: booking-service
+  # Logical grouping for microservice within dedicated namespace
+  namespace: booking-service
+  labels:
+    app: booking-service
+    component: backend
+    part-of: dog-walking-platform
+    version: "1.0.0"
+  # Prometheus annotations for automated metrics scraping
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8082"
+    prometheus.io/path: "/actuator/prometheus"
+spec:
+  # Number of replicas to ensure high availability across nodes
+  replicas: 3
+  # Selector ensures correct Pods are targeted by this Deployment
+  selector:
+    matchLabels:
+      app: booking-service
+  # RollingUpdate strategy for zero-downtime deployments
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        # Assign labels to match the Deployment selector
+        app: booking-service
+        version: "1.0.0"
+      annotations:
+        # Prometheus scraping config on Pod level
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8082"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      ##########################################################################
+      # AFFINITY: Pod Anti-Affinity to spread pods across nodes                #
+      ##########################################################################
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - booking-service
+                topologyKey: kubernetes.io/hostname
+
+      ##########################################################################
+      # CONTAINERS: Booking Service Container Configuration                     #
+      ##########################################################################
+      containers:
+        - name: booking-service
+          # Container image (version 1.0.0), always pull fresh for updates
+          image: "dogwalking/booking-service:1.0.0"
+          imagePullPolicy: Always
+          # Container ports exposed for HTTP traffic and management endpoints
+          ports:
+            - containerPort: 8082
+              protocol: TCP
+              name: http
+            - containerPort: 8081
+              protocol: TCP
+              name: management
+          # Resource requests and limits for CPU and memory
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          ######################################################################
+          # HEALTH CHECKS: Liveness, Readiness, and Startup Probes             #
+          ######################################################################
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: management
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: management
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 30
+          ######################################################################
+          # ENVIRONMENT: Pull configuration from ConfigMap & Secret           #
+          ######################################################################
+          envFrom:
+            - configMapRef:
+                name: booking-service-config
+            - secretRef:
+                name: booking-service-secrets
+          ######################################################################
+          # SECURITY CONTEXT: Restrictive permissions for container runtime   #
+          ######################################################################
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ######################################################################
+          # VOLUMES AND MOUNTS: Ephemeral storage for /tmp, config volume      #
+          ######################################################################
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: config-volume
+              mountPath: /config
+              readOnly: true
+
+      ##########################################################################
+      # VOLUMES: EmptyDir for temp files, ConfigMap volume for read-only data  #
+      ##########################################################################
+      volumes:
+        - name: tmp-volume
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: config-volume
+          configMap:
+            name: booking-service-config
+
+      ##########################################################################
+      # SERVICE ACCOUNT & SECURITY CONTEXT                                     #
+      ##########################################################################
+      serviceAccountName: booking-service-sa
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+
+---
+################################################################################
+# SERVICE: Booking Service
+# ------------------------------------------------------------------------------
+# apiVersion: v1
+# kind: Service
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  # Unique name for service within the booking-service namespace
+  name: booking-service
+  namespace: booking-service
+  labels:
+    app: booking-service
+    component: backend
+  # Prometheus annotations for scraping metrics from 8082
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8082"
+spec:
+  # Internal type for cluster-wide access (ClusterIP)
+  type: ClusterIP
+  # Define two exposed ports: HTTP (8082) and management (8081)
+  ports:
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP
+      name: http
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP
+      name: management
+  # Match pods from the deployment with 'app: booking-service' label
+  selector:
+    app: booking-service
