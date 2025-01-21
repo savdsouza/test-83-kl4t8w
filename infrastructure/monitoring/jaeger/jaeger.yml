@@ -1,0 +1,219 @@
+#------------------------------------------------------------------------------
+# Jaeger configuration file providing distributed tracing for the Dog Walking
+# Application's microservices, addressing:
+#   1) System Monitoring (2.4.1) with robust tracing capabilities
+#   2) Cross-Cutting Concerns (2.4) via advanced sampling and secure data storage
+#   3) High Availability (2.5.1) leveraging multi-worker ingestion and Elasticsearch
+#
+# External Dependencies (IE2: Library Versions):
+#   - jaeger-operator (v1.28.0) : Facilitates Jaeger deployment via Kubernetes operator
+#
+# Internal Imports (IE1):
+#   - elasticsearch_config.cluster_settings (from infrastructure/monitoring/elk/elasticsearch.yml)
+#     Used for aligning Elasticsearch cluster naming and high-availability integration
+#
+# Exports (IE3): 
+#   - jaeger_config (named YAML export) exposing:
+#       • sampling_strategies
+#       • storage_options
+#       • query_settings
+#
+# Style & Usage:
+#   - Enterprise-grade production settings
+#   - Extensive comments for clarity (S2)
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# agent:
+#   Defines the Jaeger agent configuration. The agent is a network daemon that
+#   listens for spans sent over UDP or HTTP and batches them to the collector.
+#------------------------------------------------------------------------------
+agent:
+  # collector_host_port:
+  #   Host and port where the Jaeger collector is running. Environment variables
+  #   allow for flexible configuration across different environments (dev, staging, prod).
+  collector_host_port: "${JAEGER_COLLECTOR_HOST:jaeger-collector}:${JAEGER_COLLECTOR_PORT:14250}"
+  
+  # log_level:
+  #   Specifies the log level for the agent. Possible values: debug, info, warn, error, fatal, panic.
+  log_level: "info"
+
+#------------------------------------------------------------------------------
+# collector:
+#   Configuration for the Jaeger collector, which receives traces and processes
+#   or indexes them into the storage backend (Elasticsearch).
+#------------------------------------------------------------------------------
+collector:
+  # host_port:
+  #   The primary port on which the collector listens for UDP or HTTP traffic.
+  host_port: ":14250"
+
+  # grpc_port:
+  #   The gRPC port for receiving spans from Jaeger SDKs or the agent.
+  grpc_port: 14250
+
+  # http_port:
+  #   The HTTP port for handling spans and health endpoints.
+  http_port: 14268
+
+  # log_level:
+  #   Logging verbosity for the collector service.
+  log_level: "info"
+
+  # num_workers:
+  #   Number of worker threads for processing incoming spans. Helps with horizontal scaling.
+  num_workers: 50
+
+  # queue_size:
+  #   Maximum backlog of spans in the collector before they are processed.
+  #   Larger queues handle spikes in traffic but require more memory.
+  queue_size: 2000
+
+#------------------------------------------------------------------------------
+# sampling:
+#   Defines sampling rules for each microservice. "Probabilistic" sampling
+#   determines the fraction of requests that produce spans, reducing overhead
+#   by limiting the number of traces ingested.
+#------------------------------------------------------------------------------
+sampling:
+  strategies: &sampling_strategies
+    - service: "api-gateway"
+      type: "probabilistic"
+      param: 1.0       # 100% sampling for the API gateway
+    - service: "auth-service"
+      type: "probabilistic"
+      param: 0.5       # 50% sampling for authentication flows
+    - service: "booking-service"
+      type: "probabilistic"
+      param: 0.5       # 50% sampling for booking operations
+    - service: "payment-service"
+      type: "probabilistic"
+      param: 1.0       # 100% sampling for payment processes for full visibility
+    - service: "tracking-service"
+      type: "probabilistic"
+      param: 0.3       # 30% sampling for real-time GPS tracking metrics
+    - service: "notification-service"
+      type: "probabilistic"
+      param: 0.3       # 30% sampling for push notification events
+
+#------------------------------------------------------------------------------
+# storage:
+#   Ingesting and storing spans in Elasticsearch for long-term trace analysis.
+#   This configuration references cluster settings from 'elasticsearch_config'
+#   (infrastructure/monitoring/elk/elasticsearch.yml) to align with the
+#   high-availability cluster 'dogwalking-monitoring'.
+#------------------------------------------------------------------------------
+storage: &storage_options
+  # type:
+  #   The storage backend for Jaeger. Options include 'cassandra', 'elasticsearch',
+  #   'kafka', 'memory', and more. We use 'elasticsearch' for its distributed
+  #   nature and strong indexing capabilities.
+  type: "elasticsearch"
+
+  # options:
+  #   Additional Elasticsearch configuration, including server URLs, credentials,
+  #   indexing controls, and bulk ingestion optimizations for high throughput.
+  options:
+    es:
+      # server-urls:
+      #   Points to the Elasticsearch cluster addresses. If not set, defaults
+      #   to local instance.
+      server-urls: "${ELASTICSEARCH_URL:http://elasticsearch:9200}"
+
+      # username/password:
+      #   Credentials used if Elasticsearch security is enabled (e.g., X-Pack).
+      username: "${ELASTIC_USERNAME}"
+      password: "${ELASTIC_PASSWORD}"
+
+      # index-prefix:
+      #   A prefix for the indices created by Jaeger. Helps differentiate
+      #   multiple trace deployments in a single cluster.
+      index-prefix: "jaeger"
+
+      # max-doc-count:
+      #   Recommended limit for the maximum number of documents stored per index
+      #   to maintain performance and avoid overly large shards.
+      max-doc-count: 10000
+
+      # bulk-size:
+      #   Maximum total size (in bytes) of span data streamed per bulk request.
+      #   This ensures stable performance under high ingestion loads.
+      bulk-size: 5000000
+
+      # bulk-workers:
+      #   Number of concurrent workers that consumer the queue of pending index operations.
+      #   Increases parallelism for heavy trace ingestion.
+      bulk-workers: 5
+
+      # bulk-actions:
+      #   Maximum number of actions (span documents) per bulk request.
+      #   Fine-tuning helps avoid large overhead in a single batch.
+      bulk-actions: 1000
+
+      # bulk-flush-interval:
+      #   The time interval for flushing buffered spans if neither bulk-size
+      #   nor bulk-actions thresholds are met.
+      bulk-flush-interval: "200ms"
+
+#------------------------------------------------------------------------------
+# query:
+#   Settings for the Jaeger Query service, which provides the UI and APIs for
+#   searching and visualizing traces.
+#------------------------------------------------------------------------------
+query: &query_settings
+  # host_port:
+  #   The network interface and port for the Query service. The typical port is
+  #   16686 for Jaeger.
+  host_port: ":16686"
+
+  # base_path:
+  #   A root path for the Query UI, useful if the UI is hosted behind a prefix
+  #   or reverse proxy.
+  base_path: "/jaeger"
+
+  # additional_headers:
+  #   Custom headers to include in HTTP responses from the Query service.
+  additional_headers:
+    - "Access-Control-Allow-Origin: *"
+
+  # cors:
+  #   Fine-grained cross-origin resource sharing configuration for the Query UI.
+  cors:
+    enabled: true
+    allowed_origins:
+      - "*"
+    allowed_headers:
+      - "Content-Type"
+
+#------------------------------------------------------------------------------
+# ingester:
+#   Configurations for an optional ingester component, which can pull spans from
+#   a message queue, handle them, and store them in Elasticsearch. The dead letter
+#   queue ensures problematic spans are not lost.
+#------------------------------------------------------------------------------
+ingester:
+  dead_letter_queue:
+    # enabled:
+    #   Activates a dead letter queue for spans that cannot be ingested—ensuring
+    #   no data is dropped trivially.
+    enabled: true
+
+    # topic:
+    #   The queue or topic name where unprocessable spans are forwarded.
+    topic: "jaeger-spans-dlq"
+
+    # group_id:
+    #   Recommended to identify the consumer group used for reading from the
+    #   dead letter queue, enabling parallel consumption if needed.
+    group_id: "jaeger-ingester"
+
+#------------------------------------------------------------------------------
+# jaeger_config:
+#   Named export block exposing specific sections for Kubernetes or external
+#   integration. The references (*) link to anchors defined above in 'sampling',
+#   'storage', and 'query' blocks.
+#------------------------------------------------------------------------------
+jaeger_config:
+  sampling_strategies: *sampling_strategies
+  storage_options: *storage_options
+  query_settings: *query_settings
