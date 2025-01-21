@@ -1,0 +1,117 @@
+#------------------------------------------------------------------------------
+# Kibana configuration file for the Dog Walking Application's ELK stack.
+#
+# External Dependencies (IE2: Library Versions):
+#   - kibana (v8.11.1): Core Kibana functionality for data exploration, dashboards, and visualizations
+#   - x-pack-kibana (v8.11.1): Enhanced security, monitoring, alerting, and reporting features
+#
+# Internal Imports (IE1):
+#   - elasticsearch_config.network_settings
+#   - elasticsearch_config.security_settings
+#     from "infrastructure/monitoring/elk/elasticsearch.yml"
+#     providing secure transport and network configuration alignment
+#
+# Exports (IE3):
+#   - kibana_config (named YAML export)
+#       • server_settings (member_type: config_section)
+#       • monitoring_settings (member_type: config_section)
+#
+# Description:
+#   Production-ready Kibana settings covering server configuration, secure Elasticsearch connectivity,
+#   security integration, advanced monitoring, detailed logging, and telemetry controls.
+#   Implements:
+#       - System Monitoring (2.4.1) with xpack.monitoring features
+#       - Cross-Cutting Concerns (2.4) via enhanced security, logging, and session management
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# kibana_config: (Named Export)
+#   * server_settings
+#   * monitoring_settings
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# server_settings: (Exported Section)
+# Description: Enhanced server configuration with security and performance optimizations
+#------------------------------------------------------------------------------
+server.name: "${HOSTNAME}"                      # Dynamically set the instance name for identification
+server.port: 5601                               # Default Kibana listening port
+server.host: "0.0.0.0"                          # Bind to all interfaces for container deployments
+server.publicBaseUrl: "https://${KIBANA_DOMAIN}" # Public base URL used for generating links
+server.maxPayloadBytes: 10485760                # Increase max payload for large data uploads
+server.compression.enabled: true                # Enable GZIP compression for payload responses
+server.keepaliveTimeout: 120000                 # Keep-alive timeout in ms
+server.socketTimeout: 120000                    # Socket timeout in ms
+
+#------------------------------------------------------------------------------
+# elasticsearch_settings:
+# Description: Secure Elasticsearch connection aligning with imported network_settings & security_settings
+#------------------------------------------------------------------------------
+elasticsearch.hosts:
+  - "http://elasticsearch:9200"                  # Aligned with Elasticsearch network settings
+elasticsearch.username: "${ELASTICSEARCH_USERNAME}"
+elasticsearch.password: "${ELASTICSEARCH_PASSWORD}"
+elasticsearch.ssl.verificationMode: "certificate"
+elasticsearch.ssl.certificateAuthorities:
+  - "/etc/kibana/certs/ca.crt"
+elasticsearch.pingTimeout: 30000                 # Ping Elasticsearch within 30 seconds
+elasticsearch.requestTimeout: 30000              # Request timeout for ES operations (30 seconds)
+elasticsearch.sniffOnStart: true                 # Discover cluster nodes at Kibana startup
+elasticsearch.sniffInterval: 300000              # Refresh node list every 5 minutes
+
+#------------------------------------------------------------------------------
+# security_settings:
+# Description: Comprehensive X-Pack security with encryption, session management, and audit logging
+#------------------------------------------------------------------------------
+xpack.security.enabled: true                    # Master switch for X-Pack security in Kibana
+xpack.security.encryptionKey: "${ENCRYPTION_KEY}" # Key for securing session data
+xpack.security.session.idleTimeout: "1h"         # Idle timeout for user sessions
+xpack.security.session.lifespan: "24h"           # Max session lifespan
+xpack.security.audit.enabled: true              # Enable audit logging for security events
+xpack.security.audit.logLevel: "info"           # The verbosity level for audit logs
+xpack.security.audit.appender.type: "file"       # Write audit logs to file (specified path)
+xpack.security.audit.appender.path: "/var/log/kibana/audit.log"
+xpack.security.loginAssistanceMessage: "Contact system administrator for access"
+xpack.security.authc.providers: ["basic", "saml", "token"]
+xpack.security.authc.oidc.realm: "oidc1"         # Example realm integration for OIDC-based SSO
+
+#------------------------------------------------------------------------------
+# monitoring_settings: (Exported Section)
+# Description: Enhanced monitoring configuration with container and UI-based monitoring
+#------------------------------------------------------------------------------
+xpack.monitoring.enabled: true
+xpack.monitoring.kibana.collection.enabled: true
+xpack.monitoring.ui.container.elasticsearch.enabled: true
+xpack.monitoring.collection.interval: "10s"      # Interval for collecting Kibana monitoring data
+xpack.monitoring.min_interval_seconds: 10        # Minimum valid interval in seconds
+xpack.monitoring.ui.enabled: true
+xpack.monitoring.ui.container.logstash.enabled: true
+xpack.monitoring.ui.container.beats.enabled: true
+
+#------------------------------------------------------------------------------
+# logging_settings:
+# Description: Detailed logging configuration with JSON formatting and file rotation
+#------------------------------------------------------------------------------
+logging.root.level: "info"                            # Overall logging level
+logging.appenders.file.type: "file"                   # Writes logs to file
+logging.appenders.file.fileName: "/var/log/kibana/kibana.log"
+logging.appenders.file.layout.type: "json"            # JSON layout for machine-readable logs
+logging.appenders.file.layout.format: "detailed"      # Include detailed fields (timestamp, level, etc.)
+logging.appenders.file.rotateInterval: "1d"           # Rotate logs daily
+logging.appenders.file.rotateSize: "100mb"            # Rotate upon reaching 100 MB
+logging.appenders.file.backups: 10                    # Keep up to 10 rotated log files
+logging.appenders.console.type: "console"             # Also log to the console
+logging.appenders.console.layout.type: "pattern"      # Pattern layout for quick reading on console
+
+#------------------------------------------------------------------------------
+# telemetry_settings:
+# Description: Telemetry and usage data configuration respecting privacy/product requirements
+#------------------------------------------------------------------------------
+telemetry.enabled: false                              # Disable telemetry by default
+telemetry.allowChangingOptInStatus: false             # Prevent user from modifying telemetry setting
+telemetry.optIn: false                                # Explicitly disable sending usage data
+telemetry.sendUsageFrom: "server"                     # If enabled, usage is sent from server
+
+#------------------------------------------------------------------------------
+# End of kibana.yml configuration
+#------------------------------------------------------------------------------
