@@ -1,0 +1,282 @@
+<!--
+    fragment_walk_history.xml
+
+    --------------------------------------------------------------------------------
+    Purpose:
+    --------------------------------------------------------------------------------
+    This layout file defines the "Walk History" screen, displaying a list of past walks
+    with comprehensive filtering, sorting, and state management capabilities. It adheres
+    to Material Design, implements data binding for dynamic state handling, and includes
+    accessibility configurations such as content descriptions and minimum touch targets.
+
+    --------------------------------------------------------------------------------
+    Internal Imports:
+    --------------------------------------------------------------------------------
+    1) item_walk.xml (layout): Template for individual walk items in the RecyclerView.
+    2) bg_card.xml (drawable): Material Design card background with elevation and corner
+       radius used in item_walk.xml.
+
+    --------------------------------------------------------------------------------
+    External Imports (with library versions):
+    --------------------------------------------------------------------------------
+    1) ConstraintLayout (androidx.constraintlayout.widget.ConstraintLayout) // v2.1.4
+    2) SwipeRefreshLayout (androidx.swiperefreshlayout.widget.SwipeRefreshLayout) // v1.1.0
+    3) RecyclerView (androidx.recyclerview.widget.RecyclerView)               // v1.3.1
+    4) MaterialSpinner (com.google.android.material.spinner.MaterialSpinner)  // v1.9.0
+
+    --------------------------------------------------------------------------------
+    Requirements Addressed:
+    --------------------------------------------------------------------------------
+    • Service Execution (1.3 Scope/Core Features):
+      - Displays walk history with GPS tracking data and status updates.
+      - Provides comprehensive filtering, sorting, and state views.
+    • Booking System (1.3 Scope/Core Features):
+      - Manages walk scheduling history with detailed UI interaction components.
+    • User Interface Design (6.1 Design System Key):
+      - Implements typography, spacing, and elevation standards from the design system.
+      - Incorporates minimum 48dp touch targets and robust accessibility considerations.
+
+    --------------------------------------------------------------------------------
+    Accessibility Considerations:
+    --------------------------------------------------------------------------------
+    • Content descriptions on interactive elements, including filterSpinner, sortSpinner,
+      refreshLayout, and walkList.
+    • Minimum 48dp touch targets to accommodate users with diverse accessibility needs.
+    • Adequate spacing (8dp) around interactive UI components for clarity and ergonomics.
+
+    --------------------------------------------------------------------------------
+    Data Binding Setup:
+    --------------------------------------------------------------------------------
+    <data>
+        <variable
+            name="viewModel"
+            type="WalkHistoryViewModel" />
+    </data>
+
+    Bindings:
+    1) refreshLayout:
+       - app:onRefreshListener="@{() -> viewModel.refreshWalks()}"
+    2) walkList:
+       - app:adapter="@{viewModel.walkAdapter}"
+    3) emptyView:
+       - android:visibility="@{viewModel.walks.empty ? View.VISIBLE : View.GONE}"
+    4) loadingView:
+       - android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
+    5) errorView: (example usage)
+       - android:visibility="@{viewModel.hasError ? View.VISIBLE : View.GONE}"
+
+    --------------------------------------------------------------------------------
+    State Handling:
+    --------------------------------------------------------------------------------
+    • Loading State (loadingView): Center-aligned progress indicator with fade in/out.
+    • Empty State (emptyView): Centered message and icon when no walks are available.
+    • Error State (errorView): Error message with a retry button for quick recovery.
+
+    --------------------------------------------------------------------------------
+    Responsive Design Breakpoints:
+    --------------------------------------------------------------------------------
+    - Ensures that spinners, refresh layout, and RecyclerView adjust gracefully from
+      small mobile widths (≤375px) to larger screens (≥1024px). ConstraintLayout ensures
+      flexible screen usage.
+
+    --------------------------------------------------------------------------------
+    Implementation Details:
+    --------------------------------------------------------------------------------
+    - A top bar container (filterContainer) holds two MaterialSpinner elements:
+      filterSpinner (filters walks by status) and sortSpinner (sorts walks by date,
+      price, or duration).
+    - A SwipeRefreshLayout wraps the RecyclerView to provide "pull-to-refresh"
+      functionality.
+    - Overlaid state views (loadingView, emptyView, and errorView) help users understand
+      the current data status (loading, no data, or error).
+
+-->
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <!-- ViewModel handles walk history data, filtering, sorting, and refresh logic -->
+        <variable
+            name="viewModel"
+            type="com.example.app.viewmodels.WalkHistoryViewModel" />
+    </data>
+
+    <!-- Root container using ConstraintLayout for flexible positioning and responsive layouts -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:attr/windowBackground"
+        android:fitsSystemWindows="true"
+        app:layout_constraintHeight_min="48dp"
+        app:layout_constraintWidth_min="48dp">
+
+        <!--
+            Filter Container
+            A dedicated container that houses two MaterialSpinner elements for
+            filtering walks (filterSpinner) and sorting options (sortSpinner).
+            Positioned at the top of the screen.
+        -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/filterContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/global_spacing_medium"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!--
+                filterSpinner
+                MaterialSpinner for filtering walks by completed, cancelled, or in-progress.
+            -->
+            <com.google.android.material.spinner.MaterialSpinner
+                android:id="@+id/filterSpinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:contentDescription="@string/filter_spinner_description"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/sortSpinner"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                />
+
+            <!--
+                sortSpinner
+                MaterialSpinner for sorting walks by date, price, or duration.
+            -->
+            <com.google.android.material.spinner.MaterialSpinner
+                android:id="@+id/sortSpinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:contentDescription="@string/sort_spinner_description"
+                app:layout_constraintStart_toEndOf="@+id/filterSpinner"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!--
+            SwipeRefreshLayout
+            Pull-to-refresh layout containing the walk history list (RecyclerView).
+            app:onRefreshListener triggers the ViewModel's refreshWalks() method.
+        -->
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/refreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:contentDescription="@string/refresh_layout_description"
+            app:layout_constraintTop_toBottomOf="@+id/filterContainer"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:onRefreshListener="@{() -> viewModel.refreshWalks()}">
+
+            <!--
+                RecyclerView
+                Displays the list of past walks using item_walk.xml as the item template.
+                Fades and overlays the scrollbar for a modern, clean look.
+                Binds its adapter from the ViewModel via data binding (app:adapter).
+            -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/walkList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:fadeScrollbars="true"
+                android:padding="@dimen/padding_medium"
+                android:scrollbarStyle="outsideOverlay"
+                android:scrollbars="vertical"
+                android:contentDescription="@string/walk_list_description"
+                app:adapter="@{viewModel.walkAdapter}" />
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!--
+            Loading View
+            Center-aligned ProgressBar indicating a loading state.
+            Visibility controlled by ViewModel.isLoading with fade in/out animations
+            managed in code if desired.
+        -->
+        <ProgressBar
+            android:id="@+id/loadingView"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!--
+            Empty View
+            Displays a central icon and text prompt when the walk list is empty.
+            Bound to viewModel.walks.empty to show/hide based on data availability.
+        -->
+        <LinearLayout
+            android:id="@+id/emptyView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="@{viewModel.walks.empty ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_walk"
+                android:tint="?attr/colorPrimary"
+                android:contentDescription="@string/no_walks_illustration" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_spacing_small"
+                android:text="@string/no_walks_found"
+                android:textAppearance="?attr/textAppearanceBody1" />
+        </LinearLayout>
+
+        <!--
+            Error View
+            Shows an error message and a retry button if an error occurs.
+            Slide in/out animation is typically applied programmatically or via
+            TransitionManager. Binds to ViewModel.hasError for visibility.
+        -->
+        <LinearLayout
+            android:id="@+id/errorView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="@{viewModel.hasError ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/walks_error_occurred"
+                android:textAppearance="?attr/textAppearanceBody1" />
+
+            <Button
+                android:id="@+id/retryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_spacing_small"
+                android:text="@string/retry"
+                android:onClick="@{() -> viewModel.refreshWalks()}" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
