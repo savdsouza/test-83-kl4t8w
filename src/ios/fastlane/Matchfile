@@ -1,0 +1,205 @@
+# frozen_string_literal: true
+
+############################################################
+# Dog Walking Mobile Application - Fastlane Matchfile
+#
+# This file manages iOS code signing certificates and
+# provisioning profiles with enhanced security via
+# Fastlane Match. It integrates with a secure Git
+# repository to store and retrieve encrypted certificates.
+#
+# Imports & References:
+#   - require 'fastlane/plugin/match' # version 2.0
+#   - Appfile (src/ios/fastlane/Appfile) for:
+#       * app_identifier => "com.dogwalking.app"
+#       * team_id => ENV['TEAM_ID']
+#
+# Environment Variables:
+#   MATCH_GIT_URL         => URL to the encrypted certificates repo
+#   TEAM_ID               => Apple Developer Team ID
+#   MATCH_PASSWORD        => Password for encrypted certificate repo
+#   MATCH_GIT_AUTH        => Basic auth token for Git access
+#   CI                    => Boolean or truthy string indicating CI environment
+#
+# Security Config:
+#   - certificate_storage: 'encrypted_git'
+#   - encryption_method: 'OpenSSL'
+#   - access_control: 'team_based'
+#   - certificate_rotation: '90_days'
+#   - password_protected: true
+#   - audit_logging: true
+#   - expiration_monitoring: true
+#
+# Deployment Config:
+#   - platform: 'ios'
+#   - min_version: '13.0'
+#   - signing_type: 'automatic'
+#   - provisioning_type: 'app_store'
+#   - certificate_types: ['development', 'distribution', 'enterprise']
+#
+# Important Note:
+#   Fastlane Match does not provide explicit parameters for
+#   rotation schedules, expiration monitoring, or audit logging.
+#   Those features can be implemented and monitored by an
+#   external script or CI pipeline that periodically runs Match
+#   or checks certificate expiration. The configuration below
+#   reflects best practices aligned with the specification.
+############################################################
+
+require 'fastlane/plugin/match' # fastlane-plugin-match 2.0
+
+############################################################
+# match_configuration
+#
+# Primary function to configure Fastlane Match with enhanced
+# security, referencing environment variables and the imported
+# Appfile. This function orchestrates:
+#   1. Setting the Git repository for certificate storage
+#   2. Enforcing Git-based storage mode with encryption
+#   3. Selecting the certificate type (development by default)
+#   4. Binding the configuration to the specified app identifier
+#   5. Setting the Apple Developer team identifier
+#   6. Enabling read-only mode for CI environments
+#   7. Using Git basic auth for secure repository access
+#   8. Acknowledging iOS as the target platform
+#   9. Documenting certificate rotation and expiration policies
+#   10. Adhering to password protection and audit logging
+#
+# This method is auto-invoked at the end of the file to ensure
+# that these parameters are loaded whenever fastlane is run.
+############################################################
+def match_configuration
+  ##########################################################
+  # Step 1: Set Git repository URL with encrypted storage.
+  #
+  # We rely on an environment variable for security best
+  # practices. The repository must be private, storing
+  # certificate files encrypted with OpenSSL.
+  ##########################################################
+  git_url(ENV["MATCH_GIT_URL"])
+
+  ##########################################################
+  # Step 2: Configure Git-based storage mode with encryption.
+  #
+  # "git" mode instructs Match to store all certificates
+  # and provisioning profiles in the Git repository.
+  # By default, Match uses OpenSSL to encrypt/decrypt files
+  # unless overridden. We reaffirm that we use OpenSSL
+  # through comments for clarity, as there's no direct
+  # param to set it to "openssl".
+  ##########################################################
+  storage_mode("git")
+  # NOTE: Encryption method is OpenSSL. For advanced usage,
+  #       configure encryption or pass custom parameters
+  #       in your CI workflow if needed.
+
+  ##########################################################
+  # Step 3: Set certificate type based on environment.
+  #
+  # The default is "development" but can be changed to
+  # "distribution" or "enterprise" if necessary. This
+  # aligns with the specification's mention of multiple
+  # certificate types. For production builds, consider
+  # switching to "appstore" or "distribution".
+  ##########################################################
+  type("development")
+
+  ##########################################################
+  # Step 4: Configure the app identifier from Appfile.
+  #
+  # This ensures that credentials align with the "com.dogwalking.app"
+  # bundle identifier. If multiple apps are managed, provide
+  # them in an array format.
+  ##########################################################
+  app_identifier("com.dogwalking.app")
+
+  ##########################################################
+  # Step 5: Set the Apple Developer Team ID from environment.
+  #
+  # This leverages the same TEAM_ID used in the Appfile, ensuring
+  # that all code signing aligns with the correct developer account.
+  ##########################################################
+  team_id(ENV["TEAM_ID"])
+
+  ##########################################################
+  # Step 6: Enable readonly mode for CI environments.
+  #
+  # During continuous integration, we typically do not want to
+  # create or revoke certificates. Instead, use existing ones
+  # without modifications. This is controlled by the CI variable.
+  ##########################################################
+  readonly(ENV["CI"] == "true")
+
+  ##########################################################
+  # Step 7: Configure Git basic authorization if provided.
+  #
+  # This securely authenticates read/write operations on the
+  # certificates repository. The environment variable
+  # MATCH_GIT_AUTH can store a token or basic auth string.
+  ##########################################################
+  git_basic_authorization(ENV["MATCH_GIT_AUTH"])
+
+  ##########################################################
+  # Step 8: Set the platform to iOS.
+  #
+  # Although Match does not explicitly require a "platform"
+  # parameter, we list it here for completeness and clarity,
+  # acknowledging that this config is strictly for iOS.
+  ##########################################################
+  # NOTE: No direct DSL param for platform in Matchfile.
+  #       We simply note that this file is for iOS usage.
+
+  ##########################################################
+  # Step 9: Configure certificate rotation schedule.
+  #
+  # Per specification, we enforce a 90-day rotation for
+  # certificates. Fastlane Match does not handle automation
+  # for rotation by default. We recommend a CI pipeline or
+  # cron job that periodically runs `match` or `nuke` tasks
+  # to keep certificates fresh. This helps reduce risk of
+  # compromised or expired certs.
+  ##########################################################
+  # Example approach: 
+  #  - schedule a job to run `fastlane match nuke development`
+  #    and recreate certificates every 90 days.
+  #  - or run `fastlane match renew` if your environment
+  #    uses advanced scripts.
+
+  ##########################################################
+  # Step 10: Set up certificate expiration monitoring.
+  #
+  # Additional logic can be integrated with the Fastlane
+  # environment (e.g., `fastlane run check_certificates`) or
+  # custom scripts to email/notify the team about upcoming
+  # certificate expiration. The specification calls for an
+  # "expiration_monitoring" approach, which is not built
+  # into Match directly but can be scripted outside.
+  ##########################################################
+
+  ##########################################################
+  # Step 11: Enable security audit logging.
+  #
+  # For a fully auditable environment, you can keep logs of
+  # each time Match is run, including who triggered it and
+  # which certificates were accessed. The specification
+  # mentions "audit_logging": true, so consider hooking into
+  # a logging service (e.g., Splunk, Datadog) or enabling
+  # verbose logs in your CI pipeline to track all Match usage.
+  ##########################################################
+
+  ##########################################################
+  # Additional Security: password-protected encryption.
+  #
+  # We rely on MATCH_PASSWORD to encrypt/decrypt the repo,
+  # ensuring it's never exposed in plain text. This meets
+  # the directive that certificates be password protected.
+  ##########################################################
+  match_password(ENV["MATCH_PASSWORD"])
+end
+
+############################################################
+# Invoke the primary function to load all configuration
+# parameters. This ensures that whenever the Matchfile
+# is evaluated by Fastlane, the config is properly set.
+############################################################
+match_configuration
