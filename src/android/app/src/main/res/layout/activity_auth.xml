@@ -1,0 +1,69 @@
+<!--
+    activity_auth.xml
+
+    Layout resource file for the authentication activity, implementing:
+      • Material Design theming (Theme.MaterialComponents.DayNight).
+      • Secure hosting of multiple authentication flows (login, registration, password reset).
+      • Accessibility features (importantForAccessibility, fitsSystemWindows).
+      • RTL (layoutDirection="locale") and multi-factor authentication readiness.
+      • Window resizing for keyboard (windowSoftInputMode="adjustResize") to ensure good UX.
+      • Elevated surface with background="?attr/colorSurface" and elevation="4dp".
+      • Provides a fragment container (FragmentContainerView) hosting the nav_graph_auth for:
+         → Owner/Walker user profile management.
+         → Multi-step verification flows.
+         → Future expansions (biometric or 2FA fragments).
+
+    External Libraries and Versions (per requirement IE2):
+      • androidx.constraintlayout.widget.ConstraintLayout, version 2.1.4
+      • androidx.fragment.app.FragmentContainerView, version 1.6.0
+      • Uses Navigation: app:navGraph="@navigation/nav_graph_auth"
+
+    Requirements Addressed:
+      • Authentication Layer: Serves as a secure container for multi-factor flows.
+      • User Management: Hosts fragments for profile sign-up, login, verification.
+      • Design System Implementation: Adheres to Material specs, typography, spacing, theme attributes.
+-->
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    android:theme="@style/Theme.MaterialComponents.DayNight"
+    android:layoutDirection="locale"
+    android:importantForAccessibility="yes"
+    android:fitsSystemWindows="true"
+    android:background="?attr/colorSurface"
+    android:elevation="4dp"
+    android:stateListAnimator="@animator/touch_feedback"
+    android:windowSoftInputMode="adjustResize"
+    android:screenOrientation="portrait"
+    android:windowTranslucentStatus="true">
+
+    <!--
+        FragmentContainerView:
+          - Hosts the NavHostFragment that orchestrates login,
+            registration, and password reset flows (nav_graph_auth).
+          - Marked as the defaultNavHost to intercept the system Back button.
+          - Accessibility considerations:
+             → importantForAccessibility="yes" to ensure screen reader focus properly.
+          - Transition name "auth_container" for potential shared-element transitions.
+          - Layout behavior referencing appbar_scrolling_view_behavior for a
+            scrolling layout pattern if integrated with a collapsing toolbar.
+    -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph_auth"
+
+        android:transitionName="auth_container"
+        android:importantForAccessibility="yes"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
