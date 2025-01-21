@@ -1,0 +1,591 @@
+{
+  "imports": {
+    "internal": [
+      {
+        "name": "prometheus",
+        "type": "datasource",
+        "import_type": "named",
+        "path": "src/backend/common/monitoring/prometheus/prometheus.yml",
+        "purpose": "Import Prometheus node exporter and availability metrics for comprehensive system monitoring",
+        "members_used": [
+          {
+            "member_name": "node_metrics",
+            "member_type": "timeseries",
+            "import_type": "named"
+          },
+          {
+            "member_name": "availability_metrics",
+            "member_type": "timeseries",
+            "import_type": "named"
+          }
+        ]
+      }
+    ],
+    "external": [
+      {
+        "name": "grafana",
+        "package_name": "grafana",
+        "package_version": "9.5.0",
+        "purpose": "Grafana dashboard framework for advanced system monitoring visualization"
+      }
+    ]
+  },
+
+  "globals": [
+    {
+      "dashboard": {
+        "id": "system-metrics-dashboard",
+        "uid": "system_metrics",
+        "title": "System Metrics Overview",
+        "tags": [
+          "system",
+          "infrastructure",
+          "monitoring",
+          "availability"
+        ],
+        "timezone": "browser",
+        "refresh": "30s",
+        "schemaVersion": 36,
+        "version": 1,
+        "editable": true
+      }
+    }
+  ],
+
+  "classes": {
+    "SystemMetricsPanel": {
+      "description": "Advanced dashboard panel for system-level metrics with enhanced visualization",
+      "properties": [
+        {
+          "string": "title"
+        },
+        {
+          "string": "metric_type"
+        },
+        {
+          "object": "thresholds"
+        },
+        {
+          "object": "visualization_options"
+        }
+      ],
+      "constructor": {
+        "description": "Creates a new system metrics panel with advanced configuration",
+        "parameters": [
+          {
+            "object": "config"
+          },
+          {
+            "object": "alert_settings"
+          }
+        ],
+        "steps": [
+          "Initialize panel with provided configuration",
+          "Set up advanced metric queries",
+          "Configure visualization options",
+          "Initialize alert rules",
+          "Set up trend analysis",
+          "Configure predictive indicators"
+        ]
+      }
+    }
+  },
+
+  "functions": {
+    "calculateSystemHealth": {
+      "description": "Calculates comprehensive system health score based on multiple metrics",
+      "decorators": [
+        "@memoize(ttl=300)"
+      ],
+      "parameters": [
+        {
+          "string": "interval"
+        },
+        {
+          "object": "weightings"
+        }
+      ],
+      "returns": {
+        "object": "Detailed health metrics including overall score and component scores"
+      },
+      "steps": [
+        "Query critical system metrics (CPU, memory, disk, network)",
+        "Apply weighting factors to each component",
+        "Calculate component health scores",
+        "Detect anomalies using statistical analysis",
+        "Generate overall health score",
+        "Include trend analysis and predictions"
+      ]
+    },
+    "calculateResourceTrends": {
+      "description": "Performs advanced trend analysis on resource utilization",
+      "decorators": [
+        "@cacheable(ttl=600)"
+      ],
+      "parameters": [
+        {
+          "string": "resource_type"
+        },
+        {
+          "string": "timerange"
+        },
+        {
+          "object": "prediction_config"
+        }
+      ],
+      "returns": {
+        "object": "Comprehensive trend analysis with predictions"
+      },
+      "steps": [
+        "Collect historical metric data",
+        "Apply statistical analysis methods",
+        "Generate trend patterns",
+        "Calculate seasonal adjustments",
+        "Perform predictive analysis",
+        "Generate confidence intervals"
+      ]
+    }
+  },
+
+  "exports": [
+    {
+      "name": "dashboard",
+      "type": "object",
+      "purpose": "Export complete system monitoring dashboard configuration with enhanced features",
+      "members_exposed": [
+        {
+          "member_name": "panels",
+          "member_type": "array",
+          "export_type": "named"
+        },
+        {
+          "member_name": "variables",
+          "member_type": "object",
+          "export_type": "named"
+        },
+        {
+          "member_name": "annotations",
+          "member_type": "array",
+          "export_type": "named"
+        }
+      ]
+    }
+  ],
+
+  "dashboard": {
+    "id": null,
+    "uid": "system_metrics",
+    "title": "System Metrics Overview",
+    "tags": [
+      "system",
+      "infrastructure",
+      "monitoring",
+      "availability"
+    ],
+    "timezone": "browser",
+    "refresh": "30s",
+    "schemaVersion": 36,
+    "version": 1,
+    "editable": true,
+
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+
+    "panels": [
+      {
+        "type": "timeseries",
+        "title": "CPU Utilization",
+        "description": "Displays CPU usage across nodes derived from Prometheus node_metrics",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "CPU Usage (%)",
+            "refId": "A"
+          }
+        ],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "orange",
+              "value": 70
+            },
+            {
+              "color": "red",
+              "value": 90
+            }
+          ]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1
+      },
+      {
+        "type": "timeseries",
+        "title": "Memory Usage",
+        "description": "Shows overall memory utilization from Prometheus node_metrics",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100",
+            "legendFormat": "Memory Usage (%)",
+            "refId": "B"
+          }
+        ],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "orange",
+              "value": 80
+            },
+            {
+              "color": "red",
+              "value": 90
+            }
+          ]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "id": 2
+      },
+      {
+        "type": "timeseries",
+        "title": "Disk I/O",
+        "description": "Monitors disk I/O wait times from node_metrics for system health",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "instance:node_disk_io_time_seconds_total:rate5m",
+            "legendFormat": "Disk I/O Wait",
+            "refId": "C"
+          }
+        ],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "red",
+              "value": 1
+            }
+          ]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 3,
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "id": 3
+      },
+      {
+        "type": "timeseries",
+        "title": "Network Throughput",
+        "description": "Tracks inbound/outbound network traffic for performance monitoring",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "irate(node_network_receive_bytes_total[5m])",
+            "legendFormat": "Rx",
+            "refId": "D"
+          },
+          {
+            "expr": "irate(node_network_transmit_bytes_total[5m])",
+            "legendFormat": "Tx",
+            "refId": "E"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 2,
+            "unit": "Bps"
+          },
+          "overrides": []
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            }
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "id": 4
+      },
+      {
+        "type": "stat",
+        "title": "System Availability",
+        "description": "Displays current system availability from availability_metrics to ensure 99.9% uptime",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "avg(availability_metrics)",
+            "legendFormat": "Availability",
+            "refId": "F"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 3,
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "value": null,
+              "color": "red"
+            },
+            {
+              "value": 99.0,
+              "color": "orange"
+            },
+            {
+              "value": 99.9,
+              "color": "green"
+            }
+          ]
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "horizontal",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        },
+        "id": 5,
+        "alert": {
+          "alertRuleTags": {
+            "severity": "critical"
+          },
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [
+                  99.0
+                ],
+                "type": "lt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": [
+                  "A"
+                ]
+              },
+              "reducer": {
+                "type": "mean"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "30s",
+          "handler": 1,
+          "message": "System availability is below 99%. Immediate attention required.",
+          "name": "System_Uptime_Check",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "type": "stat",
+        "title": "Overall Health Score",
+        "description": "Displays an aggregated system health score using calculateSystemHealth function",
+        "datasource": "-- Calculation Only --",
+        "targets": [],
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 1,
+            "unit": "none"
+          },
+          "overrides": []
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "red",
+              "value": 0
+            },
+            {
+              "color": "orange",
+              "value": 70
+            },
+            {
+              "color": "green",
+              "value": 90
+            }
+          ]
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ]
+          },
+          "orientation": "horizontal",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 12,
+          "x": 12,
+          "y": 16
+        },
+        "id": 6,
+        "description_ext": {
+          "functionCall": "calculateSystemHealth(interval='5m', weightings={\"cpu\":0.3,\"memory\":0.25,\"disk\":0.2,\"network\":0.15,\"availability\":0.1})"
+        }
+      }
+    ],
+
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "type": "dashboard",
+          "name": "Annotations & Alerts",
+          "enabled": true,
+          "hide": true
+        }
+      ]
+    },
+
+    "templating": {
+      "list": [
+        {
+          "name": "node",
+          "type": "query",
+          "datasource": "Prometheus",
+          "definition": "label_values(node_uname_info, instance)",
+          "label": "Node Selector",
+          "current": {
+            "text": "All",
+            "value": [
+              "All"
+            ]
+          },
+          "allValue": null,
+          "includeAll": true,
+          "multi": true
+        }
+      ]
+    }
+  },
+
+  "exports": {
+    "dashboard": {
+      "panels": [
+        "CPU Utilization",
+        "Memory Usage",
+        "Disk I/O",
+        "Network Throughput",
+        "System Availability",
+        "Overall Health Score"
+      ],
+      "variables": {
+        "node": {
+          "type": "query",
+          "query": "label_values(node_uname_info, instance)"
+        }
+      },
+      "annotations": [
+        {
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    }
+  }
+}
