@@ -1,0 +1,24 @@
+platform :ios, '13.0'
+use_frameworks!
+inhibit_all_warnings!
+
+target 'DogWalking' do
+  pod 'Alamofire', '~> 5.8'
+  pod 'GoogleMaps', '~> 8.2'
+  pod 'Firebase/Analytics', '~> 10.17'
+  pod 'Firebase/Messaging', '~> 10.17'
+  pod 'RealmSwift', '~> 10.43'
+  pod 'Socket.IO-Client-Swift', '~> 16.1'
+  pod 'Stripe', '~> 23.18'
+  pod 'KeychainAccess', '~> 4.2'
+  pod 'SDWebImage', '~> 5.18'
+  pod 'SwiftLint', '~> 0.53'
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |t|
+    t.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+    end
+  end
+end
