@@ -1,0 +1,141 @@
+<!--
+  Utilizing MaterialComponents (com.google.android.material:material:1.9.0)
+  for advanced Material Design 3 theming, component styling,
+  and accessibility compliance.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        TEXT APPEARANCES
+        - Comprehensive typographic system implementing the design system's
+          specifications (Section 3.1.1) and ensuring accessibility through
+          adequate size and contrast against backgrounds.
+    -->
+
+    <!-- Headline1: Largest text size (96sp), light weight (approx. 300) -->
+    <style name="TextAppearance.App.Headline1" parent="@android:style/TextAppearance">
+        <!-- Use Roboto or a similar sans-serif-light font for large headlines -->
+        <item name="android:fontFamily">sans-serif-light</item>
+        <!-- Font size set to 96sp for display-level content -->
+        <item name="android:textSize">96sp</item>
+        <!-- Matching color for large headings, ensuring contrast on light backgrounds -->
+        <item name="android:textColor">@color/text_primary</item>
+        <!-- Additional line spacing to enhance readability of large text -->
+        <item name="android:lineSpacingExtra">4dp</item>
+    </style>
+
+    <!-- Headline2: Second-largest text size (60sp), light weight -->
+    <style name="TextAppearance.App.Headline2" parent="@android:style/TextAppearance">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textSize">60sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <!-- Body1: Primary body text (16sp), regular weight -->
+    <style name="TextAppearance.App.Body1" parent="@android:style/TextAppearance">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- Body2: Secondary body text (14sp), regular weight -->
+    <style name="TextAppearance.App.Body2" parent="@android:style/TextAppearance">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- Caption: Smaller text (12sp), used for hints/help text -->
+    <style name="TextAppearance.App.Caption" parent="@android:style/TextAppearance">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <!-- Error text appearance used within EditText error states -->
+    <style name="TextAppearance.App.Error" parent="@android:style/TextAppearance">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/error</item>
+    </style>
+
+    <!--
+        BUTTON STYLE
+        - Implements the design requirements (Section 3.1.2) providing:
+          - Ripple effect (use of foreground)
+          - Elevation via stateListAnimator
+          - Accessibility-friendly minimum height
+          - Theming alignment for background and text color
+    -->
+    <style name="Widget.App.Button" parent="@style/Widget.MaterialComponents.Button">
+        <!-- Background drawable defining shape, border, or color states -->
+        <item name="android:background">@drawable/btn_background</item>
+        <!-- Text color referencing the primary text color or on_primary if needed -->
+        <item name="android:textColor">@color/text_primary</item>
+        <!-- Standard padding ensuring a comfortable and accessible touch target -->
+        <item name="android:padding">@dimen/button_padding</item>
+        <!-- State list animator for elevation or shadow changes -->
+        <item name="android:stateListAnimator">@animator/button_elevation_anim</item>
+        <!-- Ripple effect on newer APIs when tapped, providing visual feedback -->
+        <item name="android:foreground">?attr/selectableItemBackgroundBorderless</item>
+        <!-- Minimum height to meet 48dp recommended accessible touch target -->
+        <item name="android:minHeight">@dimen/button_min_height</item>
+    </style>
+
+    <!--
+        EDITTEXT STYLE
+        - Incorporates error handling, hint text color, and a material-based layout.
+    -->
+    <style name="Widget.App.EditText" parent="@style/Widget.MaterialComponents.TextInputEditText.FilledBox">
+        <!-- Background drawable for outlining or filled box styling -->
+        <item name="android:background">@drawable/edittext_background</item>
+        <!-- Primary text color for user-entered text -->
+        <item name="android:textColor">@color/text_primary</item>
+        <!-- Sufficient padding for larger tap target and visual clarity -->
+        <item name="android:padding">@dimen/edittext_padding</item>
+        <!-- Hint color ensuring adequate contrast in placeholder text -->
+        <item name="android:textColorHint">@color/text_hint</item>
+        <!-- Style for error messages placed under the EditText component -->
+        <item name="app:errorTextAppearance">@style/TextAppearance.App.Error</item>
+        <!-- Toggles the display of error text. In many cases, your layout sets this at runtime. -->
+        <item name="app:errorEnabled">true</item>
+    </style>
+
+    <!--
+        CARD STYLE
+        - Provides elevation, corner radius, and layout margins
+          suitable for the card container pattern (Section 3.1.2).
+    -->
+    <style name="Widget.App.Card" parent="@style/Widget.MaterialComponents.CardView">
+        <!-- Background color referencing elevated surface from color resources -->
+        <item name="android:background">@color/elevation_01</item>
+        <!-- Elevation defined to differentiate the card from base surfaces -->
+        <item name="android:elevation">@dimen/card_elevation</item>
+        <!-- Layout margin to separate cards within a list or grid -->
+        <item name="android:layout_margin">@dimen/card_margin</item>
+        <!-- State list animator can increase elevation on press or focus if desired -->
+        <item name="android:stateListAnimator">@animator/card_elevation_anim</item>
+        <!-- Rounded corners for a modern Material aesthetic -->
+        <item name="app:cardCornerRadius">@dimen/card_corner_radius</item>
+    </style>
+
+    <!--
+        RECYCLERVIEW STYLE
+        - Enhances list scrolling behavior with scrollbars, fastscroll, and padding.
+          Supports large data sets with improved user navigation (Section 3.1.2).
+    -->
+    <style name="Widget.App.RecyclerView">
+        <!-- Vertical scrollbar for lengthy lists, or 'horizontal' if needed -->
+        <item name="android:scrollbars">vertical</item>
+        <!-- Determines if child views can extend into the padding area -->
+        <item name="android:clipToPadding">false</item>
+        <!-- Enables fast scrolling if desired for large data sets -->
+        <item name="android:fastScrollEnabled">true</item>
+        <!-- Positions the scrollbar within or overlapping the layout -->
+        <item name="android:scrollbarStyle">insideOverlay</item>
+        <!-- Fades out scrollbars after a short delay, reducing visual clutter -->
+        <item name="android:fadeScrollbars">true</item>
+    </style>
+
+</resources>
