@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Layout resource file defining the UI for displaying user profile information
+  with enhanced accessibility and Material Design 3 components.
+  
+  References:
+  - androidx.constraintlayout:constraintlayout:2.1.4 for responsive ConstraintLayout
+  - com.google.android.material:material:1.9.0 for MaterialCardView and MaterialButton
+  - Internal styles from styles.xml (Widget.App.Card, TextAppearance.App.Headline2, TextAppearance.App.Body1, Widget.App.Button, Widget.App.Button.Outlined)
+  - Internal dimens from dimens.xml for spacing (spacing_medium, spacing_large), ensuring 8dp grid alignment
+  - Requirements:
+    * User Management (display profile info, edit profile)
+    * Design System Specs (Typography, Spacing, Elevation)
+    * Component Library (cards, buttons, text elements)
+    * Responsive Design with ConstraintLayout
+-->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_profile_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:fillViewport="true"
+    android:clipToPadding="false">
+
+    <!-- Root ConstraintLayout to manage card positions and spacing -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/global_spacing_large"
+        android:clipChildren="false"
+        app:layout_constraintHeight_min="wrap_content">
+
+        <!--
+            First card: Displays profile photo, user name, user type,
+            and an action to edit profile.
+            style="@style/Widget.App.Card" applies Material Design 3 card styling.
+        -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_profile_info"
+            style="@style/Widget.App.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/global_spacing_medium"
+            app:cardElevation="2dp"
+            app:cardPreventCornerOverlap="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Nested ConstraintLayout inside the card for flexible arrangement of child views -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/global_spacing_medium">
+
+                <!-- Profile photo display -->
+                <ImageView
+                    android:id="@+id/iv_profile_photo"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:contentDescription="@string/profile_photo_description"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <!-- User name in headline style -->
+                <TextView
+                    android:id="@+id/tv_user_name"
+                    style="@style/TextAppearance.App.Headline2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="@+id/iv_profile_photo"
+                    app:layout_constraintStart_toEndOf="@+id/iv_profile_photo"
+                    app:layout_constraintEnd_toStartOf="@+id/btn_edit_profile"
+                    android:layout_marginStart="@dimen/global_spacing_medium"
+                    android:layout_marginEnd="@dimen/global_spacing_small"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
+
+                <!-- User type or role (Owner/Walker) in body style -->
+                <TextView
+                    android:id="@+id/tv_user_type"
+                    style="@style/TextAppearance.App.Body1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_user_name"
+                    app:layout_constraintStart_toStartOf="@+id/tv_user_name"
+                    android:layout_marginTop="@dimen/global_spacing_tiny"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
+
+                <!-- Edit profile button with MaterialButton primary style -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_edit_profile"
+                    style="@style/Widget.App.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_edit_profile"
+                    app:layout_constraintTop_toTopOf="@+id/iv_profile_photo"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginEnd="@dimen/global_spacing_medium" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!--
+            Second card: Displays user walk statistics (completed walks, rating)
+            and provides a settings button for further configuration.
+        -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_statistics"
+            style="@style/Widget.App.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/global_spacing_medium"
+            app:cardElevation="2dp"
+            app:cardPreventCornerOverlap="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/card_profile_info"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Nested ConstraintLayout for stats layout -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/global_spacing_medium">
+
+                <!-- TextView for total walks completed -->
+                <TextView
+                    android:id="@+id/tv_walks_completed"
+                    style="@style/TextAppearance.App.Body1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginBottom="@dimen/global_spacing_tiny"
+                    android:maxLines="1"
+                    android:text="@string/profile_walks_completed" />
+
+                <!-- TextView for user rating or average score -->
+                <TextView
+                    android:id="@+id/tv_rating"
+                    style="@style/TextAppearance.App.Body1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="@+id/tv_walks_completed"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginBottom="@dimen/global_spacing_tiny"
+                    android:maxLines="1"
+                    android:text="@string/profile_rating"
+                    android:layout_marginEnd="@dimen/global_spacing_small" />
+
+                <!-- Settings button with outlined style -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_settings"
+                    style="@style/Widget.App.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_settings"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_walks_completed"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginTop="@dimen/global_spacing_medium" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
