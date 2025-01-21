@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ------------------------------------------------------------------------------------
+    FILE: activity_main.xml
+    PATH: src/android/app/src/main/res/layout
+    ------------------------------------------------------------------------------------
+    DESCRIPTION:
+      Main activity layout serving as the central container for the Dog Walking Application.
+      Implements a navigation-based architecture that includes a BottomNavigationView
+      (Material Design 3 compliant) and a FragmentContainerView (NavHost) to facilitate
+      smooth transitions and proper state preservation. Adheres to accessibility standards
+      (TalkBack/screen reader) and edge-to-edge content guidelines.
+
+    EXTERNAL DEPENDENCIES:
+      • androidx.constraintlayout:constraintlayout:2.1.4  (Root layout container)
+      • androidx.fragment:fragment:1.6.1                (FragmentContainerView)
+      • com.google.android.material:material:1.9.0       (BottomNavigationView)
+
+    MATERIAL DESIGN 3 & ACCESSIBILITY:
+      • Uses ?attr/colorSurface for the bottom navigation background.
+      • labelVisibilityMode set to "labeled" to ensure text labels for icons, enhancing
+        readability for users with vision impairments.
+      • importantForAccessibility set to "yes" on the BottomNavigationView for screen readers.
+
+    LAYOUT STRUCTURE:
+      1) ConstraintLayout (root) with match_parent width/height for flexible alignment.
+      2) FragmentContainerView anchored to the top of the layout and constrained to rest above
+         the bottom navigation bar. This acts as the NavHost for Jetpack Navigation.
+      3) BottomNavigationView pinned to the bottom of the screen. References an internal menu
+         resource @menu/menu_bottom_nav which defines four navigation items: Home, Walks, Dogs,
+         and Profile. 
+
+    EXPORTS:
+      • @+id/nav_host_fragment  => Navigation host fragment container reference.
+      • @+id/bottom_navigation  => Material Design 3 bottom navigation reference.
+
+    ------------------------------------------------------------------------------------
+-->
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    <!-- Ensures the system windows (such as status bar) are taken into account,
+         allowing for edge-to-edge content where appropriate. -->
+    android:fitsSystemWindows="true"
+
+    <!-- Disables default clipping of child views, enabling creative layouts
+         that might extend or animate beyond parent boundaries if needed. -->
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!--
+        FragmentContainerView:
+        Acts as the NavHost (androidx.navigation.fragment.NavHostFragment),
+        hosting different destination fragments such as Home, Walks, Dogs, etc.
+        Constrained to occupy the upper portion of the screen above the bottom nav.
+        Before final release, ensure that @navigation/nav_graph points to the correct
+        nav graph resource (e.g., nav_graph.xml).
+    -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph"
+
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+
+        <!-- Provides extra bottom padding to avoid overlapping content with the
+             bottom navigation, respecting the defined dimension bottom_nav_height. -->
+        android:paddingBottom="@dimen/bottom_nav_height"
+
+        <!-- Disables clipping so child fragments can draw across boundaries if needed. -->
+        android:clipToPadding="false" />
+
+    <!--
+        BottomNavigationView:
+        Material Design 3 bottom navigation bar that anchors to the bottom of the screen.
+        References @menu/menu_bottom_nav for its menu items. Elevation and colorSurface
+        attributes align with MD3 guidelines for a prominent but non-intrusive nav element.
+    -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        app:menu="@menu/menu_bottom_nav"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        <!-- Uses a surface color from theme attributes for a background that adapts
+             to light/dark modes. -->
+        android:background="?attr/colorSurface"
+
+        <!-- Sets the Material-compliant elevation resource for subtle shadow. -->
+        app:elevation="@dimen/bottom_nav_elevation"
+
+        <!-- Critical for accessibility, ensuring screen readers properly handle nav items. -->
+        android:importantForAccessibility="yes"
+
+        <!-- Ensures text labels remain visible alongside icons, enhancing clarity for users. -->
+        app:labelVisibilityMode="labeled" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
