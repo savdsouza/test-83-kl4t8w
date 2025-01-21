@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layout file for displaying a list of available dog walkers 
+    with search, filtering, and real-time updates capabilities.
+
+    This file addresses:
+    1) User Management (Display of walker profiles in a list)
+    2) Booking System (Real-time availability via pull-to-refresh)
+    3) Search Component (Material Design 3 search bar + filtering)
+
+    External library references with version comments:
+    - androidx.constraintlayout.widget.ConstraintLayout (v2.1.4)
+    - com.google.android.material.search.SearchBar (v1.9.0)
+    - com.google.android.material.chip.ChipGroup (v1.9.0)
+    - androidx.swiperefreshlayout.widget.SwipeRefreshLayout (v1.1.0)
+    - androidx.recyclerview.widget.RecyclerView (v1.3.0)
+-->
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    <!-- Using the app theme surface color as background -->
+    android:background="?attr/colorSurface"
+
+    <!-- Ensures layout is adjusted to fit system bars (status/navigation) -->
+    android:fitsSystemWindows="true">
+
+    <!-- Material Design 3 SearchBar (v1.9.0) for location input -->
+    <com.google.android.material.search.SearchBar
+        android:id="@+id/search_bar"
+        style="@style/Widget.Material3.SearchBar"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:contentDescription="@string/search_location_description"
+        android:hint="@string/search_location_hint"
+
+        android:layout_margin="@dimen/margin_medium"
+
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Filter ChipGroup (v1.9.0) for distance/rating filters, single selection -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/filter_chip_group"
+        style="@style/Widget.Material3.ChipGroup"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_margin="@dimen/margin_small"
+
+        app:singleSelection="true"
+
+        app:layout_constraintTop_toBottomOf="@id/search_bar" />
+
+    <!-- SwipeRefreshLayout (v1.1.0) for pull-to-refresh real-time updates -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+
+        app:layout_constraintTop_toBottomOf="@id/filter_chip_group"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- RecyclerView (v1.3.0) to list available walkers -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_walkers"
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/padding_large"
+
+            android:scrollbars="vertical"
+            android:fadeScrollbars="true" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Included layout for empty state (visible if no walkers found) -->
+    <include
+        android:id="@+id/empty_state"
+        android:layout="@layout/view_empty_state"
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        android:visibility="gone"
+
+        app:layout_constraintTop_toBottomOf="@id/filter_chip_group"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- ProgressBar shown during initial load or background refresh -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_gravity="center"
+        android:visibility="gone"
+
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
