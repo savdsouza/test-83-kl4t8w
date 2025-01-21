@@ -1,0 +1,115 @@
+# -----------------------------------------------------------------------------------
+# Kubernetes ConfigMaps for Non-Sensitive Configuration
+# This file is validated against Kubernetes v1.28 (see external import reference)
+# and utilizes namespace definitions from namespaces.yaml (internal import reference).
+# These ConfigMaps provide runtime configuration parameters such as health checks,
+# monitoring endpoints, tracing, logging, circuit breaker settings, and more for
+# the Dog Walking Platform microservices. All values herein are non-secret.
+# -----------------------------------------------------------------------------------
+
+apiVersion: v1
+kind: List
+items:
+  # -----------------------------------------------------------------------------
+  # ConfigMap: api-gateway-config
+  # Namespace: api-gateway (defined in namespaces.yaml)
+  # -----------------------------------------------------------------------------
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      # Name assigned to this ConfigMap to identify gateway service configuration
+      name: api-gateway-config
+      # Namespace must match the api-gateway namespace from namespaces.yaml
+      namespace: api-gateway
+      labels:
+        # Identifies the overarching application
+        app: api-gateway
+        # Indicates the functional role of this resource within the platform
+        component: gateway
+        # Grouping label for the entire dog walking platform
+        part-of: dog-walking-platform
+    data:
+      # The network port on which the API Gateway listens for incoming requests
+      PORT: "8080"
+      # Environment variable indicating that this service runs in production
+      NODE_ENV: "production"
+      # Time window for rate limiting (e.g., 15 minutes)
+      RATE_LIMIT_WINDOW: "15m"
+      # Maximum allowed requests per user/IP within the rate limit window
+      RATE_LIMIT_MAX_REQUESTS: "100"
+      # List of allowed origins for Cross-Origin Resource Sharing
+      CORS_ALLOWED_ORIGINS: "*"
+      # Specifies the detail level for logging (e.g., debug, info, warn, error)
+      LOG_LEVEL: "info"
+      # HTTP endpoint path for readiness/liveness health checks
+      HEALTH_CHECK_PATH: "/health"
+      # Interval at which health checks are performed by the orchestrator
+      HEALTH_CHECK_INTERVAL: "30s"
+      # HTTP endpoint path for service metrics, consumed by monitoring tools
+      METRICS_PATH: "/metrics"
+      # Flag to enable or disable distributed tracing integrations
+      TRACING_ENABLED: "true"
+      # HTTP header key used to populate correlation ID for tracing across services
+      CORRELATION_ID_HEADER: "x-correlation-id"
+      # Maximum allowed payload size for inbound requests
+      MAX_PAYLOAD_SIZE: "1mb"
+      # Circuit breaker timeout defining how long requests wait before failing
+      CIRCUIT_BREAKER_TIMEOUT: "5s"
+      # Duration after which circuit breaker attempts to reset if failure rate subsides
+      CIRCUIT_BREAKER_RESET_TIMEOUT: "30s"
+      # Number of automatic retries for transient errors or network issues
+      RETRY_COUNT: "3"
+      # Delay between retry attempts to prevent immediate repeated failures
+      RETRY_DELAY: "1s"
+
+  # -----------------------------------------------------------------------------
+  # ConfigMap: auth-service-config
+  # Namespace: auth-service (defined in namespaces.yaml)
+  # -----------------------------------------------------------------------------
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      # Name assigned to this ConfigMap to identify auth service configuration
+      name: auth-service-config
+      # Namespace must match the auth-service namespace from namespaces.yaml
+      namespace: auth-service
+      labels:
+        # Identifies the overarching application
+        app: auth-service
+        # Indicates the functional role of this resource within the platform
+        component: backend
+        # Grouping label for the entire dog-walking-platform initiative
+        part-of: dog-walking-platform
+    data:
+      # The network port on which the Auth Service listens for incoming requests
+      PORT: "3000"
+      # Environment variable indicating that this service runs in production
+      NODE_ENV: "production"
+      # JWT token expiration period for user sessions
+      TOKEN_EXPIRY: "15m"
+      # Refresh token validity duration to enable session renewal
+      REFRESH_TOKEN_EXPIRY: "7d"
+      # Number of hashing rounds used for password hashing (Argon2, bcrypt, etc.)
+      PASSWORD_HASH_ROUNDS: "12"
+      # Specifies the detail level for logging activities
+      LOG_LEVEL: "info"
+      # HTTP endpoint path for readiness/liveness health checks
+      HEALTH_CHECK_PATH: "/health"
+      # Interval for orchestrator-driven health checks
+      HEALTH_CHECK_INTERVAL: "30s"
+      # Metrics endpoint path for monitoring and telemetry scrapers
+      METRICS_PATH: "/metrics"
+      # Flag to enable or disable distributed tracing integrations
+      TRACING_ENABLED: "true"
+      # HTTP header key used to propagate correlation ID across service boundaries
+      CORRELATION_ID_HEADER: "x-correlation-id"
+      # Time to live (TTL) for cached authentication data in Redis
+      REDIS_CACHE_TTL: "1h"
+      # Prefix applied to authentication keys stored in Redis for organized grouping
+      REDIS_CACHE_PREFIX: "auth:"
+      # Maximum number of login attempts before triggering account lockout
+      MAX_LOGIN_ATTEMPTS: "5"
+      # Duration of lockout period if maximum login attempts are exceeded
+      LOGIN_BLOCK_DURATION: "15m"
+      # Interval to clean up stale user sessions to free resources
+      SESSION_CLEANUP_INTERVAL: "1h"
