@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Import global variables for brand colors, typographic scales, and spacing.
+   Ensures consistent usage of design tokens, including transition and radius
+   variables for shared motion design.
+   ========================================================================== */
+@import "../styles/variables.css";
+
+/* ==========================================================================
+   Root-Level Overrides for Animation Variables
+   --------------------------------------------------------------------------
+   These custom properties align with the JSON specification to ensure that
+   var(--transition-duration) and var(--transition-timing) are available.
+   Additionally, we define the circle border radius for spinner usage.
+   ========================================================================== */
+:root {
+  /* Base motion properties to integrate with the existing design tokens */
+  --transition-duration: var(--transition-normal);
+  --transition-timing: ease-in-out;
+  --border-radius-circle: 50%;
+}
+
+/* ==========================================================================
+   Global Keyframe Animations
+   --------------------------------------------------------------------------
+   The following @keyframes are declared for reuse throughout the application,
+   offering enterprise-level performance and clarity.
+   ========================================================================== */
+
+/* SPIN
+   ----
+   Used primarily for loading indicators or any rotating visual element.
+   Rotates a targeted element full-circle infinitely.
+*/
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* FADE IN
+   -------
+   Gradually increases an element’s opacity from 0 to 1,
+   enabling smooth appearance of new UI components.
+*/
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* SLIDE IN
+   --------
+   Shifts an element upward while simultaneously fading it into view,
+   making certain content transitions feel more organic.
+*/
+@keyframes slideIn {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* PULSE
+   -----
+   Scales an element in and out to draw user attention or highlight
+   interactivity. Suitable for subtle emphasis on actionable UI items.
+*/
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   Reusable Animation/Transition Classes
+   --------------------------------------------------------------------------
+   Each class applies one or more of the defined keyframes and references
+   shared variables for consistent motion design across the app.
+   ========================================================================== */
+
+/* LOADING-SPINNER
+   ---------------
+   A rotating spinner for loading states, with performance tweaks including
+   will-change for hardware acceleration and translateZ(0) to compose on the GPU.
+*/
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-background);
+  border-top-color: var(--color-primary);
+  border-radius: var(--border-radius-circle);
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* FADE-ENTER
+   ----------
+   Applies a fade-in animation on entering transitions (e.g. new route,
+   newly displayed modal). Leverages consistent duration and timing from
+   root-level transition variables.
+*/
+.fade-enter {
+  animation: fadeIn var(--transition-duration) var(--transition-timing);
+  animation-fill-mode: forwards;
+  will-change: opacity;
+}
+
+/* SLIDE-ENTER
+   -----------
+   Similar to fade-enter but with a slight upward slide. It merges
+   fadeIn with translateY for improved visual feedback on content entry.
+*/
+.slide-enter {
+  animation: slideIn var(--transition-duration) var(--transition-timing);
+  animation-fill-mode: forwards;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* PULSE
+   -----
+   Continuously pulses an element to draw user attention or indicate
+   interactive functionality. The infinite iteration ensures repetitive motion.
+*/
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* TRANSITION-BASE
+   ---------------
+   Provides a universal transition property for smoother state changes on hover,
+   focus, active states, etc. Infuses UI with a uniform transitional feel.
+*/
+.transition-base {
+  transition: all var(--transition-duration) var(--transition-timing);
+  will-change: auto;
+}
+
+/* ==========================================================================
+   Reduced Motion Media Query
+   --------------------------------------------------------------------------
+   Comprehensive accessibility support: if the user requests reduced motion
+   through OS preferences, drastically minimize animation durations and
+   iteration counts to prevent motion discomfort.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
