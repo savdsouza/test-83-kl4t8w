@@ -1,0 +1,418 @@
+{
+  "imports": {
+    "internal": [
+      {
+        "name": "prometheus",
+        "type": "datasource",
+        "import_type": "named",
+        "members_used": [
+          {
+            "member_name": "metrics",
+            "member_type": "timeseries",
+            "import_type": "named"
+          },
+          {
+            "member_name": "histograms",
+            "member_type": "heatmap",
+            "import_type": "named"
+          }
+        ],
+        "module": "prometheus",
+        "path": "src/backend/common/monitoring/prometheus/prometheus.yml",
+        "purpose": "Import Prometheus metrics for comprehensive API Gateway monitoring"
+      }
+    ],
+    "external": [
+      {
+        "name": "grafana",
+        "package_name": "grafana",
+        "package_version": "9.5.0",
+        "purpose": "Grafana dashboard framework for visualization"
+      }
+    ]
+  },
+  "globals": [
+    {
+      "dashboard": {
+        "id": "api-gateway-dashboard",
+        "uid": "api_gateway_overview",
+        "title": "API Gateway Overview",
+        "tags": [
+          "api-gateway",
+          "monitoring",
+          "slo"
+        ],
+        "timezone": "browser",
+        "refresh": "30s",
+        "schemaVersion": 36,
+        "version": 1,
+        "editable": true
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "calculateRequestRate",
+      "description": "Calculates request rate per service with method-level granularity",
+      "parameters": [
+        {
+          "name": "service_name",
+          "type": "string"
+        },
+        {
+          "name": "interval",
+          "type": "string"
+        },
+        {
+          "name": "method",
+          "type": "string"
+        }
+      ],
+      "returns": {
+        "type": "float",
+        "description": "Requests per second by method"
+      },
+      "decorators": [
+        "@memoize(ttl=60)"
+      ],
+      "steps": [
+        "Query total requests from Prometheus with method label",
+        "Calculate rate over specified interval",
+        "Group by service, method, and status code",
+        "Apply rate calculation function",
+        "Format results for visualization"
+      ]
+    },
+    {
+      "name": "calculateErrorRate",
+      "description": "Calculates detailed error rate percentage by category",
+      "parameters": [
+        {
+          "name": "service_name",
+          "type": "string"
+        },
+        {
+          "name": "interval",
+          "type": "string"
+        },
+        {
+          "name": "error_type",
+          "type": "string"
+        }
+      ],
+      "returns": {
+        "type": "float",
+        "description": "Error rate percentage by category"
+      },
+      "decorators": [
+        "@memoize(ttl=60)"
+      ],
+      "steps": [
+        "Query error count from Prometheus by status code",
+        "Calculate percentage against total requests",
+        "Group by error type and service",
+        "Apply threshold calculations",
+        "Format for visualization with color coding"
+      ]
+    }
+  ],
+  "classes": [
+    {
+      "name": "RequestMetricsPanel",
+      "description": "Enhanced dashboard panel for API request metrics with advanced visualization",
+      "properties": [
+        {
+          "type": "string",
+          "name": "title"
+        },
+        {
+          "type": "string",
+          "name": "service_name"
+        },
+        {
+          "type": "object",
+          "name": "metrics"
+        },
+        {
+          "type": "object",
+          "name": "thresholds"
+        },
+        {
+          "type": "object",
+          "name": "visualization_options"
+        }
+      ],
+      "constructor": {
+        "description": "Creates a new request metrics panel with advanced configuration",
+        "parameters": [
+          {
+            "name": "config",
+            "type": "object"
+          }
+        ],
+        "steps": [
+          "Initialize panel properties with defaults",
+          "Set up request-specific metrics with granular options",
+          "Configure advanced visualization options",
+          "Set up multi-level alerts and thresholds",
+          "Initialize real-time update handlers"
+        ]
+      },
+      "functions": [
+        {
+          "name": "updateVisualization",
+          "description": "Updates panel visualization based on new data",
+          "parameters": [
+            {
+              "name": "metrics_data",
+              "type": "object"
+            }
+          ],
+          "returns": {
+            "type": "void",
+            "description": "Updates panel state"
+          },
+          "steps": [
+            "Process incoming metrics data",
+            "Apply visualization rules",
+            "Update panel display",
+            "Trigger alerts if needed"
+          ]
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "dashboard",
+      "type": "object",
+      "members_exposed": [
+        {
+          "member_name": "panels",
+          "member_type": "array",
+          "export_type": "named"
+        },
+        {
+          "member_name": "variables",
+          "member_type": "object",
+          "export_type": "named"
+        },
+        {
+          "member_name": "annotations",
+          "member_type": "array",
+          "export_type": "named"
+        }
+      ],
+      "purpose": "Export complete API Gateway dashboard configuration with enhanced features"
+    }
+  ],
+  "dashboard": {
+    "id": "api-gateway-dashboard",
+    "uid": "api_gateway_overview",
+    "title": "API Gateway Overview",
+    "tags": [
+      "api-gateway",
+      "monitoring",
+      "slo"
+    ],
+    "timezone": "browser",
+    "refresh": "30s",
+    "schemaVersion": 36,
+    "version": 1,
+    "editable": true,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "type": "graph",
+        "title": "API Gateway Request Rate",
+        "id": 1,
+        "datasource": "prometheus",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{service=\"$service_name\"}[1m])) by (method)",
+            "intervalFactor": 1,
+            "legendFormat": "{{method}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        },
+        "options": {}
+      },
+      {
+        "type": "graph",
+        "title": "API Gateway Error Rate",
+        "id": 2,
+        "datasource": "prometheus",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"5..\", service=\"$service_name\"}[1m])) / sum(rate(http_requests_total{service=\"$service_name\"}[1m]))",
+            "intervalFactor": 1,
+            "legendFormat": "Error Rate",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 0.01
+                },
+                {
+                  "color": "red",
+                  "value": 0.05
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "alertThreshold": true
+        }
+      },
+      {
+        "type": "heatmap",
+        "title": "API Gateway Latency (Histogram)",
+        "id": 3,
+        "datasource": "prometheus",
+        "gridPos": {
+          "x": 0,
+          "y": 8,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(http_request_duration_seconds_bucket{service=\"$service_name\"}[1m])",
+            "format": "heatmap",
+            "intervalFactor": 1,
+            "legendFormat": "{{le}}",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        },
+        "options": {}
+      },
+      {
+        "type": "graph",
+        "title": "API Gateway Resource Usage",
+        "id": 4,
+        "datasource": "prometheus",
+        "gridPos": {
+          "x": 12,
+          "y": 8,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "avg by (instance) (rate(container_cpu_usage_seconds_total{container=\"api-gateway\"}[1m]))",
+            "intervalFactor": 1,
+            "legendFormat": "{{instance}} CPU",
+            "refId": "D"
+          },
+          {
+            "expr": "avg by (instance) (container_memory_usage_bytes{container=\"api-gateway\"})",
+            "intervalFactor": 1,
+            "legendFormat": "{{instance}} Memory",
+            "refId": "E"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        },
+        "options": {}
+      }
+    ],
+    "variables": {
+      "list": [
+        {
+          "name": "service_name",
+          "type": "query",
+          "label": "Service Name",
+          "query": "label_values(http_requests_total, service)",
+          "definition": "",
+          "current": {
+            "text": "api-gateway",
+            "value": "api-gateway"
+          },
+          "includeAll": false
+        },
+        {
+          "name": "interval",
+          "type": "interval",
+          "label": "Interval",
+          "query": "1m,5m,15m",
+          "current": {
+            "text": "1m",
+            "value": "1m"
+          },
+          "includeAll": false
+        },
+        {
+          "name": "method",
+          "type": "query",
+          "label": "HTTP Method",
+          "query": "label_values(http_requests_total, method)",
+          "current": {
+            "text": "GET",
+            "value": "GET"
+          },
+          "includeAll": true
+        },
+        {
+          "name": "error_type",
+          "type": "custom",
+          "label": "Error Type",
+          "query": "4xx,5xx",
+          "current": {
+            "text": "5xx",
+            "value": "5xx"
+          },
+          "includeAll": true
+        }
+      ]
+    },
+    "annotations": [
+      {
+        "name": "Deployments",
+        "type": "dashboard",
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "iconColor": "rgba(255, 96, 96, 1)",
+        "hide": false
+      }
+    ]
+  },
+  "overwrite": true
+}
