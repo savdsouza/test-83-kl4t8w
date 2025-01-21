@@ -1,0 +1,135 @@
+<!--
+    This layout file defines the core UI for displaying a searchable,
+    filterable list of dog profiles within a native Android application.
+    Adhering to Material Design 3 guidelines, it provides:
+      • A search TextInputLayout with outlined styling and an EditText for user queries.
+      • A SwipeRefreshLayout to enable pull-to-refresh functionality for the dog list.
+      • A RecyclerView to efficiently display an updatable list of dogs (using item_dog.xml).
+      • A FloatingActionButton (FAB) to add a new dog profile.
+    Accessibility elements and content descriptions are included to ensure screen reader
+    compatibility. This file leverages Android Data Binding for binding search input
+    and refresh states to a ViewModel.
+-->
+
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        Data Binding Variable:
+          - viewModel: The business logic holder (DogListViewModel) managing search query,
+                       dog list data, and loading/refresh states.
+    -->
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.ui.DogListViewModel" />
+    </data>
+
+    <!--
+        Root ConstraintLayout from 'androidx.constraintlayout:constraintlayout:2.1.4'
+        to provide a performant and flexible UI. Matches parent width/height with a
+        background referencing Android's default background color theme attribute.
+        The fitsSystemWindows attribute is true to properly handle status/navigation bars.
+    -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:colorBackground"
+        android:fitsSystemWindows="true"
+        tools:context=".ui.DogListFragment">
+
+        <!--
+            TextInputLayout from 'com.google.android.material:material:1.9.0'
+            styled with an OutlinedBox appearance per Material Design 3 standards.
+            Serves as the container for the search EditText, providing an accessible
+            label/hint. The margin around ensures spacing from parent edges.
+        -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_search"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/global_spacing_medium"
+            android:importantForAutofill="no"
+            android:hint="@string/search_dogs"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!--
+                TextInputEditText from 'com.google.android.material:material:1.9.0'
+                to capture user search queries. Binds two-way to viewModel.searchQuery
+                for live updates. bg_input.xml is applied as the background drawable
+                to handle focused, disabled, and normal states. Accessibility settings
+                include a content description and correct focus ordering.
+            -->
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input"
+                android:contentDescription="@string/search_dogs_description"
+                android:importantForAccessibility="yes"
+                android:imeOptions="actionSearch"
+                android:nextFocusDown="@+id/rv_dogs"
+                android:text="@={viewModel.searchQuery}" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--
+            SwipeRefreshLayout from 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+            providing pull-to-refresh behavior. The constraints anchor this layout below
+            the search field and extend down to the parent bottom. It binds to viewModel.isRefreshing
+            enabling or disabling the refresh state automatically.
+        -->
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/srl_dogs"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:importantForAccessibility="yes"
+            android:refreshing="@{viewModel.isRefreshing}"
+            android:nextFocusDown="@+id/fab_add_dog"
+            app:layout_constraintTop_toBottomOf="@+id/til_search"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!--
+                RecyclerView from 'androidx.recyclerview:recyclerview:1.3.0'
+                for displaying dog items (item_dog.xml) in a scrollable list.
+                LayoutManager is set in code for flexibility. The tools:listitem
+                reference prepares the layout preview. Accessibility settings
+                allow screen reader navigation and content updates.
+            -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_dogs"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="yes"
+                android:scrollbars="vertical"
+                android:nextFocusDown="@+id/fab_add_dog"
+                tools:listitem="@layout/item_dog" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!--
+            FloatingActionButton from 'com.google.android.material:material:1.9.0'
+            allowing users to add a new dog profile. It includes a vector icon
+            (ic_add.xml) and uses a dimension-based elevation. Positioned at
+            the bottom-end corner of the screen, consistent with Material Design 3.
+        -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_dog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/global_spacing_large"
+            android:contentDescription="@string/add_dog_description"
+            android:importantForAccessibility="yes"
+            android:src="@drawable/ic_add"
+            android:nextFocusUp="@+id/rv_dogs"
+            app:elevation="@dimen/fab_elevation"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
