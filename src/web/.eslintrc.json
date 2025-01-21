@@ -1,0 +1,148 @@
+{
+  // ESLint configuration file for the Dog Walking web application.
+  // This configuration enforces strict TypeScript rules, React best practices,
+  // accessibility standards, and robust code quality checks for production readiness.
+
+  // Environment settings to indicate which globals are predefined.
+  "env": {
+    // Browser environment for front-end code.
+    "browser": true,
+    // ES2022 environment to enable modern ECMAScript features.
+    "es2022": true,
+    // Node environment for any server-side or build scripts.
+    "node": true,
+    // Jest environment for testing.
+    "jest": true
+  },
+
+  // Configuration presets to extend for baseline, TypeScript, React, accessibility,
+  // and Prettier integration.
+  // "eslint:recommended" = Core ESLint recommended rules.
+  // "plugin:@typescript-eslint/recommended" (uses @typescript-eslint/eslint-plugin ^6.0.0)
+  // "plugin:react/recommended" (uses eslint-plugin-react ^7.33.0)
+  // "plugin:react-hooks/recommended" (uses eslint-plugin-react-hooks ^4.6.0)
+  // "plugin:jsx-a11y/recommended" (uses eslint-plugin-jsx-a11y ^6.7.0)
+  // "prettier" (uses eslint-config-prettier ^8.8.0)
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:jsx-a11y/recommended",
+    "prettier"
+  ],
+
+  // Parser configuration to handle TypeScript syntax with @typescript-eslint/parser ^6.0.0.
+  "parser": "@typescript-eslint/parser",
+
+  // Parser options specifying ECMAScript version, module source type, JSX support,
+  // and location of the TypeScript configuration file.
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "project": "./tsconfig.json"
+  },
+
+  // ESLint plugins to provide various rule sets:
+  // @typescript-eslint (from @typescript-eslint/eslint-plugin ^6.0.0),
+  // react (from eslint-plugin-react ^7.33.0),
+  // react-hooks (from eslint-plugin-react-hooks ^4.6.0),
+  // jsx-a11y (from eslint-plugin-jsx-a11y ^6.7.0).
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "react-hooks",
+    "jsx-a11y"
+  ],
+
+  // React version detection for eslint-plugin-react, set to "detect" automatically.
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+
+  // Strict and production-oriented linting rules, enforcing best practices,
+  // type safety, and code clarity.
+  "rules": {
+    // Turn off forced explicit return type since it's often handled by inference.
+    "@typescript-eslint/explicit-function-return-type": "off",
+    // Turn off forced explicit module boundaries to keep code concise.
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    // Disallow the usage of the 'any' type for stronger type safety.
+    "@typescript-eslint/no-explicit-any": "error",
+    // Disallow unused variables, but allow ignoring with leading underscore.
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    // Disallow non-null assertions to avoid potential runtime errors.
+    "@typescript-eslint/no-non-null-assertion": "error",
+
+    // Turn off the requirement for React to be in scope with newer JSX transforms.
+    "react/react-in-jsx-scope": "off",
+    // Turn off prop-types since TypeScript handles prop validation.
+    "react/prop-types": "off",
+    // Enforce rules of hooks usage in function components.
+    "react-hooks/rules-of-hooks": "error",
+    // Warn about missing effect dependencies in hooks.
+    "react-hooks/exhaustive-deps": "warn",
+
+    // Ensure valid anchor usage and accessibility in JSX (jsx-a11y ^6.7.0).
+    "jsx-a11y/anchor-is-valid": [
+      "error",
+      {
+        "components": ["Link"],
+        "specialLink": ["hrefLeft", "hrefRight"],
+        "aspects": ["invalidHref", "preferButton"]
+      }
+    ],
+
+    // Restrict console usage to warnings and errors only in production code.
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    // Require strict equality checks.
+    "eqeqeq": "error",
+    // Disallow var declarations in favor of block-scoped let/const.
+    "no-var": "error",
+    // Encourage usage of const for variables that never change.
+    "prefer-const": "error",
+    // Enforce concise arrow function body style when possible.
+    "arrow-body-style": [
+      "error",
+      "as-needed"
+    ]
+  },
+
+  // Override certain rules for test files, allowing usage of any
+  // in test environments for flexible mocking and testing scenarios.
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ],
+
+  // Ignore common output and config directories to reduce noise in linting.
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "vite.config.ts"
+  ]
+}
