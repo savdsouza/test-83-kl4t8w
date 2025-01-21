@@ -1,0 +1,185 @@
+# ---------------------------------------------------------------------------
+# Main Prometheus configuration for the Dog Walking Application
+# ---------------------------------------------------------------------------
+# Using prometheus v2.45.0
+#
+# This file defines global parameters (scrape_interval, evaluation_interval,
+# external_labels), references internal rule files (rules.yml and alerts.yml),
+# and sets up scrape configurations for each core microservice to collect
+# metrics at a 15-second interval. It also configures alertmanager integration
+# for real-time notifications based on defined alerting rules.
+#
+# Requirements Addressed (From Technical Specification):
+#  1) System Monitoring (Section 2.4.1):
+#    - Collects metrics every 15s for real-time visibility.
+#    - Integrates with alerting systems for immediate incident response.
+#  2) Success Criteria (Section 1.2):
+#    - Ensures 99.9% uptime target is visible via frequent metric collection.
+#    - Provides detailed service health checks and SLA monitoring.
+#  3) High Availability (Section 2.5.1):
+#    - Labels facilitate multi-AZ deployment and environment-based grouping.
+#    - Facilitates discovery for horizontally scaled microservices.
+#
+# Internal Imports (Referenced by rule_files):
+#  - rules.yml (recording_rules): Contains custom metrics calculations.
+#  - alerts.yml (alert_rules): Contains alerting logic for system events.
+#
+# External Import:
+#  - prometheus v2.45.0 (Core syntax & features).
+#
+# Exports (Named Config Sections):
+#  - global
+#  - scrape_configs
+#  - alerting
+# ---------------------------------------------------------------------------
+
+global:
+  # Defines default data collection intervals and external labels
+  # for environment and region identification.
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  
+  # The following external labels help track metrics across different
+  # environments and regions for high availability and multi-AZ monitoring.
+  external_labels:
+    environment: "production"
+    region: "us-east-1"
+
+# ---------------------------------------------------------------------------
+# rule_files:
+#   These YAML files define recording and alerting rules. Recording rules
+#   (from rules.yml) pre-compute metrics like system availability Ratios,
+#   95th percentile latencies, error rates, and business KPIs related to
+#   active walks. Alerting rules (from alerts.yml) define triggers for
+#   abnormal conditions such as high error rates, low availability, high
+#   resource usage, and other SLA violations.
+# ---------------------------------------------------------------------------
+rule_files:
+  - "rules.yml"
+  - "alerts.yml"
+
+# ---------------------------------------------------------------------------
+# scrape_configs:
+#   Each job defines a set of endpoints that Prometheus will scrape to
+#   collect metrics. The metrics_path, scheme, and static_configs targets
+#   are carefully specified to ensure collection from each microservice
+#   participating in the Dog Walking Application's architecture.
+# ---------------------------------------------------------------------------
+scrape_configs:
+  # -------------------------------------------------------------------------
+  # Job: api-gateway
+  # Description:
+  #   Collects HTTP metrics exposed by the API Gateway, which routes and
+  #   validates requests to the backend services. Observing these metrics
+  #   is crucial for monitoring the front-door performance and availability.
+  # -------------------------------------------------------------------------
+  - job_name: "api-gateway"
+    metrics_path: "/metrics"
+    scheme: "http"
+    static_configs:
+      - targets:
+          - "api-gateway:9090"
+        labels:
+          service: "api-gateway"
+          tier: "frontend"
+
+  # -------------------------------------------------------------------------
+  # Job: auth-service
+  # Description:
+  #   Responsible for user authentication and authorization. This job
+  #   monitors login rates, token validation counts, and any unexpected
+  #   spikes in authentication failures or latencies.
+  # -------------------------------------------------------------------------
+  - job_name: "auth-service"
+    metrics_path: "/metrics"
+    scheme: "http"
+    static_configs:
+      - targets:
+          - "auth-service:9090"
+        labels:
+          service: "auth-service"
+          tier: "backend"
+
+  # -------------------------------------------------------------------------
+  # Job: booking-service
+  # Description:
+  #   Manages walk reservations, scheduling, and business logic for creating
+  #   and updating dog walking appointments. Metrics include booking throughput,
+  #   scheduling latencies, and success vs. failure rates.
+  # -------------------------------------------------------------------------
+  - job_name: "booking-service"
+    metrics_path: "/metrics"
+    scheme: "http"
+    static_configs:
+      - targets:
+          - "booking-service:9090"
+        labels:
+          service: "booking-service"
+          tier: "backend"
+
+  # -------------------------------------------------------------------------
+  # Job: payment-service
+  # Description:
+  #   Handles payment transactions, billing, and integration with external
+  #   payment gateways. These metrics help track transaction success rates,
+  #   latency of payment checks, and error scenarios in financial operations.
+  # -------------------------------------------------------------------------
+  - job_name: "payment-service"
+    metrics_path: "/metrics"
+    scheme: "http"
+    static_configs:
+      - targets:
+          - "payment-service:9090"
+        labels:
+          service: "payment-service"
+          tier: "backend"
+
+  # -------------------------------------------------------------------------
+  # Job: tracking-service
+  # Description:
+  #   Provides real-time GPS tracking for active dog walks, leveraging
+  #   concurrency-friendly microservice design to update location data.
+  #   Collecting these metrics helps detect latency issues in location
+  #   updates or message queue backlogs.
+  # -------------------------------------------------------------------------
+  - job_name: "tracking-service"
+    metrics_path: "/metrics"
+    scheme: "http"
+    static_configs:
+      - targets:
+          - "tracking-service:9090"
+        labels:
+          service: "tracking-service"
+          tier: "backend"
+
+  # -------------------------------------------------------------------------
+  # Job: notification-service
+  # Description:
+  #   Sends push notifications, alerts, or updates to dog owners and walkers.
+  #   These metrics track delivery rates, queuing delays, and any errors
+  #   in external notification gateways.
+  # -------------------------------------------------------------------------
+  - job_name: "notification-service"
+    metrics_path: "/metrics"
+    scheme: "http"
+    static_configs:
+      - targets:
+          - "notification-service:9090"
+        labels:
+          service: "notification-service"
+          tier: "backend"
+
+# ---------------------------------------------------------------------------
+# alerting:
+#   Defines alert manager instances that handle alert routing, deduplication,
+#   silencing, and escalation. This integrates with the rules in alerts.yml
+#   to deliver real-time notifications when services violate defined SLOs.
+# ---------------------------------------------------------------------------
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "alertmanager:9093"
+      scheme: "http"
+      timeout: "10s"
+      api_version: "v2"
