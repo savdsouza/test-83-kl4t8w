@@ -1,0 +1,148 @@
+# -----------------------------------------------------------------------------
+# Prometheus Recording Rules for the Dog Walking Application
+# -----------------------------------------------------------------------------
+# Using Prometheus v2.45.0
+#
+# These rules implement comprehensive monitoring in accordance with:
+#  - Section 2.4.1 (System Monitoring): Provides pre-computed metrics for alerts
+#    and overall health monitoring of application services, ensuring real-time
+#    insight into the system performance and reliability.
+#  - Section 1.2 (Success Criteria): Monitors core KPIs such as system uptime,
+#    user satisfaction, and other essential business metrics, aligning with the
+#    99.9% availability target.
+#  - Section 2.5.1 (Infrastructure Requirements): Tracks high availability in
+#    multi-AZ deployments, integrating with auto-scaling groups and achieving
+#    robust service health checks.
+#
+# Each rule group includes specific recording rules that serve different
+# monitoring dimensions:
+#  - service_availability: Captures availability, uptime calculations, and
+#    high-level health scores.
+#  - service_performance: Provides latency, error ratios, and user experience
+#    APDEX scoring.
+#  - business_metrics: Reflects important operational and financial KPIs,
+#    plus user satisfaction indices.
+#  - resource_utilization: Monitors resource usage (CPU, memory, network) for
+#    capacity planning and proactive scaling.
+# -----------------------------------------------------------------------------
+
+groups:
+  # ---------------------------------------------------------------------------
+  # AVAILABILITY & HEALTH GROUP
+  # ---------------------------------------------------------------------------
+  - name: "service_availability"
+    interval: "30s"
+    rules:
+      # Record the average 'up' metric, partitioned by job, instance, and
+      # availability zone, to measure real-time service availability.
+      - record: "service:up:ratio"
+        expr: "avg(up) by (job, instance, availability_zone)"
+        labels:
+          severity: "critical"
+          team: "platform"
+
+      # Maintain a 24-hour rolling average of the service's availability ratio,
+      # focusing on long-term SLO tracking.
+      - record: "service:availability:ratio"
+        expr: "avg_over_time(service:up:ratio[24h])"
+        labels:
+          severity: "critical"
+          slo: "availability"
+
+      # Calculate an overall health score by averaging probe successes for each
+      # service and region, aiding in high-level, geographically-aware health
+      # checks.
+      - record: "service:health:score"
+        expr: "avg(probe_success) by (service, region)"
+        labels:
+          severity: "critical"
+          type: "health"
+
+  # ---------------------------------------------------------------------------
+  # PERFORMANCE & LATENCY GROUP
+  # ---------------------------------------------------------------------------
+  - name: "service_performance"
+    interval: "1m"
+    rules:
+      # Histogram-based 95th percentile latency for HTTP requests, broken down by
+      # le (bucket), job, and endpoint. Offers insight into tail latencies.
+      - record: "service:request_duration:p95"
+        expr: "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job, endpoint))"
+        labels:
+          severity: "warning"
+          slo: "latency"
+
+      # Ratio of 5xx errors divided by total requests over 5 minutes, per job and
+      # service. Highlights error-heavy endpoints for immediate investigation.
+      - record: "service:error_rate:ratio"
+        expr: "sum(rate(http_requests_total{status=~\"5.*\"}[5m])) by (job, service) / sum(rate(http_requests_total[5m])) by (job, service)"
+        labels:
+          severity: "warning"
+          slo: "errors"
+
+      # APDEX-like score approximates user satisfaction based on request duration
+      # buckets. Combines 'satisfied' (<=0.5s) and 'tolerating' (<=2s) events.
+      - record: "service:apdex:score"
+        expr: "(sum(rate(http_request_duration_seconds_bucket{le=\"0.5\"}[5m])) + sum(rate(http_request_duration_seconds_bucket{le=\"2\"}[5m]))) / 2 / sum(rate(http_request_duration_seconds_count[5m]))"
+        labels:
+          type: "satisfaction"
+
+  # ---------------------------------------------------------------------------
+  # BUSINESS & KEY PERFORMANCE INDICATORS GROUP
+  # ---------------------------------------------------------------------------
+  - name: "business_metrics"
+    interval: "1m"
+    rules:
+      # Current count of active dog walks, summing across region and service,
+      # reflecting platform operational load.
+      - record: "business:active_walks:total"
+        expr: "sum(active_walks_total) by (region, service)"
+        labels:
+          type: "kpi"
+          business_unit: "operations"
+
+      # Success ratio of payment transactions over a rolling 5-minute window;
+      # crucial for financial health and user satisfaction.
+      - record: "business:payment_success:ratio"
+        expr: "sum(rate(payment_transactions_total{status=\"success\"}[5m])) / sum(rate(payment_transactions_total[5m]))"
+        labels:
+          type: "kpi"
+          business_unit: "finance"
+
+      # Average walk rating, aggregated by region and service. Key measure of
+      # user satisfaction and walker performance.
+      - record: "business:user_satisfaction:score"
+        expr: "avg(walk_rating_total) by (region, service)"
+        labels:
+          type: "kpi"
+          business_unit: "customer"
+
+  # ---------------------------------------------------------------------------
+  # RESOURCE UTILIZATION GROUP
+  # ---------------------------------------------------------------------------
+  - name: "resource_utilization"
+    interval: "2m"
+    rules:
+      # Memory usage ratio for containers, comparing the current usage to the
+      # declared memory limit, partitioned by service and instance.
+      - record: "resource:memory:usage"
+        expr: "sum(container_memory_usage_bytes) by (service, instance) / sum(container_spec_memory_limit_bytes) by (service, instance)"
+        labels:
+          severity: "warning"
+          type: "resource"
+
+      # CPU usage computed as a rate over 5 minutes, aggregated by service and
+      # instance, providing insight into scaling needs.
+      - record: "resource:cpu:usage"
+        expr: "sum(rate(container_cpu_usage_seconds_total[5m])) by (service, instance)"
+        labels:
+          severity: "warning"
+          type: "resource"
+
+      # Network transmit saturation in MB/s over 5 minutes, grouped by instance,
+      # used to detect potential network bottlenecks.
+      - record: "resource:network:saturation"
+        expr: "sum(rate(container_network_transmit_bytes_total[5m])) by (instance) / 1024 / 1024"
+        labels:
+          severity: "warning"
+          type: "resource"
