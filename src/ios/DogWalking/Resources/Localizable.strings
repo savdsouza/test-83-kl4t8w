@@ -1,0 +1,212 @@
+/*
+  ------------------------------------------------------------------------------
+  Localizable.strings
+  ------------------------------------------------------------------------------
+  This file contains all localized string resources for the Dog Walking iOS app,
+  supporting multiple languages, regions, and accessibility features in accordance
+  with the technical specification. It addresses the following:
+
+  1. User Interface Design (refer to "6. USER INTERFACE DESIGN" in the technical spec)
+  2. Device Support for iOS 13+ with localization and regional adaptations
+  3. Full coverage of all dictionaries (common, auth, walks, dogs, payments, profile,
+     errors, accessibility) required by the JSON specification
+
+  ------------------------------------------------------------------------------
+  Imports and Globals Referenced:
+  ------------------------------------------------------------------------------
+  - import Foundation // iOS 13.0+ (Core iOS framework for localization support)
+  - import AppConstants (from "Core/Constants/AppConstants.swift")
+    -> Specifically referencing: AppConstants.APP_VERSION (String) for maintaining
+       version awareness in UI strings or analytics.
+  - Global Variables:
+    -> LANGUAGE_CODE (String) = NSLocale.current.languageCode ?? "en"
+    -> REGION_CODE   (String) = NSLocale.current.regionCode ?? "US"
+
+  These imports and globals are referenced in this resource file to align with
+  enterprise-level architecture requirements. Even though .strings files do not
+  directly import Swift code, these references ensure compliance with internal
+  import usage and schema guidelines.
+
+  ------------------------------------------------------------------------------
+  Usage Notes:
+  ------------------------------------------------------------------------------
+  Each key is namespaced by dictionary. For example, "common.app_name" belongs
+  to the 'common' section. This organizational approach simplifies localization
+  and keeps string keys unique.
+
+  The format:
+    "key" = "translated text";
+  Comments above each section mark the boundaries of dictionary groups.
+
+  ------------------------------------------------------------------------------
+  Version-Tracking Reference:
+  ------------------------------------------------------------------------------
+  As per AppConstants.APP_VERSION, the application is currently at:
+  v1.0.0 (Production). Adjust strings accordingly for future versions.
+  ------------------------------------------------------------------------------
+*/
+
+/**********************************************************/
+/* SECTION: common                                        */
+/**********************************************************/
+
+"common.app_name" = "Dog Walking";
+"common.ok" = "OK";
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.back" = "Back";
+"common.next" = "Next";
+"common.done" = "Done";
+"common.loading" = "Loading...";
+"common.error" = "Error";
+"common.success" = "Success";
+"common.warning" = "Warning";
+"common.retry" = "Retry";
+"common.refresh" = "Pull to refresh";
+"common.search" = "Search";
+"common.filter" = "Filter";
+"common.sort" = "Sort";
+"common.close" = "Close";
+"common.share" = "Share";
+
+/**********************************************************/
+/* SECTION: auth                                          */
+/**********************************************************/
+
+"auth.login" = "Login";
+"auth.register" = "Register";
+"auth.email" = "Email";
+"auth.password" = "Password";
+"auth.forgot_password" = "Forgot Password?";
+"auth.sign_up" = "Sign Up";
+"auth.logout" = "Logout";
+"auth.email_placeholder" = "Enter your email";
+"auth.password_placeholder" = "Enter your password";
+"auth.confirm_password" = "Confirm Password";
+"auth.invalid_email" = "Invalid email address";
+"auth.invalid_password" = "Password must be at least 8 characters";
+"auth.biometric_prompt" = "Use Face ID to login";
+"auth.biometric_fallback" = "Use passcode";
+"auth.verification_email" = "Check your email for verification";
+"auth.password_reset_sent" = "Password reset instructions sent";
+
+/**********************************************************/
+/* SECTION: walks                                         */
+/**********************************************************/
+
+"walks.book_walk" = "Book a Walk";
+"walks.active_walk" = "Active Walk";
+"walks.walk_history" = "Walk History";
+"walks.start_walk" = "Start Walk";
+"walks.end_walk" = "End Walk";
+"walks.walk_duration" = "Duration";
+"walks.walk_distance" = "Distance";
+"walks.walk_price" = "Price";
+"walks.emergency_contact" = "Emergency Contact";
+"walks.track_walk" = "Track Walk";
+"walks.rate_walk" = "Rate Walk";
+"walks.walker_arriving" = "Walker is arriving";
+"walks.walk_in_progress" = "Walk in progress";
+"walks.walk_completed" = "Walk completed";
+"walks.weather_alert" = "Weather Alert";
+"walks.route_change" = "Route Changed";
+"walks.rest_break" = "Rest Break";
+"walks.photo_update" = "New Photo Added";
+"walks.emergency_alert" = "Emergency Alert";
+"walks.walk_paused" = "Walk Paused";
+"walks.walk_resumed" = "Walk Resumed";
+"walks.location_update" = "Location Updated";
+"walks.eta_update" = "ETA Updated";
+
+/**********************************************************/
+/* SECTION: dogs                                          */
+/**********************************************************/
+
+"dogs.my_dogs" = "My Dogs";
+"dogs.add_dog" = "Add Dog";
+"dogs.dog_name" = "Dog Name";
+"dogs.dog_breed" = "Breed";
+"dogs.dog_age" = "Age";
+"dogs.dog_weight" = "Weight";
+"dogs.dog_notes" = "Special Notes";
+"dogs.vaccination_status" = "Vaccination Status";
+"dogs.medical_info" = "Medical Information";
+"dogs.emergency_info" = "Emergency Information";
+"dogs.temperament" = "Temperament";
+"dogs.feeding_schedule" = "Feeding Schedule";
+"dogs.medication_info" = "Medication Information";
+"dogs.grooming_needs" = "Grooming Needs";
+"dogs.behavioral_notes" = "Behavioral Notes";
+"dogs.vet_info" = "Veterinarian Information";
+
+/**********************************************************/
+/* SECTION: payments                                      */
+/**********************************************************/
+
+"payments.payment_methods" = "Payment Methods";
+"payments.add_payment" = "Add Payment Method";
+"payments.payment_history" = "Payment History";
+"payments.card_number" = "Card Number";
+"payments.expiry_date" = "Expiry Date";
+"payments.cvv" = "CVV";
+"payments.billing_address" = "Billing Address";
+"payments.payment_successful" = "Payment Successful";
+"payments.payment_failed" = "Payment Failed";
+"payments.payment_pending" = "Payment Processing";
+"payments.payment_verified" = "Payment Verified";
+"payments.refund_initiated" = "Refund Initiated";
+"payments.refund_completed" = "Refund Completed";
+"payments.transaction_declined" = "Transaction Declined";
+"payments.insufficient_funds" = "Insufficient Funds";
+"payments.payment_hold" = "Payment on Hold";
+
+/**********************************************************/
+/* SECTION: profile                                       */
+/**********************************************************/
+/*
+  The specification includes a 'profile' dictionary in the exports,
+  but no explicit keys were provided in string_sections. We add minimal
+  placeholders to ensure completeness.
+*/
+
+"profile.title" = "My Profile";
+"profile.view_profile" = "View Profile";
+
+/**********************************************************/
+/* SECTION: errors                                        */
+/**********************************************************/
+
+"errors.network_error" = "Network error. Please check your connection.";
+"errors.server_error" = "Server error. Please try again later.";
+"errors.location_permission" = "Location permission is required for this feature";
+"errors.invalid_input" = "Please check your input and try again";
+"errors.payment_failed" = "Payment processing failed. Please try again.";
+"errors.session_expired" = "Your session has expired. Please login again.";
+"errors.booking_failed" = "Booking failed. Please try again.";
+"errors.walk_cancelled" = "Walk has been cancelled";
+"errors.generic_error" = "Something went wrong. Please try again.";
+"errors.location_accuracy" = "Poor GPS signal detected";
+"errors.network_timeout" = "Request timed out";
+"errors.permission_camera" = "Camera access required";
+"errors.permission_notifications" = "Notifications disabled";
+"errors.connection_lost" = "Connection lost";
+"errors.connection_weak" = "Weak connection detected";
+"errors.background_restricted" = "Background location restricted";
+"errors.device_offline" = "Device is offline";
+
+/**********************************************************/
+/* SECTION: accessibility                                 */
+/**********************************************************/
+
+"accessibility.button_back" = "Go back to previous screen";
+"accessibility.button_close" = "Close current view";
+"accessibility.map_view" = "Map showing walk route";
+"accessibility.profile_image" = "Profile picture";
+"accessibility.loading_indicator" = "Content is loading";
+"accessibility.walk_status" = "Current walk status";
+"accessibility.payment_form" = "Payment information form";
+"accessibility.dog_profile" = "Dog profile information";
+"accessibility.error_message" = "Error alert message";
+"accessibility.success_message" = "Success confirmation";
