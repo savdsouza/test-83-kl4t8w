@@ -1,0 +1,112 @@
+PROPRIETARY LICENSE AGREEMENT
+Version 1.0.0
+Last Updated: 2024
+
+THIS PROPRIETARY LICENSE AGREEMENT (HEREINAFTER REFERRED TO AS THE "LICENSE") GOVERNS THE USE, DISTRIBUTION, AND MODIFICATION OF THE DOG WALKING APPLICATION SOFTWARE PLATFORM (HEREINAFTER REFERRED TO AS THE "SOFTWARE"). THIS LICENSE IS A LEGALLY BINDING AGREEMENT BETWEEN THE END USER (INCLUDING BUT NOT LIMITED TO DOG OWNERS, DOG WALKERS, PLATFORM OPERATORS, AND SERVICE PROVIDERS), AND THE COPYRIGHT HOLDER AND/OR LICENSOR ("LICENSOR"). BY INSTALLING, ACCESSING, OR USING THIS SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTAND, AND AGREE TO BE BOUND BY ALL THE TERMS AND CONDITIONS OF THIS LICENSE. IF YOU DO NOT AGREE TO ALL THE TERMS AND CONDITIONS, YOU MUST NOT INSTALL, ACCESS, OR USE THIS SOFTWARE.
+
+--------------------------------------------------------------------------------
+1. LICENSE OVERVIEW
+--------------------------------------------------------------------------------
+1.1 License Type. This SOFTWARE is licensed on a proprietary basis. All rights not expressly granted herein are reserved by the LICENSOR.  
+1.2 Version. This LICENSE is Version 1.0.0, updated in 2024. Any revisions or modifications to this LICENSE will be communicated in accordance with Section 10.3 (Updates).  
+1.3 Review and Approval. This LICENSE has a "Required" legal review status, indicating ongoing review for final compliance.  
+
+--------------------------------------------------------------------------------
+2. KEY TERMS AND DEFINITIONS
+--------------------------------------------------------------------------------
+2.1 "Dog Walking Application Software Platform" or "SOFTWARE": The platform or suite of applications, modules, and services providing real-time connection and scheduling services for dog owners and dog walkers, including but not limited to mobile applications, backend services, real-time tracking services, and any related documentation.  
+2.2 "Stakeholders": Any individuals or entities who interact with, use, operate, or integrate with the SOFTWARE, specifically including Dog Owners, Dog Walkers, Platform Operators, and Service Providers as referenced in the Technical Specifications.  
+2.3 "North America": The jurisdiction primarily covered by this LICENSE, requiring compliance with local, state, and federal laws where applicable.  
+2.4 "Compliance Requirements": A set of obligations that the LICENSOR and LICENSEE must meet, including Data Privacy, Financial Processing, Service Delivery, User Protection, and Platform Security.  
+2.5 "Related Documents": Terms of Service, Privacy Policy, and User Agreement that collectively govern the usage of the SOFTWARE and form an integral part of this LICENSE.
+
+--------------------------------------------------------------------------------
+3. SCOPE OF LICENSE
+--------------------------------------------------------------------------------
+3.1 Software Usage Rights  
+    (a) Grant of License: Subject to compliance with all terms and conditions herein, LICENSOR grants you a non-exclusive, non-transferable, revocable license to access and use the SOFTWARE for legitimate dog walking service bookings, scheduling, tracking, and related platform features, solely within the scope of the services described in the Technical Specifications.  
+    (b) Permitted Use: You may access and use the SOFTWARE to manage profiles, schedule dog walking sessions, process payments, track walk sessions, and conduct any other activities explicitly supported by the SOFTWARE, subject to all applicable laws and regulations.  
+    (c) Usage Limitations: Use of the SOFTWARE is restricted to authorized accounts and must not exceed the usage parameters set forth in any applicable user documentation or service agreements.
+
+--------------------------------------------------------------------------------
+4. INTELLECTUAL PROPERTY PROTECTION
+--------------------------------------------------------------------------------
+4.1 Ownership. The LICENSOR (and/or its affiliates and licensors) retains all rights, title, and interest in and to the SOFTWARE, including all intellectual property rights, trademarks, service marks, and logos. No title to or ownership of any proprietary rights related to the SOFTWARE is transferred to you pursuant to this LICENSE.  
+4.2 Protection and Notices. You shall not remove, alter, or obscure any copyright notices, trademark notices, or any other proprietary rights notices on or in the SOFTWARE.  
+4.3 Feedback and Contributions. Any suggestions, ideas, or feedback you provide shall be deemed non-confidential and become the sole property of the LICENSOR, who may use such information for any lawful purpose without obligation.
+
+--------------------------------------------------------------------------------
+5. LIABILITY LIMITATIONS
+--------------------------------------------------------------------------------
+5.1 Limitation of Liability. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR, ITS AFFILIATES, AND ITS SUPPLIERS SHALL NOT BE LIABLE FOR ANY INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF OR RELATED TO THIS LICENSE OR THE USE OF THE SOFTWARE, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, LOSS OF DATA, ERROR OR INTERRUPTION OF USE, OR COST OF PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES.  
+5.2 Maximum Aggregate Liability. IN NO EVENT SHALL THE LICENSOR’S TOTAL LIABILITY EXCEED THE AMOUNT PAID BY YOU (IF ANY) FOR THE LICENSE OR USE OF THE SOFTWARE DURING THE SIX (6) MONTHS PRECEDING THE DATE OF THE CLAIM.  
+5.3 Allocation of Risk. The limitations of liability set forth in this Section 5 allocate the risks under this LICENSE between the parties and form an essential basis of the bargain between you and the LICENSOR.
+
+--------------------------------------------------------------------------------
+6. WARRANTY DISCLAIMERS
+--------------------------------------------------------------------------------
+6.1 General Disclaimer. EXCEPT AS REQUIRED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF PERFORMANCE, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.  
+6.2 High-Risk Environment. The SOFTWARE is not designed or intended for use in potentially hazardous or mission-critical environments where errors, delays, or disruptions could lead to personal injury, property damage, or severe financial losses.  
+6.3 Third-Party Services. Any third-party services integrated within the SOFTWARE, including maps, payment gateways, or notification services, are provided on an "AS IS" basis. LICENSOR does not warrant or assume any liability for any third-party service’s availability, performance, or terms of use.
+
+--------------------------------------------------------------------------------
+7. DATA HANDLING AND PRIVACY
+--------------------------------------------------------------------------------
+7.1 Data Privacy Compliance. The SOFTWARE processes personal data of Dog Owners, Dog Walkers, and other Stakeholders. You agree to comply with all applicable privacy laws and regulations in your jurisdiction, including any relevant Data Privacy compliance requirements.  
+7.2 Sensitive Data. Certain data (e.g., user credentials, payment details, or geolocation information) is classified as sensitive and is subject to additional safeguards under this LICENSE. LICENSOR employs AES-256 encryption and ensures TLS 1.3 for in-transit data security.  
+7.3 Retention Policies. LICENSOR shall maintain your data in accordance with published data retention schedules, ensuring that personally identifiable information is securely archived or anonymized after specified durations. Refer to the Related Documents for further detail on data storage procedures.  
+7.4 Incident Response. In the event of a data breach or security incident involving personal data, LICENSOR shall follow the incident response protocols outlined in the Technical Specifications and relevant privacy legislation.
+
+--------------------------------------------------------------------------------
+8. TERMS OF SERVICE INTEGRATION
+--------------------------------------------------------------------------------
+8.1 Relationship to Terms of Service. This LICENSE forms a part of and must be interpreted in harmony with the Terms of Service, Privacy Policy, and User Agreement. In the event of any conflict between this LICENSE and the Related Documents, the provisions that confer greater protection to LICENSOR’s rights or stricter obligations on the end user shall prevail, unless otherwise mandated by applicable law.  
+8.2 Service Delivery. LICENSOR provides the SOFTWARE as a mechanism to facilitate real-time matching, booking, and management of dog walking services. All service details, availability, and performance commitments are governed by the Terms of Service.
+
+--------------------------------------------------------------------------------
+9. PAYMENT PROCESSING TERMS
+--------------------------------------------------------------------------------
+9.1 Financial Transactions. The SOFTWARE integrates with third-party payment gateways for processing financial transactions. You acknowledge that all payment transactions are subject to the payment provider’s terms and conditions.  
+9.2 Fees and Charges. LICENSOR reserves the right to charge fees for the use of certain features within the SOFTWARE. Such fees and charges will be disclosed in the Terms of Service, Privacy Policy, or separate pricing documentation.  
+9.3 Refunds and Disputes. All refunds, disputes, or related customer service issues for payment transactions are outlined in the Terms of Service. LICENSOR is not responsible for banking or extra fees imposed by the payment provider.
+
+--------------------------------------------------------------------------------
+10. RESTRICTIONS AND COMPLIANCE
+--------------------------------------------------------------------------------
+10.1 Modification Restrictions. You shall not alter, modify, adapt, translate, reverse-engineer, decompile, or disassemble the SOFTWARE, nor create derivative works from it, unless expressly permitted by the LICENSOR.  
+10.2 Distribution Limitations. You shall not sublicense, resell, or otherwise distribute the SOFTWARE to any third party in any manner not approved by the LICENSOR. Any unauthorized redistribution is grounds for immediate termination of this LICENSE.  
+10.3 Updates. LICENSOR reserves the right to update, enhance, or modify the SOFTWARE or this LICENSE at its sole discretion. Continued use of the SOFTWARE after any update constitutes acceptance of the updated LICENSE.  
+10.4 Compliance Requirements. You agree to comply with all regulations, obligations, and best practices pertaining to Data Privacy, Financial Processing, Service Delivery, User Protection, and Platform Security, as set forth in this LICENSE, the Technical Specifications, and the Related Documents.
+
+--------------------------------------------------------------------------------
+11. TERMINATION
+--------------------------------------------------------------------------------
+11.1 Termination by LICENSOR. LICENSOR may terminate this LICENSE immediately and without notice if you fail to comply with any term or condition of this LICENSE, engage in fraudulent or illegal activities, or breach any Related Documents (Terms of Service, Privacy Policy, User Agreement).  
+11.2 Effect of Termination. Upon termination, you must immediately cease using the SOFTWARE, destroy all copies, and remove all installations or references to the SOFTWARE. Termination shall not relieve you of any obligations arising prior to the termination date, including accrued liabilities.  
+11.3 Survival. Sections relating to Liability Limitations, Warranty Disclaimers, Intellectual Property Protection, and any other provisions that by their nature extend beyond termination shall survive the termination of this LICENSE.
+
+--------------------------------------------------------------------------------
+12. GOVERNING LAW AND JURISDICTION
+--------------------------------------------------------------------------------
+12.1 Governing Law. This LICENSE shall be governed by and construed in accordance with the laws applicable in North America.  
+12.2 Jurisdiction. You agree to submit to the personal and exclusive jurisdiction of the courts located in the region specified by LICENSOR, and you waive any objections to such jurisdiction, including but not limited to forum non conveniens.
+
+--------------------------------------------------------------------------------
+13. GENERAL PROVISIONS
+--------------------------------------------------------------------------------
+13.1 Entire Agreement. This LICENSE, along with the Related Documents, constitutes the entire agreement between you and the LICENSOR concerning the SOFTWARE and supersedes any prior or contemporaneous agreements.  
+13.2 No Waiver. The failure of LICENSOR to enforce any right or provision of this LICENSE shall not constitute a waiver of such right or provision.  
+13.3 Severability. If any portion of this LICENSE is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.  
+13.4 Amendments. Any amendments or modifications to this LICENSE must be made in writing and signed by an authorized representative of the LICENSOR.
+
+--------------------------------------------------------------------------------
+14. CONTACT INFORMATION
+--------------------------------------------------------------------------------
+If you have any questions concerning this LICENSE, or if you desire to contact LICENSOR for any reason, please refer to the documentation associated with the SOFTWARE or the Related Documents (Terms of Service, Privacy Policy, User Agreement) for contact details.
+
+--------------------------------------------------------------------------------
+ACCEPTANCE
+--------------------------------------------------------------------------------
+BY INSTALLING OR USING THE DOG WALKING APPLICATION SOFTWARE PLATFORM, YOU ACKNOWLEDGE THAT YOU HAVE READ AND UNDERSTAND THIS LICENSE, AND YOU AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.
+
+END OF LICENSE
