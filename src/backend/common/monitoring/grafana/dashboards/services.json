@@ -1,0 +1,396 @@
+{
+  "grafanaVersion": "9.5.0",
+  "dashboard": {
+    "id": "services-overview-dashboard",
+    "uid": "services_overview",
+    "title": "Services Overview",
+    "tags": [
+      "services",
+      "monitoring",
+      "overview",
+      "dog-walking"
+    ],
+    "timezone": "browser",
+    "refresh": "30s",
+    "schemaVersion": 36,
+    "version": 1,
+    "editable": true,
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Health Overview",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "avg_over_time(up{app=\"$service_name\"}[5m])",
+            "format": "time_series",
+            "intervalFactor": 2,
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 0.5
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true,
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "horizontal"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Service Error Rate",
+        "type": "timeseries",
+        "datasource": "Prometheus",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "(sum(rate(http_requests_total{app=\"$service_name\",status_code=~\"5..\"}[1m])) / sum(rate(http_requests_total{app=\"$service_name\"}[1m]))) * 100",
+            "intervalFactor": 2,
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 2
+                },
+                {
+                  "color": "red",
+                  "value": 5
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "show": true
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "CPU Usage",
+        "type": "timeseries",
+        "datasource": "Prometheus",
+        "gridPos": {
+          "x": 0,
+          "y": 6,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{app=\"$service_name\"}[1m])",
+            "intervalFactor": 2,
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 70
+                },
+                {
+                  "color": "red",
+                  "value": 90
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "show": true
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Memory Usage",
+        "type": "timeseries",
+        "datasource": "Prometheus",
+        "gridPos": {
+          "x": 12,
+          "y": 6,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{app=\"$service_name\"}",
+            "intervalFactor": 2,
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 500000000
+                },
+                {
+                  "color": "red",
+                  "value": 800000000
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "show": true
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "service_name",
+          "type": "query",
+          "label": "Service",
+          "datasource": "Prometheus",
+          "query": "label_values(http_requests_total, app)",
+          "regex": "",
+          "includeAll": false,
+          "multi": false,
+          "sort": 0,
+          "refresh": 1
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "type": "dashboard",
+          "name": "Annotations & Alerts",
+          "enabled": true
+        }
+      ]
+    }
+  },
+  "exports": {
+    "name": "dashboard",
+    "type": "object",
+    "members_exposed": [
+      {
+        "member_name": "panels",
+        "member_type": "array",
+        "export_type": "named"
+      },
+      {
+        "member_name": "variables",
+        "member_type": "object",
+        "export_type": "named"
+      },
+      {
+        "member_name": "alerts",
+        "member_type": "array",
+        "export_type": "named"
+      }
+    ],
+    "purpose": "Export enhanced dashboard configuration with all components"
+  },
+  "alerts": [
+    {
+      "alertName": "High Error Rate - $service_name",
+      "expr": "(sum(rate(http_requests_total{app=\"$service_name\",status_code=~\"5..\"}[1m])) / sum(rate(http_requests_total{app=\"$service_name\"}[1m]))) * 100 > 2",
+      "severity": "warning",
+      "for": "5m",
+      "labels": {
+        "service": "$service_name",
+        "type": "error-rate"
+      },
+      "annotations": {
+        "summary": "High HTTP 5xx error rate in $service_name",
+        "description": "Error rate is above 2% for more than 5 minutes"
+      }
+    }
+  ],
+  "functions": {
+    "calculateServiceHealth": {
+      "description": "Enhanced service health calculation with multiple metrics",
+      "parameters": [
+        {
+          "string": "service_name"
+        },
+        {
+          "string": "interval"
+        },
+        {
+          "object": "thresholds"
+        }
+      ],
+      "returns": {
+        "object": "Health metrics including score, components, and trends"
+      },
+      "steps": [
+        "Query service uptime from Prometheus",
+        "Calculate error rates by status code category",
+        "Measure response times with percentile breakdowns",
+        "Track resource utilization metrics",
+        "Apply weighted scoring algorithm",
+        "Generate trend analysis",
+        "Return comprehensive health metrics"
+      ]
+    },
+    "calculateResourceUtilization": {
+      "description": "Detailed resource utilization calculation per service",
+      "parameters": [
+        {
+          "string": "service_name"
+        },
+        {
+          "string": "resource_type"
+        },
+        {
+          "object": "thresholds"
+        }
+      ],
+      "returns": {
+        "object": "Detailed resource metrics with trends and predictions"
+      },
+      "steps": [
+        "Query detailed resource metrics from Prometheus",
+        "Calculate usage percentages and trends",
+        "Generate resource saturation metrics",
+        "Analyze resource efficiency",
+        "Predict future utilization",
+        "Return comprehensive resource metrics"
+      ]
+    }
+  },
+  "classes": {
+    "ServiceMetricsPanel": {
+      "description": "Enhanced dashboard panel for service-specific metrics",
+      "properties": [
+        {
+          "string": "title"
+        },
+        {
+          "string": "service_name"
+        },
+        {
+          "object": "metrics"
+        },
+        {
+          "object": "thresholds"
+        },
+        {
+          "object": "alerts"
+        },
+        {
+          "array": "visualizations"
+        }
+      ],
+      "constructor": {
+        "description": "Creates an enhanced service metrics panel",
+        "parameters": [
+          {
+            "object": "config"
+          },
+          {
+            "object": "thresholds"
+          },
+          {
+            "array": "alertRules"
+          }
+        ],
+        "steps": [
+          "Initialize panel with advanced properties",
+          "Set up comprehensive service metrics",
+          "Configure multiple visualization options",
+          "Set up granular alerts and thresholds",
+          "Initialize trend analysis",
+          "Configure interaction handlers"
+        ]
+      }
+    }
+  }
+}
