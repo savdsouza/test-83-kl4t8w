@@ -1,0 +1,273 @@
+{
+  // ------------------------------------------------------
+  // Inherit base configuration from a parent TS config.
+  // This allows sharing common settings across projects.
+  // ------------------------------------------------------
+  "extends": "../tsconfig.json",
+
+  // ------------------------------------------------------
+  // Compiler-specific configuration options controlling
+  // how TypeScript processes, checks, and emits code.
+  // ------------------------------------------------------
+  "compilerOptions": {
+    // ----------------------------------------------------
+    // Set the ECMAScript version target for emitted JS.
+    // "ES2022" includes modern syntax and features.
+    // ----------------------------------------------------
+    "target": "ES2022",
+
+    // ----------------------------------------------------
+    // Specify the module code generation style.
+    // "CommonJS" is typical for Node.js environments.
+    // ----------------------------------------------------
+    "module": "CommonJS",
+
+    // ----------------------------------------------------
+    // Define the directory for all compiled output files.
+    // Helps keep build artifacts separate from source.
+    // ----------------------------------------------------
+    "outDir": "./dist",
+
+    // ----------------------------------------------------
+    // Specify the root path for TypeScript input files.
+    // Useful for controlling how paths are resolved.
+    // ----------------------------------------------------
+    "rootDir": "./src",
+
+    // ----------------------------------------------------
+    // Establish a base path for non-absolute imports.
+    // Paired with "paths" for custom import aliases.
+    // ----------------------------------------------------
+    "baseUrl": "./",
+
+    // ----------------------------------------------------
+    // Map import aliases to local paths. This helps
+    // developers use shortcuts like "@/api" for clarity.
+    // ----------------------------------------------------
+    "paths": {
+      "@/*": ["src/*"],
+      "@api/*": ["src/api/*"],
+      "@middleware/*": ["src/middleware/*"],
+      "@security/*": ["src/security/*"],
+      "@validation/*": ["src/validation/*"]
+    },
+
+    // ----------------------------------------------------
+    // Mark this config as part of a composite build.
+    // Allows faster, incremental builds in large projects.
+    // ----------------------------------------------------
+    "composite": true,
+
+    // ----------------------------------------------------
+    // Enable declaration (.d.ts) file generation to
+    // support type definitions for consumers.
+    // ----------------------------------------------------
+    "declaration": true,
+
+    // ----------------------------------------------------
+    // Generate .d.ts.map files to map back declarations
+    // to original source for debugging and editor tooling.
+    // ----------------------------------------------------
+    "declarationMap": true,
+
+    // ----------------------------------------------------
+    // Produce .map files for .js output, enabling
+    // in-browser or runtime debugging of original TS.
+    // ----------------------------------------------------
+    "sourceMap": true,
+
+    // ----------------------------------------------------
+    // Enable all strict type-checking options:
+    // noImplicitAny, strictNullChecks, etc.
+    // ----------------------------------------------------
+    "strict": true,
+
+    // ----------------------------------------------------
+    // Disallow the 'any' type unless explicitly defined.
+    // Helps maintain strong typing and reduce errors.
+    // ----------------------------------------------------
+    "noImplicitAny": true,
+
+    // ----------------------------------------------------
+    // Ensure that 'null' and 'undefined' are recognized
+    // as distinct types to avoid runtime exceptions.
+    // ----------------------------------------------------
+    "strictNullChecks": true,
+
+    // ----------------------------------------------------
+    // Prevent assigning functions of the wrong parameter
+    // or return types in certain type signature checks.
+    // ----------------------------------------------------
+    "strictFunctionTypes": true,
+
+    // ----------------------------------------------------
+    // Validate proper usage of bind, call, and apply
+    // to ensure method arguments are correctly typed.
+    // ----------------------------------------------------
+    "strictBindCallApply": true,
+
+    // ----------------------------------------------------
+    // Require that class instance fields are initialized
+    // in constructors or with a declared initializer.
+    // ----------------------------------------------------
+    "strictPropertyInitialization": true,
+
+    // ----------------------------------------------------
+    // Disallow 'this' of type 'any' to ensure correct
+    // context usage within methods.
+    // ----------------------------------------------------
+    "noImplicitThis": true,
+
+    // ----------------------------------------------------
+    // Enforce that catch clause variables have type
+    // 'unknown' instead of a broader 'any'.
+    // ----------------------------------------------------
+    "useUnknownInCatchVariables": true,
+
+    // ----------------------------------------------------
+    // Insert "use strict" directives in emitted JS,
+    // automatically enabling strict mode.
+    // ----------------------------------------------------
+    "alwaysStrict": true,
+
+    // ----------------------------------------------------
+    // Report errors if local variables are declared but
+    // never used in the code.
+    // ----------------------------------------------------
+    "noUnusedLocals": true,
+
+    // ----------------------------------------------------
+    // Report errors if function parameters are declared
+    // but never used inside the function body.
+    // ----------------------------------------------------
+    "noUnusedParameters": true,
+
+    // ----------------------------------------------------
+    // Interpret optional properties more strictly, so
+    // exact or partial usage is validated.
+    // ----------------------------------------------------
+    "exactOptionalPropertyTypes": true,
+
+    // ----------------------------------------------------
+    // Throw an error if code paths do not explicitly
+    // return a value in every function branch.
+    // ----------------------------------------------------
+    "noImplicitReturns": true,
+
+    // ----------------------------------------------------
+    // Disallow fallthrough in switch-case statements,
+    // preventing unintentional case transitions.
+    // ----------------------------------------------------
+    "noFallthroughCasesInSwitch": true,
+
+    // ----------------------------------------------------
+    // Add 'undefined' to index access results, forcing
+    // checks for missing array or object elements.
+    // ----------------------------------------------------
+    "noUncheckedIndexedAccess": true,
+
+    // ----------------------------------------------------
+    // Require the 'override' keyword for methods that
+    // override an inherited method from a base class.
+    // ----------------------------------------------------
+    "noImplicitOverride": true,
+
+    // ----------------------------------------------------
+    // Disallow unused labels in code, enforcing clarity
+    // and preventing hidden complexities.
+    // ----------------------------------------------------
+    "allowUnusedLabels": false,
+
+    // ----------------------------------------------------
+    // Disallow unreachable code sections, ensuring that
+    // all written code can be meaningfully executed.
+    // ----------------------------------------------------
+    "allowUnreachableCode": false,
+
+    // ----------------------------------------------------
+    // Enable experimental ES decorators. Required if
+    // using decorators in frameworks or libraries.
+    // ----------------------------------------------------
+    "experimentalDecorators": true,
+
+    // ----------------------------------------------------
+    // Emit design-type metadata for decorated
+    // declarations, often needed for reflection.
+    // ----------------------------------------------------
+    "emitDecoratorMetadata": true,
+
+    // ----------------------------------------------------
+    // Skips type checking of declaration files. Helps
+    // speed up compilation by not re-checking library .d.ts.
+    // ----------------------------------------------------
+    "skipLibCheck": true,
+
+    // ----------------------------------------------------
+    // Enforce consistent capitalization in import paths,
+    // preventing case mismatch issues across platforms.
+    // ----------------------------------------------------
+    "forceConsistentCasingInFileNames": true,
+
+    // ----------------------------------------------------
+    // Allow importing JSON modules, treating .json files
+    // as valid with typed exports.
+    // ----------------------------------------------------
+    "resolveJsonModule": true,
+
+    // ----------------------------------------------------
+    // Enables emit interoperability between default and
+    // named imports for legacy module systems.
+    // ----------------------------------------------------
+    "esModuleInterop": true,
+
+    // ----------------------------------------------------
+    // Provide incremental compilation for faster rebuilds
+    // by storing metadata about previous build state.
+    // ----------------------------------------------------
+    "incremental": true,
+
+    // ----------------------------------------------------
+    // Define the file path where incremental build
+    // information is stored for subsequent runs.
+    // ----------------------------------------------------
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+
+    // ----------------------------------------------------
+    // Retain const enum declarations in the compiled
+    // output, rather than erasing them to inline values.
+    // ----------------------------------------------------
+    "preserveConstEnums": true,
+
+    // ----------------------------------------------------
+    // Ensure each file can be treated as a separate
+    // module. Useful for tools like Babel or bundlers.
+    // ----------------------------------------------------
+    "isolatedModules": true
+  },
+
+  // ------------------------------------------------------
+  // The glob patterns and directories to include in the
+  // TypeScript compilation process.
+  // ------------------------------------------------------
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json",
+    "src/api/**/*.ts",
+    "src/middleware/**/*.ts",
+    "src/security/**/*.ts",
+    "src/validation/**/*.ts"
+  ],
+
+  // ------------------------------------------------------
+  // The glob patterns and directories to exclude from
+  // the compilation process.
+  // ------------------------------------------------------
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**",
+    "**/__mocks__/**"
+  ]
+}
