@@ -1,0 +1,161 @@
+{
+  "_comments": [
+    "==============================================================================================",
+    "Enhanced Grafana dashboard configuration for system-wide monitoring with multi-AZ support.",
+    "This JSON file references the following imports and libraries for compliance with the specification:",
+    " - External Import: \"grafana\" v9.5.0 for advanced dashboarding and visualization.",
+    " - External Import: \"prometheus\" v2.45.0 for metrics data source with multi-AZ awareness.",
+    " - Internal Import: { scrape_configs } from \"prometheus/prometheus.yml\" for service metrics.",
+    "These configurations address 'System Monitoring' (Section 2.4.1) and 'High Availability' (Section 2.5.1).",
+    "=============================================================================================="
+  ],
+  "globals": [
+    {
+      "refresh": "10s"
+    },
+    {
+      "timezone": "browser"
+    },
+    {
+      "theme": "light"
+    },
+    {
+      "editable": true
+    }
+  ],
+  "dashboard_config": {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "graphTooltip": 0,
+    "id": null,
+    "title": "System Overview",
+    "uid": "system-overview-dashboard",
+    "version": 1,
+    "schemaVersion": 36,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "panels": [
+      {
+        "title": "Multi-AZ Service Health Overview",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "sum(up{job=~\"api-gateway|auth-service|booking-service|payment-service|tracking-service|notification-service\"}) by (job, availability_zone)",
+            "legendFormat": "{{job}} - {{availability_zone}}"
+          }
+        ],
+        "gridPos": {
+          "h": 4,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "textMode": "value_and_name",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "HEALTHY",
+                  "color": "green"
+                },
+                "0.5": {
+                  "text": "DEGRADED",
+                  "color": "orange"
+                },
+                "0": {
+                  "text": "DOWN",
+                  "color": "red"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "type": "datasource",
+          "query": "prometheus"
+        },
+        {
+          "name": "service",
+          "type": "query",
+          "query": "label_values(up, job)",
+          "refresh": 2
+        },
+        {
+          "name": "availability_zone",
+          "type": "query",
+          "query": "label_values(up, availability_zone)",
+          "refresh": 2
+        }
+      ]
+    },
+    "tags": [
+      "system",
+      "monitoring",
+      "overview",
+      "high-availability"
+    ]
+  },
+  "exports": [
+    {
+      "name": "system_dashboard",
+      "type": "json",
+      "members_exposed": [
+        {
+          "member_name": "dashboard_config",
+          "member_type": "object",
+          "export_type": "default"
+        }
+      ],
+      "purpose": "Enhanced Grafana dashboard configuration for system-wide monitoring with multi-AZ support"
+    }
+  ]
+}
