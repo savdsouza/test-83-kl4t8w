@@ -1,0 +1,52 @@
+<!-- 
+  This animation resource is used for screen transitions, navigation patterns, and UI element 
+  dismissals in the Android app. It provides a smooth slide-out effect from the current X position 
+  to -100% of the parent width, effectively moving the UI element off-screen to the left.
+
+  Requirements Addressed:
+  - Smooth UI Transitions: Uses accelerate_decelerate interpolator with a 300ms duration for 
+    natural motion and an enhanced user experience.
+  - Navigation Patterns: Supports slide-out animation from 0 to -100%p X-delta, aligning with 
+    the [<] previous indicator and typical screen/drawer dismissals.
+
+  External Import:
+  - android.view.animation (# version default)
+    Provides core Android animation capabilities for TranslateAnimation.
+
+  Animation Properties:
+  - type: translate
+  - fromXDelta: 0
+  - toXDelta: -100%p
+  - duration_ms: 300
+  - interpolator: accelerate_decelerate
+  - fill_after: true
+
+  Usage Contexts:
+  - Fragment transitions
+  - Activity transitions
+  - Navigation drawer animations
+  - Screen navigation transitions
+  - Dialog dismissal effects
+
+  Accessibility Considerations:
+  - Respects system animation scale, aligning with user accessibility settings for reduced motion.
+  - Motion sensitivity compliant with a moderate default duration.
+  - RTL support can be managed by alternative resource qualifiers if full directional mirroring 
+    is required.
+
+  Performance Impact:
+  - Minimal memory footprint.
+  - Optimized animation smoothness for a seamless 60fps experience on devices API level 26+ (Android 8.0+).
+
+  Exported Resource:
+  - Name: slide_out
+  - Type: animation-resource
+  - Exposed Member: translate (default)
+-->
+<translate
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/accelerate_decelerate"
+    android:duration="300"
+    android:fromXDelta="0"
+    android:toXDelta="-100%p"
+    android:fillAfter="true" />
