@@ -1,0 +1,419 @@
+version: "3.9"
+
+################################################################################
+# BASE DOCKER COMPOSE CONFIGURATION FILE
+# ------------------------------------------------------------------------------
+# This file defines the core microservices architecture for the Dog Walking
+# Platform. It includes the API Gateway, Auth, Booking, Payment, Tracking, and
+# Notification services, along with the required data services: PostgreSQL,
+# MongoDB, Redis, and TimescaleDB. It serves as the foundation for both
+# development and production environments, allowing environment-specific
+# overrides in docker-compose.dev.yml and docker-compose.prod.yml.
+#
+# References Addressed:
+# 1) System Architecture (Section 2.1) - Implements microservices architecture
+#    with a dedicated internal network, robust container settings, and security.
+# 2) Data Storage Strategy (Section 2.2.2) - Configures PostgreSQL, MongoDB,
+#    Redis, and TimescaleDB for data persistence and caching.
+# 3) Container Security (Section 8.3.2) - Incorporates resource limits, health
+#    checks, logging, and network isolation for secure container operations.
+################################################################################
+
+services:
+  ##############################################################################
+  # API GATEWAY SERVICE
+  # ----------------------------------------------------------------------------
+  # The central entry point for all external requests. Handles request routing,
+  # authentication, rate limiting, and coordinates communication among the
+  # microservices. Built from the provided multi-stage Dockerfile in
+  # ./api-gateway/Dockerfile. Uses port 3000 externally.
+  ##############################################################################
+  api-gateway:
+    # Internal import of Dockerfile with build context at ./api-gateway
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    # Expose port 3000 externally to host for HTTP traffic
+    ports:
+      - "3000:3000"
+    # Lists the dependent services that must be started first
+    depends_on:
+      - auth-service
+      - booking-service
+      - payment-service
+      - tracking-service
+      - notification-service
+    # Attach the container to the internal backend network
+    networks:
+      - backend
+    # Basic Docker Swarm (or similar) deployment configs for scaling & resources
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    # Automated health checks to ensure high availability
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Config for logging in JSON file format, limiting log size
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Ensures that containers are restarted unless explicitly stopped
+    restart: unless-stopped
+
+  ##############################################################################
+  # AUTH SERVICE
+  # ----------------------------------------------------------------------------
+  # Provides authentication and authorization capabilities and manages user
+  # identities. This service may handle token generation and validation.
+  ##############################################################################
+  auth-service:
+    image: node:18-alpine # node@18-alpine
+    container_name: auth-service
+    # Open the internal port so other services can communicate if necessary
+    expose:
+      - "4000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  ##############################################################################
+  # BOOKING SERVICE
+  # ----------------------------------------------------------------------------
+  # Manages the booking lifecycle, including scheduling walks, matching dog
+  # owners with walkers, and handling confirmations. This service uses MongoDB
+  # for storing walk records.
+  ##############################################################################
+  booking-service:
+    image: node:18-alpine # node@18-alpine
+    container_name: booking-service
+    expose:
+      - "4001"
+    depends_on:
+      - mongodb
+      - postgres
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  ##############################################################################
+  # PAYMENT SERVICE
+  # ----------------------------------------------------------------------------
+  # Handles secure payment transactions, billing, and integration with external
+  # payment gateways. Typically interacts with PostgreSQL for transactional
+  # records.
+  ##############################################################################
+  payment-service:
+    image: node:18-alpine # node@18-alpine
+    container_name: payment-service
+    expose:
+      - "4002"
+    depends_on:
+      - postgres
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  ##############################################################################
+  # TRACKING SERVICE
+  # ----------------------------------------------------------------------------
+  # Maintains real-time GPS location updates, routes, and geofencing logic.
+  # Stores time-series data in TimescaleDB for advanced analytics and
+  # performance.
+  ##############################################################################
+  tracking-service:
+    image: golang:1.21-alpine # Go@1.21
+    container_name: tracking-service
+    expose:
+      - "4003"
+    depends_on:
+      - timescaledb
+      - redis
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  ##############################################################################
+  # NOTIFICATION SERVICE
+  # ----------------------------------------------------------------------------
+  # Sends push notifications, emails, or SMS updates to users during walk
+  # lifecycle events. May integrate with external providers like FCM or APNs.
+  ##############################################################################
+  notification-service:
+    image: python:3.11-slim # Python@3.11
+    container_name: notification-service
+    expose:
+      - "4004"
+    depends_on:
+      - redis
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  ##############################################################################
+  # POSTGRES DATABASE
+  # ----------------------------------------------------------------------------
+  # The primary SQL database for storing user profiles, authentication data, and
+  # transactional records. Data is persisted in a dedicated volume bound to
+  # /data/postgres as specified. Uses the official Postgres 15-alpine image.
+  ##############################################################################
+  postgres:
+    image: postgres:15-alpine # Postgres@15-alpine
+    container_name: postgres-db
+    # Disable external port binding in base config; only internal use
+    expose:
+      - "5432"
+    networks:
+      - backend
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=dogwalking
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      # Simple command checking server availability
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  ##############################################################################
+  # MONGODB
+  # ----------------------------------------------------------------------------
+  # Stores walk records, reviews, and other document-based data. Uses the official
+  # MongoDB 6.0 image. Data volume is not bound here in the base file, but can be
+  # extended in environment-specific overrides.
+  ##############################################################################
+  mongodb:
+    image: mongo:6.0 # MongoDB@6.0
+    container_name: mongodb
+    expose:
+      - "27017"
+    networks:
+      - backend
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+      - MONGO_INITDB_ROOT_PASSWORD=mongopass
+    command: ["--bind_ip", "0.0.0.0"]
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "mongo", "--username", "mongoadmin", "--password", "mongopass", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  ##############################################################################
+  # REDIS
+  # ----------------------------------------------------------------------------
+  # An in-memory cache and session store used for session management, rate
+  # limiting counters, and real-time location caching. Uses the official Redis
+  # 7.0-alpine image.
+  ##############################################################################
+  redis:
+    image: redis:7.0-alpine # Redis@7.0
+    container_name: redis-cache
+    expose:
+      - "6379"
+    networks:
+      - backend
+    command: ["redis-server", "--appendonly", "yes"]
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+  ##############################################################################
+  # TIMESCALEDB
+  # ----------------------------------------------------------------------------
+  # Stores time-series GPS tracking data for advanced analytics and real-time
+  # geolocation queries. Uses TimescaleDB with PostgreSQL 15 compatibility.
+  ##############################################################################
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15 # TimescaleDB@latest-pg15
+    container_name: timescaledb
+    expose:
+      - "5433"
+    networks:
+      - backend
+    environment:
+      - POSTGRES_USER=tsadmin
+      - POSTGRES_PASSWORD=tspass
+      - POSTGRES_DB=trackingdb
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "pg_isready", "-p", "5433", "-U", "tsadmin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+
+################################################################################
+# VOLUMES DEFINITION
+# ------------------------------------------------------------------------------
+# The only named volume defined here is postgres_data, which binds local path
+# /data/postgres to /var/lib/postgresql/data inside the postgres container
+# to persist data. See driver_opts for details.
+################################################################################
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /data/postgres
+      o: bind
+
+################################################################################
+# NETWORKS DEFINITION
+# ------------------------------------------------------------------------------
+# A bridge network named 'backend' is declared for internal container
+# communication. Marked as 'internal: true' to prevent external access
+# without explicit port mapping. IPAM configuration sets a custom subnet.
+################################################################################
+networks:
+  backend:
+    driver: bridge
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.0.0/24"
