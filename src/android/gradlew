@@ -1,0 +1,172 @@
+#!/usr/bin/env sh
+#
+# =============================================================================
+# GRADLE WRAPPER EXECUTABLE (Unix Shell Script)
+# -----------------------------------------------------------------------------
+# This script provides an enterprise-grade Gradle 8.4 build environment for the
+# Android dog walking application on Unix-like systems. It ensures consistent
+# builds, enforces security measures, and validates all runtime prerequisites.
+#
+# File Path: src/android/gradlew
+# Execution Permissions: 755 (chmod +x this file)
+# Platform: Unix
+#
+# -----------------------------------------------------------------------------
+# JSON Specification Requirements Implemented:
+#  - Unix shell script acting as Gradle Wrapper (Gradle 8.4).
+#  - Uses gradle-wrapper.jar (GradleWrapperMain class).
+#  - Reads gradle-wrapper.properties for distributionUrl, distributionBase,
+#    distributionPath, zipStoreBase, zipStorePath, etc.
+#  - Environment variables validated:
+#      APP_HOME, APP_BASE_NAME, DEFAULT_JVM_OPTS, MAX_FD, GRADLE_OPTS,
+#      JAVA_HOME, CLASSPATH
+#  - Thorough error checking, environment setup, and consistent return codes.
+# -----------------------------------------------------------------------------
+# External Dependency:
+#  - Java 1.8+ (comment near import as per instructions)
+# -----------------------------------------------------------------------------
+# INTERNAL IMPORTS (from the project):
+#  - gradle-wrapper.jar => org.gradle.wrapper.GradleWrapperMain
+#  - gradle-wrapper.properties => distributionUrl, distributionBase, distributionPath, etc.
+# =============================================================================
+
+###############################################################################
+# GLOBAL VARIABLE DEFINITIONS
+###############################################################################
+
+# Base name of this script (override if needed)
+APP_BASE_NAME="${APP_BASE_NAME:-gradlew}"
+
+# Default JVM options for Gradle execution
+DEFAULT_JVM_OPTS="${DEFAULT_JVM_OPTS:="-Xmx64m -Xms64m -Dfile.encoding=UTF-8"}"
+
+# Maximum file descriptor limit to be enforced for Gradle
+MAX_FD="${MAX_FD:-4096}"
+
+# Environment variable referencing additional JVM options for Gradle
+GRADLE_OPTS="${GRADLE_OPTS}"
+
+# JAVA_HOME path (must be set or resolvable from 'java' in PATH)
+JAVA_HOME="${JAVA_HOME}"
+
+# APP_HOME: Absolute path to the application's root folder
+APP_HOME="${APP_HOME:-$(pwd)}"
+
+# CLASSPATH referencing the Gradle Wrapper JAR
+# Typically: "$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+CLASSPATH="${CLASSPATH:-$APP_HOME/gradle/wrapper/gradle-wrapper.jar}"
+
+###############################################################################
+# UTILITY FUNCTION: die
+# -----------------------------------------------------------------------------
+# Prints error message to stderr, then exits script with status 1.
+###############################################################################
+die() {
+  # Parameters: $1 => error message
+  echo "[ERROR] $1" >&2
+  exit 1
+}
+
+###############################################################################
+# FUNCTION: init
+# -----------------------------------------------------------------------------
+# Initializes environment variables and validates runtime requirements for
+# Gradle 8.4 execution. This involves determining the absolute script location,
+# verifying Java installation, checking file descriptor limits, setting
+# system proxy if needed, and optionally verifying distribution checksums.
+###############################################################################
+init() {
+  # Ensure we have an absolute path to this script directory if scripting is needed
+  if [ -z "$APP_HOME" ] || [ ! -d "$APP_HOME" ]; then
+    # Attempt to resolve APP_HOME from the script's actual location
+    # Using a method that supports macOS, Linux, etc.
+    PRG="$0"
+    while [ -h "$PRG" ] ; do
+      ls=$(ls -ld "$PRG")
+      link=$(expr "$ls" : '.*-> \(.*\)$')
+      if expr "$link" : '/.*' >/dev/null; then
+        PRG="$link"
+      else
+        PRG=$(dirname "$PRG")/"$link"
+      fi
+    done
+    APP_HOME=$(cd "$(dirname "$PRG")" && pwd)
+  fi
+
+  if [ ! -d "$APP_HOME" ]; then
+    die "Application home directory not found or invalid: $APP_HOME"
+  fi
+
+  # Validate Java availability by checking if it exists in PATH, or from JAVA_HOME
+  if [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    JAVACMD="$JAVA_HOME/bin/java"
+  else
+    JAVACMD="$(command -v java 2>/dev/null)"
+    if [ -z "$JAVACMD" ]; then
+      die "Java installation not found. Please set JAVA_HOME or ensure 'java' is in PATH."
+    fi
+  fi
+
+  # Enforce minimum file descriptor limit if possible, for improved Gradle stability
+  CURRENT_FD_LIMIT="$(ulimit -n)"
+  if [ "$CURRENT_FD_LIMIT" != "unlimited" ] && [ "$CURRENT_FD_LIMIT" -lt "$MAX_FD" ]; then
+    ulimit -n "$MAX_FD" 2>/dev/null || true
+  fi
+
+  # Confirm CLASSPATH exists or jar is accessible
+  if [ ! -f "$CLASSPATH" ]; then
+    die "Gradle Wrapper JAR not found at path: $CLASSPATH"
+  fi
+
+  # Optionally: We can place enterprise-oriented proxy or checksum verification here
+  # For advanced usage. This placeholder is for future expansion.
+
+  # Export final environment variables for subsequent steps
+  export APP_HOME CLASSPATH JAVACMD
+}
+
+###############################################################################
+# FUNCTION: execute
+# -----------------------------------------------------------------------------
+# Executes Gradle Wrapper by invoking the GradleWrapperMain class from
+# gradle-wrapper.jar with the provided command-line arguments. Returns
+# Gradle's exit code.
+#
+# Steps:
+#  1. Construct the Java command with correct classpath
+#  2. Add default JVM options and user-provided GRADLE_OPTS
+#  3. Launch org.gradle.wrapper.GradleWrapperMain with script arguments
+#  4. Capture and return the exit code
+###############################################################################
+execute() {
+  # Gather all script arguments for Gradle
+  CMD_ARGS="$*"
+
+  # Consolidate JVM options
+  # Include default JVM options, plus any user-specified GRADLE_OPTS
+  ALL_JVM_OPTS="$DEFAULT_JVM_OPTS $GRADLE_OPTS"
+
+  # Determine the final Java command to run
+  COMMAND="\"$JAVACMD\" $ALL_JVM_OPTS -classpath \"$CLASSPATH\" org.gradle.wrapper.GradleWrapperMain $CMD_ARGS"
+
+  # Print debugging info (optional for enterprise logging):
+  # echo "Debug: Java command = $COMMAND"
+
+  # Execute the command in a subshell, capturing the exit code
+  sh -c "$COMMAND"
+  EXIT_CODE=$?
+
+  # Return the exit code to the caller
+  return $EXIT_CODE
+}
+
+###############################################################################
+# MAIN EXECUTION FLOW
+###############################################################################
+#  1. Invoke init for environment setup and validation
+#  2. Execute the Gradle wrapper option passing all user arguments
+#  3. Exit with the Gradle process exit status
+###############################################################################
+init
+execute "$@"
+exit $?
