@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Material Design 3 Compliant Layout File for Displaying Comprehensive Dog Profile
+    -------------------------------------------------------------------------------
+    Requirements Addressed:
+      - Dog Profile Management:
+        Displays detailed dog profile information, including name, picture,
+        and medical records. Supports user actions for editing and booking.
+      - Mobile Applications (Offline-First, Local SQLite Support):
+        Exemplifies a responsive, accessible layout for Android apps,
+        leveraging Data Binding to handle dynamic content and offline caching.
+
+    External Imports:
+      - androidx.coordinatorlayout:1.2.0
+        Root layout container enabling collapsing toolbar and scroll behavior.
+      - com.google.android.material:1.9.0
+        Material AppBarLayout and ShapeableImageView for MD3 design compliance.
+      - androidx.core:1.10.0
+        NestedScrollView providing nested scroll interactions.
+    Internal Imports:
+      - @drawable/bg_card
+        Material Design 3 card background with corner radius and elevation effect.
+      - @drawable/bg_button
+        Material Design 3 state-aware button background depicting default, pressed,
+        and disabled states with consistent corner radius and ripple effect.
+-->
+
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!--
+        Data Binding Variables:
+        dog           -> Model containing dog's profile data (name, photo URL, medical info).
+        clickHandler  -> Handler class with navigation methods for edit profile and book walk actions.
+    -->
+    <data>
+        <variable
+            name="dog"
+            type="com.example.model.Dog" />
+
+        <variable
+            name="clickHandler"
+            type="com.example.ui.dogprofile.DogProfileClickHandler" />
+    </data>
+
+    <!--
+        Root Layout: CoordinatorLayout (from androidx.coordinatorlayout.widget.CoordinatorLayout)
+        This container fits system windows, allowing the AppBarLayout to scroll and lift on scroll events.
+    -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <!--
+            AppBarLayout (from com.google.android.material.appbar.AppBarLayout):
+            Displays any collapsing or standard toolbar data. Set to wrap_content so it can expand
+            based on children. The background uses ?attr/colorSurface to align with MD3 surface color.
+            liftOnScroll="true" ensures the bar lifts/elevates when scrolling.
+        -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSurface"
+            app:liftOnScroll="true" />
+
+        <!--
+            NestedScrollView (from androidx.core.widget.NestedScrollView):
+            Provides vertical scrollable container for content below the AppBarLayout.
+            layout_behavior references @string/appbar_scrolling_view_behavior to link scrolling.
+            clipToPadding="false" allows parallax or immersive effects in certain designs.
+        -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:clipToPadding="false">
+
+            <!--
+                A LinearLayout container to hold and structure the dog's profile content.
+                Background set to a card drawable to maintain a subtle elevated surface
+                in line with Material Design 3 card guidelines.
+            -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="@dimen/card_padding"
+                android:layout_margin="@dimen/global_spacing_medium">
+
+                <!--
+                    ShapeableImageView (from com.google.android.material.imageview.ShapeableImageView):
+                    MD3-compliant image view for dog profile picture. By default, we can
+                    enable a circular shape overlay. The Data Binding attribute can be used
+                    to load the dog's profile image. The content description references
+                    the dog's name for accessibility support.
+                -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/iv_dog_profile"
+                    android:layout_width="128dp"
+                    android:layout_height="128dp"
+                    android:layout_gravity="center_horizontal"
+                    android:contentDescription='@{`Profile picture of ` + dog.name}'
+                    app:srcCompat="@{dog.profileImageUrl}"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.CircleImageView"
+                    android:layout_marginBottom="@dimen/global_spacing_medium" />
+
+                <!--
+                    Dog Name TextView:
+                    Uses a Material Design 3 text appearance for a headline style.
+                    Data Binding expression for dynamic text with the dog's name.
+                -->
+                <TextView
+                    android:id="@+id/tv_dog_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@{dog.name}"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="@dimen/global_spacing_small" />
+
+                <!--
+                    Medical Info TextView:
+                    Displays any relevant medical or special care information.
+                    Set to a Material body style and allows for multi-line text.
+                -->
+                <TextView
+                    android:id="@+id/tv_medical_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@{dog.medicalInfo}"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="@dimen.global_spacing_large" />
+
+                <!--
+                    Button to Edit Dog Profile:
+                    Provides an action to navigate to the edit profile screen.
+                    Uses the previously imported bg_button drawable to handle
+                    pressed/disabled states. The content description references
+                    the dog's name for accessible context. The onClick event
+                    calls the appropriate handler method from the Data Binding
+                    variable.
+                -->
+                <Button
+                    android:id="@+id/btn_edit_profile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/global_spacing_small"
+                    android:background="@drawable/bg_button"
+                    android:contentDescription='@{`Edit ` + dog.name + `\'s profile information`}'
+                    android:onClick="@{() -> clickHandler.navigateToEditProfile(dog.id)}"
+                    android:padding="@dimen/global_spacing_small"
+                    android:text="@string/edit_profile"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+                    android:textColor="@color/on_primary" />
+
+                <!--
+                    Button to Book a New Walk:
+                    Allows the user to initiate a booking flow for scheduling a dog walk.
+                    Same bg_button background. Another onClick binding for booking logic
+                    in the fragment's clickHandler. The content description references
+                    the dog's name for screen readers.
+                -->
+                <Button
+                    android:id="@+id/btn_book_walk"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_button"
+                    android:contentDescription='@{`Book a new walk for ` + dog.name}'
+                    android:onClick="@{() -> clickHandler.navigateToBookWalk(dog.id)}"
+                    android:padding="@dimen/global_spacing_small"
+                    android:text="@string/book_walk"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+                    android:textColor="@color/on_primary" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
