@@ -1,0 +1,46 @@
+<!--
+    File: ic_add.xml
+    Description: Material Design compliant vector drawable resource defining a plus/add icon
+    with theme-aware tinting for actions such as adding dogs, initiating bookings, etc.
+    -------------------------------------------------------------------------
+    Imports & External Libraries:
+    - android.graphics.drawable (platform: latest) for VectorDrawable support
+    -------------------------------------------------------------------------
+    Accessibility & Touch Targets:
+    - Recommended minimum touch area of 48dp x 48dp in layouts
+    - High-contrast theme support through tint attribute
+    -------------------------------------------------------------------------
+    Performance Considerations:
+    - Single vector path to minimize memory footprint
+    - Pixel-aligned rendering for optimal clarity
+    -------------------------------------------------------------------------
+    Themed Tinting:
+    - Uses ?attr/colorControlNormal for automatic theme adaptation (light/dark modes)
+    -------------------------------------------------------------------------
+    Export: ic_add
+    Exposed Members:
+    - path (default): Vector path representing plus sign
+    - tint (named): Attribute reference for color theme
+    - size (named): 24dp dimension for icon width and height
+    Purpose:
+    - Reusable Material Design plus icon for UI components requiring add/create actions
+    -------------------------------------------------------------------------
+-->
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0"
+    android:tint="?attr/colorControlNormal">
+
+    <!--
+        Single path defining the plus sign shape:
+        M19,13 h-6 v6 h-2 v-6 H5 v-2 h6 V5 h2 v6 h6 v2z
+        Fill color is white by default, tinted to match theme.
+    -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M19,13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+
+</vector>
