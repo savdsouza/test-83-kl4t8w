@@ -1,0 +1,147 @@
+/* =============================================================================
+   Import Global Design System Variables
+   =============================================================================
+   Importing color, typography, spacing, and other CSS custom properties 
+   from the shared variables.css file to ensure consistent use of the 
+   application's design system tokens.
+*/
+@import url("../styles/variables.css");
+
+/* =============================================================================
+   Global Styles
+   =============================================================================
+   Setting core body styles, typography defaults, and background color using 
+   the imported design system variables. Also applying a consistent reset for 
+   margins and padding to provide a clean layout foundation.
+*/
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+}
+
+/* =============================================================================
+   Dark Theme Mode
+   =============================================================================
+   Using the data-theme="dark" attribute to dynamically switch color tokens
+   so that backgrounds, text, and alternate backgrounds adopt darker values. 
+   This ensures a seamless dark mode experience across various UI components.
+*/
+[data-theme='dark'] {
+  background-color: #121212;
+  --color-background: #121212;
+  --color-background-alt: #1E1E1E;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B0B0B0;
+}
+
+/* =============================================================================
+   Theme Transition Class
+   =============================================================================
+   Applies smooth transitions across background, color, borders, and shadows
+   when switching themes or interacting with UI elements. Uses a normal
+   transition speed setting and standard easing for a polished experience.
+*/
+.theme-transition {
+  transition: var(--transition-normal);
+  transition-property: background-color, color, border-color, box-shadow;
+}
+
+/* =============================================================================
+   Theme Card Class
+   =============================================================================
+   Styles for card components, using the application's background color 
+   (light or dark), medium border-radius, standard box-shadow elevation, 
+   and uniform padding to maintain a consistent card look across the UI.
+*/
+.theme-card {
+  background: var(--color-background);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--elevation-card);
+  padding: var(--spacing-md);
+}
+
+/* =============================================================================
+   Theme Button Class
+   =============================================================================
+   Defines button styles utilizing the primary brand color, white text,
+   small border-radius, and medium spacing. Includes fast transition 
+   for hover/focus states to offer responsive visual feedback.
+*/
+.theme-button {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-fast);
+}
+
+/* =============================================================================
+   Theme Input Class
+   =============================================================================
+   Manages unified input styling, including alternate background color,
+   a subtle border, small rounding, base padding, medium font sizing,
+   and normal line height for legible form entries.
+*/
+.theme-input {
+  background: var(--color-background-alt);
+  border: 1px solid var(--color-text-secondary);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+}
+
+/* =============================================================================
+   Responsive Design Utilities
+   =============================================================================
+   Example utility classes and breakpoint-specific styles that adapt 
+   the layout to various screen sizes. These media queries reference 
+   the breakpoint tokens defined in variables.css to achieve a fluid 
+   and adaptive design across diverse devices and orientations.
+*/
+
+/* Extra-Small Devices (<= 375px) */
+@media (max-width: var(--breakpoint-xs)) {
+  .hide-xs {
+    display: none !important;
+  }
+  .responsive-text-xs {
+    font-size: var(--font-size-xs);
+  }
+}
+
+/* Small Devices (<= 428px) */
+@media (max-width: var(--breakpoint-sm)) {
+  .hide-sm {
+    display: none !important;
+  }
+  .responsive-text-sm {
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* Medium Devices (<= 768px) */
+@media (max-width: var(--breakpoint-md)) {
+  .hide-md {
+    display: none !important;
+  }
+  .responsive-text-md {
+    font-size: var(--font-size-md);
+  }
+}
+
+/* Large Devices (>= 1024px) */
+@media (min-width: var(--breakpoint-lg)) {
+  .hide-lg {
+    display: none !important;
+  }
+  .responsive-text-lg {
+    font-size: var(--font-size-lg);
+  }
+}
