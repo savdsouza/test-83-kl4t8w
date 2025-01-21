@@ -1,0 +1,218 @@
+<!--
+    LaunchScreen.storyboard
+    This file defines the initial view shown while the app is launching.
+    Implements the design system specifications (SF Pro typography, #FFFFFF/F5F5F5 color palette, 8px base unit grid)
+    with dark mode and dynamic layout support per the technical specification.
+
+    References:
+    • AppIcon from Resources/Assets.xcassets/AppIcon.appiconset
+    • Named Colors from Resources/Colors.xcassets (Background, Primary)
+    • Minimum iOS Version: 13.0
+    • Devices: iPhone & iPad (portrait & landscape)
+    • Accessibility: Dynamic Type, VoiceOver, Reduce Motion
+-->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<document
+    type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard"
+    version="3.0"
+    toolsVersion="18122"
+    targetRuntime="iOS.CocoaTouch"
+    propertyAccessControl="none"
+    useAutolayout="YES"
+    useTraitCollections="YES"
+    useSafeAreas="YES"
+    colorMatched="YES"
+    initialViewController="launchScreenRootController">
+    <!-- Global Dependencies Section -->
+    <dependencies>
+        <!-- Minimum deployment target for iOS 13.0+ -->
+        <deployment identifier="iOS"/>
+        <!-- UIKit (iOS 13.0+) is automatically referenced for storyboard rendering -->
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18120"/>
+        <!-- Safe area and modern layout capabilities -->
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+
+    <!-- Device Configuration for universal sizing and dark mode automation -->
+    <device id="retina6_1" orientation="portrait" appearance="automatic"/>
+    <adaptation id="fullscreen"/>
+
+    <!-- Scenes Section -->
+    <scenes>
+        <!-- Launch Screen Scene -->
+        <scene sceneID="X1Y-aB-TT0">
+            <objects>
+                <!-- Root View Controller for Launch Screen -->
+                <viewController
+                    storyboardIdentifier="LaunchScreen"
+                    useStoryboardIdentifierAsRestorationIdentifier="YES"
+                    id="launchScreenRootController"
+                    customClass="UIViewController"
+                    sceneMemberID="viewController">
+                    
+                    <!-- Root View -->
+                    <view
+                        key="view"
+                        contentMode="scaleToFill"
+                        userInteractionEnabled="NO"
+                        id="VlH-hc-SvR"
+                        userLabel="LaunchScreenRootView">
+                        
+                        <!-- Set dynamic background color named 'Background' (supports dark mode) -->
+                        <color
+                            key="backgroundColor"
+                            catalog="Colors"
+                            name="Background"
+                            colorSpace="custom"
+                            customColorSpace="sRGB"/>
+                        
+                        <!-- Safe area guide for constraint references -->
+                        <viewLayoutGuide key="safeArea" id="oTe-0N-r62"/>
+                        
+                        <!-- Subviews -->
+                        <subviews>
+                            <!-- App Icon ImageView -->
+                            <imageView
+                                userLabel="iconImageView"
+                                id="ImG-eQ-fBV"
+                                contentMode="scaleAspectFit">
+                                
+                                <!-- Accessibility for screen readers -->
+                                <accessibility
+                                    key="accessibilityConfiguration"
+                                    label="App Logo"
+                                    traits="image"/>
+                                
+                                <!-- Reference to the named image asset 'AppIcon' -->
+                                <image name="AppIcon"/>
+                            </imageView>
+
+                            <!-- Loading Indicator -->
+                            <activityIndicatorView
+                                userLabel="loadingIndicator"
+                                id="AcT-tS-Dc8"
+                                style="medium">
+                                
+                                <!-- Override color with the named color 'Primary' -->
+                                <color
+                                    key="color"
+                                    catalog="Colors"
+                                    name="Primary"
+                                    colorSpace="custom"
+                                    customColorSpace="sRGB"/>
+                                
+                                <!-- Configure behavior to animate on launch and hide when stopped -->
+                                <state key="animating" value="YES"/>
+                                <state key="hidesWhenStopped" value="YES"/>
+                            </activityIndicatorView>
+                        </subviews>
+                        
+                        <!-- Auto Layout Constraints for dynamic sizing & positioning -->
+                        <constraints>
+                            <!-- Icon ImageView Horizontal Center -->
+                            <constraint
+                                firstItem="ImG-eQ-fBV"
+                                firstAttribute="centerX"
+                                secondItem="VlH-hc-SvR"
+                                secondAttribute="centerX"
+                                id="cst-iconCenterX"/>
+                            
+                            <!-- Icon ImageView Vertical Center with offset of -20 -->
+                            <constraint
+                                firstItem="ImG-eQ-fBV"
+                                firstAttribute="centerY"
+                                secondItem="VlH-hc-SvR"
+                                secondAttribute="centerY"
+                                constant="-20"
+                                id="cst-iconCenterY"/>
+
+                            <!-- Icon ImageView width proportional to 30% of the parent view width -->
+                            <constraint
+                                firstItem="ImG-eQ-fBV"
+                                firstAttribute="width"
+                                secondItem="VlH-hc-SvR"
+                                secondAttribute="width"
+                                multiplier="0.3"
+                                id="cst-iconProportionalWidth"/>
+
+                            <!-- Maintain a 1:1 aspect ratio for the icon (square) -->
+                            <constraint
+                                firstItem="ImG-eQ-fBV"
+                                firstAttribute="height"
+                                secondItem="ImG-eQ-fBV"
+                                secondAttribute="width"
+                                multiplier="1"
+                                id="cst-iconAspectRatio"/>
+
+                            <!-- Loading Indicator center horizontally below icon -->
+                            <constraint
+                                firstItem="AcT-tS-Dc8"
+                                firstAttribute="centerX"
+                                secondItem="VlH-hc-SvR"
+                                secondAttribute="centerX"
+                                id="cst-loadingCenterX"/>
+
+                            <!-- Loading Indicator top space of 20 to the icon's bottom -->
+                            <constraint
+                                firstItem="AcT-tS-Dc8"
+                                firstAttribute="top"
+                                secondItem="ImG-eQ-fBV"
+                                secondAttribute="bottom"
+                                constant="20"
+                                id="cst-loadingTopSpace"/>
+
+                            <!-- Safe area constraints to ensure minimum spacing -->
+                            <constraint
+                                firstItem="VlH-hc-SvR"
+                                firstAttribute="leading"
+                                secondItem="oTe-0N-r62"
+                                secondAttribute="leading"
+                                relation="greaterThanOrEqual"
+                                constant="0"
+                                id="cst-safeAreaLeading"/>
+                            <constraint
+                                firstItem="VlH-hc-SvR"
+                                firstAttribute="trailing"
+                                secondItem="oTe-0N-r62"
+                                secondAttribute="trailing"
+                                relation="lessThanOrEqual"
+                                constant="0"
+                                id="cst-safeAreaTrailing"/>
+                            <constraint
+                                firstItem="VlH-hc-SvR"
+                                firstAttribute="top"
+                                secondItem="oTe-0N-r62"
+                                secondAttribute="top"
+                                relation="greaterThanOrEqual"
+                                constant="0"
+                                id="cst-safeAreaTop"/>
+                            <constraint
+                                firstItem="VlH-hc-SvR"
+                                firstAttribute="bottom"
+                                secondItem="oTe-0N-r62"
+                                secondAttribute="bottom"
+                                relation="lessThanOrEqual"
+                                constant="0"
+                                id="cst-safeAreaBottom"/>
+                        </constraints>
+                        
+                        <!-- Explicit frame size placeholder (Xcode updates automatically) -->
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </view>
+                </viewController>
+
+                <!-- First Responder Placeholder -->
+                <placeholder
+                    placeholderIdentifier="IBFirstResponder"
+                    id="Jko-wI-dn6"
+                    userLabel="First Responder"
+                    sceneMemberID="firstResponder"/>
+            </objects>
+            <!-- Canvas position in Interface Builder -->
+            <point key="canvasLocation" x="53" y="376"/>
+        </scene>
+    </scenes>
+</document>
