@@ -1,0 +1,211 @@
+{
+  // ----------------------------------------------------------------
+  // TypeScript configuration file for the Dog Walking web application
+  // admin dashboard. This configuration ensures enterprise-grade
+  // type safety, strict compiler checks, and modern JavaScript
+  // feature support, as specified in the project requirements. 
+  // ----------------------------------------------------------------
+
+  // The "compilerOptions" section defines all required compilation
+  // behaviors, module resolution strategies, and strictness checks 
+  // for a robust development experience. Each option below is chosen
+  // to align with modern best practices for scalable TypeScript apps.
+  "compilerOptions": {
+    // --------------------------------------------------------------
+    // Sets the target ECMAScript version. "ESNext" keeps the codebase
+    // aligned with the latest available capabilities of JavaScript.
+    // --------------------------------------------------------------
+    "target": "ESNext",
+
+    // --------------------------------------------------------------
+    // Enables class field declarations with the "useDefineForClassFields"
+    // behavior introduced in newer TypeScript versions, ensuring
+    // consistent initialization semantics.
+    // --------------------------------------------------------------
+    "useDefineForClassFields": true,
+
+    // --------------------------------------------------------------
+    // Specifies the list of library files to include in the compilation.
+    // "DOM", "DOM.Iterable" and "ESNext" give strong typing for modern
+    // DOM APIs and JavaScript constructs.
+    // --------------------------------------------------------------
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+
+    // --------------------------------------------------------------
+    // Disallow .js files from being integrated directly into the 
+    // TypeScript build. Ensures developers keep code strictly typed.
+    // --------------------------------------------------------------
+    "allowJs": false,
+
+    // --------------------------------------------------------------
+    // Skip type checking of all declaration files (.d.ts). This 
+    // helps reduce build times when working with large dependency
+    // trees, without compromising application-level type safety.
+    // --------------------------------------------------------------
+    "skipLibCheck": true,
+
+    // --------------------------------------------------------------
+    // Enables interoperability between ES modules and CommonJS modules.
+    // This provides a smoother transition path for various libraries.
+    // --------------------------------------------------------------
+    "esModuleInterop": true,
+
+    // --------------------------------------------------------------
+    // Allows default imports from modules with no default export.
+    // Recommended for consistent behavior with Babel or webpack.
+    // --------------------------------------------------------------
+    "allowSyntheticDefaultImports": true,
+
+    // --------------------------------------------------------------
+    // Enforces TypeScript's strict type checking mode, enabling
+    // the highest level of type safety, preventing subtle errors.
+    // --------------------------------------------------------------
+    "strict": true,
+
+    // --------------------------------------------------------------
+    // Ensures that the entire project uses a consistent approach
+    // regarding the case of file names—helpful in cross-platform setups.
+    // --------------------------------------------------------------
+    "forceConsistentCasingInFileNames": true,
+
+    // --------------------------------------------------------------
+    // Defines the output format of compiled JavaScript modules.
+    // "ESNext" is used here to allow advanced bundlers to handle 
+    // code splitting and tree shaking effectively.
+    // --------------------------------------------------------------
+    "module": "ESNext",
+
+    // --------------------------------------------------------------
+    // Determines how the TypeScript compiler resolves modules.
+    // "Node" resolution is standard, compatible with Node.js 
+    // and modern bundlers.
+    // --------------------------------------------------------------
+    "moduleResolution": "Node",
+
+    // --------------------------------------------------------------
+    // Allow importing .json files, providing type definitions for 
+    // JSON imports and enabling typed usage of configuration data.
+    // --------------------------------------------------------------
+    "resolveJsonModule": true,
+
+    // --------------------------------------------------------------
+    // Treat each file as a distinct module. This is particularly
+    // important in a multi-file codebase and helps with faster 
+    // incremental builds and safer scoping.
+    // --------------------------------------------------------------
+    "isolatedModules": true,
+
+    // --------------------------------------------------------------
+    // Prevents the compiler from emitting JavaScript outputs.
+    // Useful for purely type-checking setups where bundlers 
+    // or other tools handle the final output steps.
+    // --------------------------------------------------------------
+    "noEmit": true,
+
+    // --------------------------------------------------------------
+    // Sets the JSX mode. "react-jsx" uses the new JSX transform 
+    // introduced in React 17+, enabling an optimized development flow.
+    // --------------------------------------------------------------
+    "jsx": "react-jsx",
+
+    // --------------------------------------------------------------
+    // Generates corresponding source maps for debugging in modern
+    // browsers and tooling. This is crucial for an effective 
+    // debug experience.
+    // --------------------------------------------------------------
+    "sourceMap": true,
+
+    // --------------------------------------------------------------
+    // Produces .d.ts declaration files for the codebase, allowing
+    // for typed references across projects and enabling improved
+    // editor IntelliSense.
+    // --------------------------------------------------------------
+    "declaration": true,
+
+    // --------------------------------------------------------------
+    // Flags any declared locals that are never read, preventing 
+    // code bloat and potential dead code from persisting.
+    // --------------------------------------------------------------
+    "noUnusedLocals": true,
+
+    // --------------------------------------------------------------
+    // Fails compilation if function parameters are never used. 
+    // This practice prevents confusion and wasted resources.
+    // --------------------------------------------------------------
+    "noUnusedParameters": true,
+
+    // --------------------------------------------------------------
+    // Ensures that switch-case structures do not unintentionally 
+    // fall through from one case to the next without an explicit break.
+    // --------------------------------------------------------------
+    "noFallthroughCasesInSwitch": true,
+
+    // --------------------------------------------------------------
+    // Sets the base directory for resolving non-relative imports 
+    // in the "paths" mapping below. This ensures consistency across the project.
+    // --------------------------------------------------------------
+    "baseUrl": ".",
+
+    // --------------------------------------------------------------
+    // Implements path mapping for a well-organized directory structure.
+    // Each alias is designed to keep imports clean and maintain 
+    // a modular separation of concerns.
+    // --------------------------------------------------------------
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@pages/*": ["src/pages/*"],
+      "@services/*": ["src/services/*"],
+      "@utils/*": ["src/utils/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@types/*": ["src/types/*"],
+      "@styles/*": ["src/styles/*"],
+      "@assets/*": ["src/assets/*"],
+      "@features/*": ["src/features/*"],
+      "@layouts/*": ["src/layouts/*"],
+      "@constants/*": ["src/constants/*"],
+      "@api/*": ["src/api/*"],
+      "@store/*": ["src/store/*"]
+    }
+  },
+
+  // ----------------------------------------------------------------
+  // Instructs the compiler which files to include for inspection. 
+  // This follows the recommended patterns for TypeScript-based 
+  // React (+ TSX) projects along with definitions and environment files.
+  // ----------------------------------------------------------------
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.ts",
+    "src/vite-env.d.ts"
+  ],
+
+  // ----------------------------------------------------------------
+  // Excludes testing and build output directories from the type check
+  // process, minimizing compile times and focusing on production code 
+  // and relevant type definitions.
+  // ----------------------------------------------------------------
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+
+  // ----------------------------------------------------------------
+  // References to additional TypeScript project configurations.
+  // For instance, 'tsconfig.node.json' might contain Node-specific 
+  // settings for backend utilities or scripts.
+  // ----------------------------------------------------------------
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
+}
