@@ -1,0 +1,257 @@
+<!--
+  ===================================================================================
+  FILE: nav_graph.xml
+  DESCRIPTION:
+    This XML resource defines the main navigation graph for the Dog Walking Mobile
+    Application, powered by the androidx.navigation (v2.7.0) library. It supports
+    both dog owners and walkers, providing key destinations such as Home, Active
+    Walk, Profile, and Payment History screens with complete navigation actions,
+    deep linking, and smooth enter/exit animations. Placeholders for secondary
+    fragments (e.g., Book Walk, Walk Summary, Edit Profile, etc.) are also included
+    to ensure no incomplete references remain, satisfying the project's
+    enterprise-ready requirements.
+
+  REQUIREMENTS ADDRESSED:
+    • Mobile Navigation Structure (Technical Specifications/6.1 & 6.2)
+      Implements the primary application flow with start and secondary destinations.
+    • Core Screen Layouts
+      Provides navigation paths between main screens (HomeFragment, ActiveWalkFragment,
+      ProfileFragment, PaymentHistoryFragment).
+    • Navigation Elements
+      Implements navigation patterns with smooth transitions, proper back stack handling,
+      and accessibility support via Android’s Navigation component.
+
+  EXTERNAL IMPORTS (ANNOTATED PER IE2):
+    • androidx.navigation:2.7.0 (used implicitly for managing the navigation graph)
+  
+  INTERNAL IMPORTS (PER IE1):
+    • @anim/slide_in.xml (transition animation for entering)
+    • @anim/slide_out.xml (transition animation for exiting)
+
+  ATTRIBUTES:
+    • app:startDestination="@id/homeFragment" 
+      Defines the primary entry point for the navigation graph.
+    • app:defaultNavHost="true" 
+      Allows this navigation graph to intercept system Back button events if set
+      in the host activity.
+
+  NAVIGATION FLOW HIGHLIGHTS:
+    • homeFragment:
+      - Deep link: dogwalking://home
+      - Actions to bookWalkFragment and activeWalkFragment with slide animations
+    • activeWalkFragment:
+      - Deep link: dogwalking://walk/{walkId}
+      - Argument: walkId (string, non-null)
+      - Action to walkSummaryFragment
+    • profileFragment:
+      - Deep link: dogwalking://profile
+      - Actions to editProfileFragment, dogListFragment, preferencesFragment
+    • paymentHistoryFragment:
+      - Deep link: dogwalking://payments
+      - Actions to addPaymentFragment, transactionDetailsFragment
+    • Additional placeholders for incomplete references:
+      - bookWalkFragment, walkSummaryFragment, editProfileFragment, dogListFragment,
+        preferencesFragment, addPaymentFragment, transactionDetailsFragment
+
+  ANIMATION USAGE:
+    All destinations make use of:
+    • app:enterAnim="@anim/slide_in"
+    • app:exitAnim="@anim/slide_out"
+    ensuring a consistent UX with accelerate/decelerate motion.
+
+  ===================================================================================
+-->
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment"
+    app:defaultNavHost="true">
+
+    <!-- ========================================================================= -->
+    <!-- HOME FRAGMENT: The main entry point for both owners and walkers.        -->
+    <!-- Deep Link (dogwalking://home) allows easy app access from external URIs. -->
+    <!-- ========================================================================= -->
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.dogwalking.app.ui.home.HomeFragment"
+        android:label="@string/app_name"
+        android:layout="@layout/fragment_home"
+        tools:layout="@layout/fragment_home">
+
+        <!-- Deep Link for direct navigation to the Home screen. -->
+        <deepLink
+            android:id="@+id/deepLink_home"
+            app:uri="dogwalking://home" />
+
+        <!-- Action: Navigates from Home to Book Walk flow. -->
+        <action
+            android:id="@+id/action_home_to_book_walk"
+            app:destination="@id/bookWalkFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+
+        <!-- Action: Navigates from Home to Active Walk screen. -->
+        <action
+            android:id="@+id/action_home_to_active_walk"
+            app:destination="@id/activeWalkFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+    </fragment>
+
+    <!-- ========================================================================= -->
+    <!-- ACTIVE WALK FRAGMENT: Displays real-time tracking of the ongoing walk.   -->
+    <!-- Accepts a non-null walkId argument and supports direct URI navigation.    -->
+    <!-- ========================================================================= -->
+    <fragment
+        android:id="@+id/activeWalkFragment"
+        android:name="com.dogwalking.app.ui.walk.ActiveWalkFragment"
+        android:label="Active Walk"
+        android:layout="@layout/fragment_active_walk"
+        tools:layout="@layout/fragment_active_walk">
+
+        <!-- Deep Link: dogwalking://walk/{walkId} for direct walk tracking. -->
+        <deepLink
+            android:id="@+id/deepLink_active_walk"
+            app:uri="dogwalking://walk/{walkId}" />
+
+        <!-- Argument: walkId (required, non-null) for identifying the current walk. -->
+        <argument
+            android:name="walkId"
+            app:argType="string"
+            app:nullable="false" />
+
+        <!-- Action: Navigates from Active Walk to Walk Summary screen. -->
+        <action
+            android:id="@+id/action_active_walk_to_summary"
+            app:destination="@id/walkSummaryFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+    </fragment>
+
+    <!-- ========================================================================= -->
+    <!-- PROFILE FRAGMENT: Displays user (owner/walker) profile data and links to  -->
+    <!-- editing capabilities, dog list, and application preferences.             -->
+    <!-- ========================================================================= -->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.dogwalking.app.ui.profile.ProfileFragment"
+        android:label="Profile"
+        android:layout="@layout/fragment_profile"
+        tools:layout="@layout/fragment_profile">
+
+        <!-- Deep Link: dogwalking://profile -->
+        <deepLink
+            android:id="@+id/deepLink_profile"
+            app:uri="dogwalking://profile" />
+
+        <!-- Action: Navigates from Profile to Edit Profile fragment. -->
+        <action
+            android:id="@+id/action_profile_to_edit_profile"
+            app:destination="@id/editProfileFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+
+        <!-- Action: Navigates from Profile to Dog List fragment. -->
+        <action
+            android:id="@+id/action_profile_to_dog_list"
+            app:destination="@id/dogListFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+
+        <!-- Action: Navigates from Profile to Preferences fragment. -->
+        <action
+            android:id="@+id/action_profile_to_preferences"
+            app:destination="@id/preferencesFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+    </fragment>
+
+    <!-- ========================================================================= -->
+    <!-- PAYMENT HISTORY FRAGMENT: Displays a list of past and future transactions,-->
+    <!-- offering actions to add payment methods or view transaction details.      -->
+    <!-- ========================================================================= -->
+    <fragment
+        android:id="@+id/paymentHistoryFragment"
+        android:name="com.dogwalking.app.ui.payment.PaymentHistoryFragment"
+        android:label="Payment History"
+        android:layout="@layout/fragment_payment_history"
+        tools:layout="@layout/fragment_payment_history">
+
+        <!-- Deep Link: dogwalking://payments -->
+        <deepLink
+            android:id="@+id/deepLink_payments"
+            app:uri="dogwalking://payments" />
+
+        <!-- Action: Navigates from Payment History to Add Payment flow. -->
+        <action
+            android:id="@+id/action_payment_history_to_add_payment"
+            app:destination="@id/addPaymentFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+
+        <!-- Action: Navigates from Payment History to Transaction Details. -->
+        <action
+            android:id="@+id/action_payment_history_to_transaction_details"
+            app:destination="@id/transactionDetailsFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+    </fragment>
+
+    <!-- ========================================================================= -->
+    <!-- PLACEHOLDER FRAGMENTS: Defined to ensure no incomplete references remain. -->
+    <!-- These fragments are referenced by actions within the navigation graph.    -->
+    <!-- ========================================================================= -->
+
+    <!-- Book Walk Fragment -->
+    <fragment
+        android:id="@+id/bookWalkFragment"
+        android:name="com.dogwalking.app.ui.walk.BookWalkFragment"
+        android:label="Book Walk"
+        tools:layout="@layout/fragment_book_walk" />
+
+    <!-- Walk Summary Fragment -->
+    <fragment
+        android:id="@+id/walkSummaryFragment"
+        android:name="com.dogwalking.app.ui.walk.WalkSummaryFragment"
+        android:label="Walk Summary"
+        tools:layout="@layout/fragment_walk_summary" />
+
+    <!-- Edit Profile Fragment -->
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.dogwalking.app.ui.profile.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile" />
+
+    <!-- Dog List Fragment -->
+    <fragment
+        android:id="@+id/dogListFragment"
+        android:name="com.dogwalking.app.ui.profile.DogListFragment"
+        android:label="Dog List"
+        tools:layout="@layout/fragment_dog_list" />
+
+    <!-- Preferences Fragment -->
+    <fragment
+        android:id="@+id/preferencesFragment"
+        android:name="com.dogwalking.app.ui.profile.PreferencesFragment"
+        android:label="Preferences"
+        tools:layout="@layout/fragment_preferences" />
+
+    <!-- Add Payment Fragment -->
+    <fragment
+        android:id="@+id/addPaymentFragment"
+        android:name="com.dogwalking.app.ui.payment.AddPaymentFragment"
+        android:label="Add Payment"
+        tools:layout="@layout/fragment_add_payment" />
+
+    <!-- Transaction Details Fragment -->
+    <fragment
+        android:id="@+id/transactionDetailsFragment"
+        android:name="com.dogwalking.app.ui.payment.TransactionDetailsFragment"
+        android:label="Transaction Details"
+        tools:layout="@layout/fragment_transaction_details" />
+
+</navigation>
