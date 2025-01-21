@@ -1,0 +1,289 @@
+################################################################################
+# Kubernetes Manifest for Payment Service
+# ------------------------------------------------------------------------------
+# This file defines all major Kubernetes resources required for deploying the
+# Payment Service within the Dog Walking application. It includes:
+#   1. A Deployment for running the Payment Service container with enhanced
+#      security, resource limits, probes, and environment configuration.
+#   2. A Service exposing internal network access on port 3002 (ClusterIP).
+#   3. A HorizontalPodAutoscaler resource leveraging CPU and memory metrics
+#      for efficient, scalable auto-scaling.
+#
+# Namespace:
+#   dog-walking
+#
+# Key Features from technical specification:
+#   - PCI DSS compliance considerations for payment operations.
+#   - Secure environment variables from ConfigMap and Secrets.
+#   - Resource requests/limits ensuring stable performance.
+#   - Automated horizontal scaling triggers when CPU/memory thresholds are met.
+################################################################################
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  ##############################################################################
+  # The name of this Deployment resource. Aligned with the JSON specification.
+  ##############################################################################
+  name: payment-service-deployment
+
+  ##############################################################################
+  # The Payment Service resides in the "dog-walking" namespace, aligning with
+  # standard multi-service architecture guidelines.
+  ##############################################################################
+  namespace: dog-walking
+
+  ##############################################################################
+  # Labels provide a systematic way of categorizing and selecting this resource.
+  # The "app" label here must match the selector for the Service and HPA.
+  ##############################################################################
+  labels:
+    app: payment-service
+spec:
+  ##############################################################################
+  # Number of replicas, set to 3 for high availability, ensuring minimal
+  # downtime and load distribution.
+  ##############################################################################
+  replicas: 3
+
+  ##############################################################################
+  # The selector defines how the Deployment identifies its Pods. This must match
+  # the template's labels to associate Pods correctly.
+  ##############################################################################
+  selector:
+    matchLabels:
+      app: payment-service
+
+  ##############################################################################
+  # Template describing the Pod specification, including metadata (labels,
+  # annotations) and the container definitions.
+  ##############################################################################
+  template:
+    metadata:
+      labels:
+        app: payment-service
+      annotations:
+        ############################################################################
+        # Annotations to facilitate Prometheus-based scraping of metrics. This
+        # ensures that the monitoring stack can discover and scrape the service.
+        ############################################################################
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3002"
+        prometheus.io/path: "/metrics"
+
+    spec:
+      ##########################################################################
+      # High-level security context for the entire Pod:
+      #   - runAsNonRoot: enforced for security best practices
+      #   - runAsUser, runAsGroup, fsGroup: set to 1000, restricting privileges
+      #   - readOnlyRootFilesystem: true prevents modifications to the base image
+      #   - allowPrivilegeEscalation: false to disallow escalating privileges
+      ##########################################################################
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+
+      ##########################################################################
+      # Define the container(s) in this Pod. For the Payment Service, only one
+      # primary container is required, with dedicated resource constraints,
+      # security context, and environment references.
+      ##########################################################################
+      containers:
+        - name: payment-service
+          ######################################################################
+          # Docker Image for the Payment Service, versioned for clarity. Ensures
+          # consistent deployment across environments.
+          # (External import: "payment-service" version 1.0.0).
+          ######################################################################
+          image: "payment-service:1.0.0" # payment-service Docker image version 1.0.0
+
+          ######################################################################
+          # Expose container port 3002, named "http" for clarity. This is how
+          # the Service object will route requests to the container.
+          ######################################################################
+          ports:
+            - containerPort: 3002
+              name: http
+
+          ######################################################################
+          # Resource requests/limits:
+          #   - requests: Minimum amount of compute resources required.
+          #   - limits: Maximum amount of compute resources allowed.
+          ######################################################################
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          ######################################################################
+          # Container-level security context further tightens capabilities:
+          #   - Drop ALL capabilities to minimize container privileges.
+          ######################################################################
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+
+          ######################################################################
+          # Startup Probe:
+          #   - Checks the /health/startup endpoint to ensure the container
+          #     starts correctly. If unsuccessful within the failure threshold,
+          #     the container is considered faulty.
+          ######################################################################
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: 3002
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+
+          ######################################################################
+          # Liveness Probe:
+          #   - Assesses ongoing health via /health/live. If this probe fails,
+          #     Kubernetes restarts the container. The initial delay is higher
+          #     to accommodate warm-up time.
+          ######################################################################
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          ######################################################################
+          # Readiness Probe:
+          #   - Verifies readiness on /health/ready. The container only receives
+          #     live traffic once this probe succeeds.
+          ######################################################################
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 3002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          ######################################################################
+          # envFrom references:
+          #   - payment-service-config ConfigMap for non-sensitive environment
+          #     variables.
+          #   - stripe-secrets Secret for sensitive Stripe API credentials.
+          ######################################################################
+          envFrom:
+            - configMapRef:
+                name: payment-service-config
+            - secretRef:
+                name: stripe-secrets
+
+          ######################################################################
+          # volumeMounts:
+          #   - A temporary /tmp directory is provided for ephemeral storage,
+          #     supporting file operations that do not persist beyond container
+          #     lifetime.
+          ######################################################################
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      ##########################################################################
+      # Temporary volume (emptyDir) for ephemeral data storage such as logs,
+      # caching, or file uploads that do not require persistence.
+      ##########################################################################
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  ##############################################################################
+  # The Service name is "payment-service-service", as specified. This provides
+  # cluster-internal connectivity on port 3002 via a stable DNS entry.
+  ##############################################################################
+  name: payment-service-service
+  namespace: dog-walking
+  labels:
+    app: payment-service
+spec:
+  ##############################################################################
+  # Service type of "ClusterIP" restricts routing within the cluster, ensuring
+  # internal communication security. Potential external ingress can be handled
+  # via an Ingress or gateway layer if required.
+  ##############################################################################
+  type: ClusterIP
+  ##############################################################################
+  # The selector must match the labels we applied to the Pods in the Deployment
+  # specification.
+  ##############################################################################
+  selector:
+    app: payment-service
+  ##############################################################################
+  # Define a single port named "http", matching containerPort 3002 within the Pod.
+  ##############################################################################
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3002
+      targetPort: 3002
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  ##############################################################################
+  # An HPA automatically scales the number of pod replicas based on resource
+  # utilization metrics (CPU, memory).
+  ##############################################################################
+  name: payment-service-hpa
+  namespace: dog-walking
+  labels:
+    app: payment-service
+spec:
+  ##############################################################################
+  # Setting minimum replicas to 3 ensures baseline high availability. The system
+  # can scale up to 10 pods to handle higher loads when CPU/memory usage grows.
+  ##############################################################################
+  minReplicas: 3
+  maxReplicas: 10
+
+  ##############################################################################
+  # scaleTargetRef references the Deployment we want to scale. The apiVersion,
+  # kind, and name must accurately map to the Payment Service Deployment.
+  ##############################################################################
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: payment-service-deployment
+
+  ##############################################################################
+  # metrics define the triggers:
+  #   - CPU utilization averageUtilization: 70%
+  #   - Memory utilization averageUtilization: 80%
+  # If usage exceeds these thresholds, the HPA will scale up.
+  ##############################################################################
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
