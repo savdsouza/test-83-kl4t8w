@@ -1,0 +1,182 @@
+<!--
+    ***********************************************************************************
+    Layout File: fragment_payment_history.xml
+    Description:
+      - This layout file displays a comprehensive Payment History screen where users
+        can review their past transactions in a scrollable list, refresh the data with
+        a pull-to-refresh gesture, and observe an explicit loading indicator while data
+        is being fetched.
+
+    Requirements Addressed:
+      1) Financial Operations:
+         - Presents a scrollable list of previous payment transactions, meeting the
+           requirement to display financial records and transaction statuses.
+      2) User Interface Design:
+         - Employs Material Design guidelines for spacing, visuals, and hierarchy.
+         - Integrates an elevated card-based list item (refer to @layout/item_payment)
+           and properly spaced layouts.
+      3) Accessibility Support:
+         - Screen reader-friendly content descriptions are provided for list items
+           and loading indicators.
+         - Polite live region announcements for dynamic content updates (payment list).
+         - Adequate touch targets and region declarations.
+
+    External Imports (with versions):
+      - androidx.constraintlayout.widget.ConstraintLayout (2.1.4)
+      - androidx.swiperefreshlayout.widget.SwipeRefreshLayout (1.1.0)
+      - androidx.recyclerview.widget.RecyclerView (1.3.0)
+      - androidx.core.widget.ContentLoadingProgressBar (1.9.0)
+
+    Internal Imports:
+      - @layout/item_payment for individual transaction display items
+      - @drawable/bg_card for card backgrounds with elevation and rounded corners
+
+    Data Binding:
+      - viewModel (PaymentViewModel): Provides the observable list of payments, loading
+        state, and logic to refresh payment history.
+      - The onRefresh event is bound to viewModel.loadPaymentHistory().
+      - The payments list binds to a custom attribute app:items="@{viewModel.payments}".
+      - The loadingIndicator visibility is tied to viewModel.loading (boolean).
+    
+    State Handling:
+      - Loading State: ContentLoadingProgressBar visible if viewModel.loading = true.
+      - Pull-to-Refresh: Swipe down triggers loadPaymentHistory() in the ViewModel.
+      - Comprehensive approach includes placeholders for empty and error states
+        (TextViews with default visibility "gone"), ensuring future readiness.
+
+
+***********************************************************************************
+-->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        Data block for the PaymentViewModel, which handles:
+          - loading: Identifies whether a data request is in progress.
+          - payments: A list or LiveData of payment records to display.
+          - loadPaymentHistory(): Triggered on swipe-to-refresh.
+    -->
+    <data>
+        <import type="android.view.View" />
+
+        <variable
+            name="viewModel"
+            type="PaymentViewModel" />
+    </data>
+
+    <!--
+        Root ConstraintLayout:
+          - Expands to fill the screen (match_parent).
+          - Applies a background color from @color/background to maintain UI consistency.
+          - Ensures layout fits system windows for proper status bar handling.
+    -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:fitsSystemWindows="true"
+        tools:context=".ui.paymenthistory.PaymentHistoryFragment">
+
+        <!--
+            SwipeRefreshLayout (version 1.1.0):
+              - Enables the pull-to-refresh gesture to update payment history.
+              - Set height to 0dp for vertical ConstraintLayout matching from top to bottom.
+              - Bound to loadPaymentHistory() via a data binding adapter attribute onRefresh.
+              - importantForAccessibility set to "yes" to ensure screen reader usage is optimal.
+        -->
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/refreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:importantForAccessibility="yes"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:onRefresh="@{() -> viewModel.loadPaymentHistory()}">
+
+            <!--
+                RecyclerView (version 1.3.0):
+                  - Displays the list of payments with efficient view holder recycling.
+                  - Content description and polite live region handle accessibility announcements.
+                  - Uses tools:listitem for design-time preview of each item (item_payment layout).
+                  - Binds the payment data to the adapter with a custom attribute app:items.
+            -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/paymentList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:fadeScrollbars="true"
+                android:scrollbarStyle="outsideOverlay"
+                android:scrollbars="vertical"
+                android:contentDescription="List of payment transactions. Swipe down to refresh."
+                android:accessibilityLiveRegion="polite"
+                android:padding="@dimen/spacing_medium"
+                app:items="@{viewModel.payments}"
+                tools:listitem="@layout/item_payment" />
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!--
+            ContentLoadingProgressBar (version 1.9.0):
+              - Displays a circular indeterminate material progress indicator during loading.
+              - Set to initial GONE visibility; made VISIBLE if viewModel.loading = true.
+              - Centered by constraining all sides to parent.
+              - Provides an accessible description for screen readers.
+        -->
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/loadingIndicator"
+            style="@style/Widget.MaterialComponents.CircularProgressIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="Loading payment history"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="@{viewModel.loading ? View.VISIBLE : View.GONE}" />
+
+        <!--
+            Additional TextView for EMPTY STATE:
+              - Shown if there are no payment entries returned by the ViewModel (Future usage).
+              - Defined as invisible by default to avoid overlap.
+              - Placed at center via horizontal/vertical constraints.
+        -->
+        <TextView
+            android:id="@+id/emptyStateView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/payment_history_empty_state"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_body"
+            android:gravity="center"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!--
+            Additional TextView for ERROR STATE:
+              - Shown if an error occurs while loading payment data (Future usage).
+              - Defined as invisible by default, similarly placed in center.
+        -->
+        <TextView
+            android:id="@+id/errorStateView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/payment_history_error_state"
+            android:textColor="@color/error_dark"
+            android:textSize="@dimen/text_body"
+            android:gravity="center"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
