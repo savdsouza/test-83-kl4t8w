@@ -1,0 +1,129 @@
+# -------------------------------------------------------------------------
+# Prometheus Alerting Rules for the Dog Walking Application
+# -------------------------------------------------------------------------
+# IMPORTS & REFERENCES:
+# - External Import:
+#     * Using Prometheus v2.45.0 for alerting syntax & functionality
+# - Internal Import (prometheus/rules.yml):
+#     * service:up:ratio        -> Recording rule to measure service availability
+#     * service:error_rate:ratio -> Recording rule to measure service error rate
+#     * service:request_duration:p95 -> Recording rule for 95th percentile latency
+#     * business:active_walks:total  -> Recording rule for active walks KPI
+#
+# REQUIREMENTS ADDRESSED:
+#  1) System Monitoring (Section 2.4.1): Implements comprehensive monitoring
+#     and alerting for real-time service availability, performance, and resource usage.
+#  2) Success Criteria (Section 1.2): Critical alerts ensuring uptime >= 99.9%.
+#  3) High Availability (Section 2.5.1): Alerts to safeguard multi-AZ deployment
+#     health, resource utilization, and auto-scaling thresholds.
+#
+# EXPORTING NAMED ALERT GROUPS:
+#  * service_health
+#  * performance
+#  * business_alerts
+#  * resource_alerts
+#
+# Each group contains one or more alerting rules. All thresholds, labels,
+# and annotation fields are carefully configured for enterprise-grade, 
+# production-ready deployments.
+# -------------------------------------------------------------------------
+
+groups:
+  # -----------------------------------------
+  # ALERT GROUP: service_health
+  # -----------------------------------------
+  - name: "service_health"
+    rules:
+      - alert: "ServiceDown"
+        expr: "service:up:ratio < 0.999"
+        for: "5m"
+        labels:
+          severity: "critical"
+          category: "availability"
+        annotations:
+          summary: "Service availability below 99.9% SLA"
+          description: "{{ $labels.job }} service availability is {{ $value }} over 5m period"
+          runbook_url: "runbooks/service-availability.md"
+
+      - alert: "HighErrorRate"
+        expr: "service:error_rate:ratio > 0.05"
+        for: "5m"
+        labels:
+          severity: "warning"
+          category: "errors"
+        annotations:
+          summary: "Error rate exceeds 5% threshold"
+          description: "{{ $labels.job }} error rate is {{ $value }} over 5m period"
+          runbook_url: "runbooks/error-rate.md"
+
+  # -----------------------------------------
+  # ALERT GROUP: performance
+  # -----------------------------------------
+  - name: "performance"
+    rules:
+      - alert: "SlowResponseTime"
+        expr: "service:request_duration:p95 > 2"
+        for: "10m"
+        labels:
+          severity: "warning"
+          category: "latency"
+        annotations:
+          summary: "P95 latency exceeds 2s threshold"
+          description: "{{ $labels.job }} p95 latency is {{ $value }}s over 10m period"
+          runbook_url: "runbooks/latency.md"
+
+  # -----------------------------------------
+  # ALERT GROUP: business_alerts
+  # -----------------------------------------
+  - name: "business_alerts"
+    rules:
+      - alert: "LowActiveWalks"
+        expr: "rate(business:active_walks:total[1h]) < 10"
+        for: "30m"
+        labels:
+          severity: "warning"
+          team: "business"
+          category: "business"
+        annotations:
+          summary: "Active walks below business threshold"
+          description: "Active walks rate is {{ $value }} per hour over 30m period"
+          dashboard_url: "dashboards/business-metrics"
+
+      - alert: "PaymentFailureSpike"
+        expr: 'rate(payment_transactions_total{status="failed"}[5m]) > 5'
+        for: "5m"
+        labels:
+          severity: "critical"
+          team: "payments"
+          category: "business"
+        annotations:
+          summary: "Payment failure rate spike detected"
+          description: "Payment failures at {{ $value }} per minute over 5m period"
+          runbook_url: "runbooks/payment-failures.md"
+
+  # -----------------------------------------
+  # ALERT GROUP: resource_alerts
+  # -----------------------------------------
+  - name: "resource_alerts"
+    rules:
+      - alert: "HighMemoryUsage"
+        expr: "resource:memory:usage > 0.85"
+        for: "15m"
+        labels:
+          severity: "warning"
+          category: "resources"
+        annotations:
+          summary: "Memory usage exceeds 85% threshold"
+          description: "{{ $labels.job }} memory usage at {{ $value }}% over 15m period"
+          runbook_url: "runbooks/memory-usage.md"
+
+      - alert: "HighCPUUsage"
+        expr: "resource:cpu:usage > 0.8"
+        for: "15m"
+        labels:
+          severity: "warning"
+          category: "resources"
+        annotations:
+          summary: "CPU usage exceeds 80% threshold"
+          description: "{{ $labels.job }} CPU usage at {{ $value }}% over 15m period"
+          runbook_url: "runbooks/cpu-usage.md"
