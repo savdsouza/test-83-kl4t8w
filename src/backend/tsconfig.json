@@ -1,0 +1,161 @@
+{
+  // This configuration file uses TypeScript (v5.3.3) to compile and type-check
+  // all backend microservices. It enforces strict compilation settings to
+  // maintain high availability, security, and reliability in the system.
+
+  "compilerOptions": {
+    // The ECMAScript target version for compiled output. ES2022 ensures modern
+    // JavaScript features and optimizations are used at runtime.
+    "target": "ES2022",
+
+    // The module code generation method. CommonJS is widely supported and aligns
+    // with Node.js-based microservices.
+    "module": "CommonJS",
+
+    // Specifies the built-in library declarations included during compilation.
+    // Including ES2022 gives access to current ECMAScript features and globals.
+    "lib": [
+      "ES2022"
+    ],
+
+    // The output directory for TypeScript-compiled JavaScript files.
+    "outDir": "./dist",
+
+    // The root directory of our source files. This helps the compiler organize
+    // relative imports consistently across microservices.
+    "rootDir": "./src",
+
+    // Sets the base directory to resolve non-relative module names. This allows
+    // microservices to rely on internal path aliases.
+    "baseUrl": "./",
+
+    // Provides path aliases for clearer imports. For example, import code with
+    // "@/services" instead of long relative paths.
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+
+    // Enables project references and incremental builds in a multi-service
+    // workspace, improving build performance at scale.
+    "composite": true,
+
+    // Generates .d.ts files for external usage. This is crucial for shared
+    // interfaces across microservices.
+    "declaration": true,
+
+    // Creates .d.ts.map files for improved debugging of declaration source maps.
+    "declarationMap": true,
+
+    // Produces .map files for debugging, enabling rapid resolution of issues to
+    // maintain our 99.9% uptime target.
+    "sourceMap": true,
+
+    // Enforces all strict type-checking options. This is essential to identify
+    // potential security and reliability issues early in development.
+    "strict": true,
+
+    // Disallows variables defined without an explicit type, preventing accidental
+    // usage of the `any` type that can introduce runtime errors.
+    "noImplicitAny": true,
+
+    // Requires explicit handling of null and undefined, preventing common
+    // crashes and security vulnerabilities.
+    "strictNullChecks": true,
+
+    // Verifies function parameter and return types are strictly compatible,
+    // reducing unexpected behavior in microservice communications.
+    "strictFunctionTypes": true,
+
+    // Strengthens checks for the .call(), .apply(), and .bind() method
+    // arguments, preventing invalid scope-based issues.
+    "strictBindCallApply": true,
+
+    // Ensures class properties are all initialized, preventing uninitialized
+    // fields in critical backend logic.
+    "strictPropertyInitialization": true,
+
+    // Disallows incorrect usage of 'this' within context. This ensures better
+    // maintainability within complex microservices.
+    "noImplicitThis": true,
+
+    // Always emit 'use strict' in generated outputs, enforcing secure and
+    // faster JavaScript execution.
+    "alwaysStrict": true,
+
+    // Flags and removes local variables that are declared but never used.
+    // Enhances code clarity and reduces potential security pitfalls.
+    "noUnusedLocals": true,
+
+    // Flags and removes unused function parameters. This ensures only
+    // necessary parameters remain in function signatures, improving clarity.
+    "noUnusedParameters": true,
+
+    // Ensures all code paths in a function return a value or explicitly
+    // throw an error, preventing silent failures.
+    "noImplicitReturns": true,
+
+    // Prevents accidental fallthrough between switch-case statements, which
+    // enhances code safety.
+    "noFallthroughCasesInSwitch": true,
+
+    // Specifies how TypeScript looks up modules during import. "node" resolution
+    // is standard for Node.js-based microservices.
+    "moduleResolution": "node",
+
+    // Enables default imports for modules without default exports, ensuring
+    // compatibility with various libraries.
+    "allowSyntheticDefaultImports": true,
+
+    // Provides interoperability between CommonJS and ES Modules, simplifying
+    // usage of third-party packages.
+    "esModuleInterop": true,
+
+    // Permits usage of experimental decorator syntax, required by many popular
+    // frameworks (e.g., NestJS, TypeORM) in the backend.
+    "experimentalDecorators": true,
+
+    // Emits additional metadata for decorators, supporting deeper frameworks
+    // and libraries that rely on reflection.
+    "emitDecoratorMetadata": true,
+
+    // Skips type checking of declaration files from libraries, improving
+    // overall build performance.
+    "skipLibCheck": true,
+
+    // Ensures file name consistency across different operating systems,
+    // preventing deployment issues and path mismatches.
+    "forceConsistentCasingInFileNames": true,
+
+    // Allows for importing .json files directly in TypeScript, which is often
+    // helpful for configuration and schema handling.
+    "resolveJsonModule": true,
+
+    // Enables incremental compilation to avoid rebuilding unchanged modules,
+    // greatly speeding up frequent deployments.
+    "incremental": true,
+
+    // Stores incremental build information for subsequent compilations in the
+    // specified file, carrying forward compilation state.
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+  },
+
+  // The "include" array lets the compiler know which files should be part
+  // of the compilation process—covering both TS and JSON files we rely on.
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json"
+  ],
+
+  // The "exclude" array ensures that test files, build directories, and
+  // temporary folders are not compiled, improving performance and preventing
+  // conflicts.
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**"
+  ]
+}
