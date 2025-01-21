@@ -1,0 +1,168 @@
+/* -----------------------------------------------------------------------------
+   Importing global design system variables:
+   These variables include breakpoints, spacing, z-index values, and transitions
+   for consistent styling across the application.
+----------------------------------------------------------------------------- */
+@import "../styles/variables.css";
+
+/* -----------------------------------------------------------------------------
+   Global Resets and Base Rules
+   Ensures consistent default styling, removes browser-specific padding/margins,
+   and normalizes box-sizing.
+----------------------------------------------------------------------------- */
+html,
+body {
+  /* Global height, zero margin/padding, and smooth text rendering setup */
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  /* Ensures layout calculations rely on border-box for padding and border widths */
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+*::before,
+*::after {
+  /* Inherits box-sizing to child pseudo-elements for predictable sizing */
+  box-sizing: inherit;
+}
+
+/* -----------------------------------------------------------------------------
+   .container
+   Main content container with maximum width constraint and centered layout.
+----------------------------------------------------------------------------- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* -----------------------------------------------------------------------------
+   .app-layout
+   Primary application layout with grid structure, top and bottom sections,
+   and a flexible middle area to fill remaining space.
+----------------------------------------------------------------------------- */
+.app-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  contain: layout size;
+  content-visibility: auto;
+}
+
+/* -----------------------------------------------------------------------------
+   .sidebar
+   Enhanced sidebar navigation layout. Fixed position with smooth transitions,
+   keeping it visible on larger screens and adjustable for smaller displays.
+----------------------------------------------------------------------------- */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 250px;
+  padding: var(--spacing-lg);
+  background: var(--color-background);
+  border-right: 1px solid var(--color-border);
+  transition: transform var(--transition-normal);
+  will-change: transform;
+  z-index: calc(var(--z-index-header) - 1);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* -----------------------------------------------------------------------------
+   Utility Classes
+   Additional helper classes for specific accessibility and layout scenarios.
+----------------------------------------------------------------------------- */
+
+/* .visually-hidden
+   Hides content visually but keeps it accessible to screen readers.
+*/
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* .rtl
+   Right-to-left support for languages using an RTL reading direction.
+*/
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* -----------------------------------------------------------------------------
+   Responsive & Feature Queries
+   Adjust layouts at various breakpoints and enable fallback for older browsers.
+----------------------------------------------------------------------------- */
+
+/* Mobile layout adjustments (up to the small breakpoint):
+   Sidebar becomes hidden behind a transform shift and can be toggled into view.
+*/
+@media (max-width: var(--breakpoint-sm)) {
+  .container {
+    padding: 0 var(--spacing-sm);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+/* Tablet layout adjustments (between medium and large breakpoints):
+   Sidebar width is reduced, and main content shifts accordingly.
+*/
+@media (min-width: var(--breakpoint-md)) and (max-width: var(--breakpoint-lg)) {
+  .grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  .sidebar {
+    width: 200px;
+  }
+
+  .main-content {
+    margin-left: 200px;
+  }
+}
+
+/* Feature detection for grid support:
+   If the browser supports grid, ensure .grid uses display:grid.
+   This helps provide fallback for older browsers.
+*/
+@supports (display: grid) {
+  .grid {
+    display: grid;
+  }
+}
