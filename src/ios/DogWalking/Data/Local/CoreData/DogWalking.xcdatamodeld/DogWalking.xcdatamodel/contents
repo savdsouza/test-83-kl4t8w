@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DogWalking Core Data Model
+  This file defines the complete schema for the iOS Dog Walking application,
+  including UserEntity, DogEntity, and WalkEntity. It implements an
+  offline-first architecture with robust synchronization features,
+  encrypted fields, and entity relationships that satisfy the
+  Data Management Strategy and Security Architecture from the
+  technical specification.
+-->
+<model
+    name="DogWalking"
+    type="com.apple.CoreData.Model"
+    documentVersion="1"
+    lastSavedToolsVersion="2244"
+    systemVersion="23D49"
+    minimumToolsVersion="Automatic"
+    sourceLanguage="Swift"
+    userInterfaceIdiom="iphone">
+
+    <!--
+      ──────────────────────────────────────────────────────────────────────────
+       ENTITY: UserEntity
+       Represents a user in the system with enhanced sync, security, and
+       relationship fields for dogs (one-to-many), walks as owner, and
+       walks as walker.
+      ──────────────────────────────────────────────────────────────────────────
+    -->
+    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" userDefinedName="UserEntity" objectID="UserEntity-1">
+        <!--
+          Attributes from JSON specification:
+            id (UUID)            | email (String)       | firstName (String)
+            lastName (String)    | phone (String?)      | profileImageUrl (String?)
+            userType (Int16)     | rating (Double)      | completedWalks (Int32)
+            isVerified (Bool)    | encryptedCredentials (Binary)
+            syncStatus (Int16)   | createdAt (Date)     | updatedAt (Date)
+            isDeleted (Bool)     | lastSyncedAt (Date)
+        -->
+        <attribute name="id"                optional="NO"  attributeType="UUID"      syncable="YES"/>
+        <attribute name="email"             optional="NO"  attributeType="String"    syncable="YES"/>
+        <attribute name="firstName"         optional="NO"  attributeType="String"    syncable="YES"/>
+        <attribute name="lastName"          optional="NO"  attributeType="String"    syncable="YES"/>
+        <attribute name="phone"             optional="YES" attributeType="String"    syncable="YES"/>
+        <attribute name="profileImageUrl"   optional="YES" attributeType="String"    syncable="YES"/>
+        <attribute name="userType"          optional="NO"  attributeType="Integer 16" syncable="YES"/>
+        <attribute name="rating"            optional="NO"  attributeType="Double"    syncable="YES"/>
+        <attribute name="completedWalks"    optional="NO"  attributeType="Integer 32" syncable="YES"/>
+        <attribute name="isVerified"        optional="NO"  attributeType="Boolean"   syncable="YES"/>
+        <attribute name="encryptedCredentials" optional="NO" attributeType="Binary"  syncable="YES"/>
+        <attribute name="syncStatus"        optional="NO"  attributeType="Integer 16" syncable="YES"/>
+        <attribute name="createdAt"         optional="NO"  attributeType="Date"      syncable="YES"/>
+        <attribute name="updatedAt"         optional="NO"  attributeType="Date"      syncable="YES"/>
+        <attribute name="isDeleted"         optional="NO"  attributeType="Boolean"   syncable="YES"/>
+        <attribute name="lastSyncedAt"      optional="NO"  attributeType="Date"      syncable="YES"/>
+
+        <!--
+          Relationships for UserEntity:
+            dogs         (toMany -> DogEntity)   Cascade  inverse="owner"
+            walksAsOwner (toMany -> WalkEntity) Nullify  inverse="owner"
+            walksAsWalker(toMany -> WalkEntity) Nullify  inverse="walker"
+          Each relationship is indexed, un-ordered, and optional="YES".
+        -->
+        <relationship
+            name="dogs"
+            destinationEntity="DogEntity"
+            toMany="YES"
+            optional="YES"
+            deletionRule="NSCascadeDeleteRule"
+            indexed="YES"
+            ordered="NO"
+            syncable="YES"
+            inverseName="owner"
+            inverseEntity="DogEntity">
+        </relationship>
+        <relationship
+            name="walksAsOwner"
+            destinationEntity="WalkEntity"
+            toMany="YES"
+            optional="YES"
+            deletionRule="NSNullifyDeleteRule"
+            indexed="YES"
+            ordered="NO"
+            syncable="YES"
+            inverseName="owner"
+            inverseEntity="WalkEntity">
+        </relationship>
+        <relationship
+            name="walksAsWalker"
+            destinationEntity="WalkEntity"
+            toMany="YES"
+            optional="YES"
+            deletionRule="NSNullifyDeleteRule"
+            indexed="YES"
+            ordered="NO"
+            syncable="YES"
+            inverseName="walker"
+            inverseEntity="WalkEntity">
+        </relationship>
+    </entity>
+
+    <!--
+      ──────────────────────────────────────────────────────────────────────────
+       ENTITY: DogEntity
+       Represents a dog profile with security enhancements, sync tracking,
+       and references to its owner and to many associated walks.
+      ──────────────────────────────────────────────────────────────────────────
+    -->
+    <entity name="DogEntity" representedClassName="DogEntity" syncable="YES" userDefinedName="DogEntity" objectID="DogEntity-1">
+        <!--
+          Attributes from JSON specification:
+            id (UUID)              | ownerId (UUID)   | name (String)
+            breed (String)         | birthDate (Date) | encryptedMedicalInfo (Binary)
+            active (Bool)          | profileImageUrl (String?)
+            weight (Double)        | encryptedSpecialInstructions (Binary)
+            syncStatus (Int16)     | lastUpdated (Date)
+            isDeleted (Bool)       | lastSyncedAt (Date)
+        -->
+        <attribute name="id"                optional="NO"  attributeType="UUID"       syncable="YES"/>
+        <attribute name="ownerId"           optional="NO"  attributeType="UUID"       syncable="YES"/>
+        <attribute name="name"              optional="NO"  attributeType="String"     syncable="YES"/>
+        <attribute name="breed"             optional="NO"  attributeType="String"     syncable="YES"/>
+        <attribute name="birthDate"         optional="NO"  attributeType="Date"       syncable="YES"/>
+        <attribute name="encryptedMedicalInfo" optional="NO" attributeType="Binary"   syncable="YES"/>
+        <attribute name="active"            optional="NO"  attributeType="Boolean"    syncable="YES"/>
+        <attribute name="profileImageUrl"   optional="YES" attributeType="String"     syncable="YES"/>
+        <attribute name="weight"            optional="NO"  attributeType="Double"     syncable="YES"/>
+        <attribute name="encryptedSpecialInstructions" optional="NO" attributeType="Binary" syncable="YES"/>
+        <attribute name="syncStatus"        optional="NO"  attributeType="Integer 16" syncable="YES"/>
+        <attribute name="lastUpdated"       optional="NO"  attributeType="Date"       syncable="YES"/>
+        <attribute name="isDeleted"         optional="NO"  attributeType="Boolean"    syncable="YES"/>
+        <attribute name="lastSyncedAt"      optional="NO"  attributeType="Date"       syncable="YES"/>
+
+        <!--
+          Relationships for DogEntity:
+            owner (toOne -> UserEntity)   Nullify  inverse="dogs"
+            walks (toMany -> WalkEntity) Nullify  inverse="dog"
+        -->
+        <relationship
+            name="owner"
+            destinationEntity="UserEntity"
+            toMany="NO"
+            optional="YES"
+            deletionRule="NSNullifyDeleteRule"
+            indexed="YES"
+            ordered="NO"
+            syncable="YES"
+            inverseName="dogs"
+            inverseEntity="UserEntity">
+        </relationship>
+        <relationship
+            name="walks"
+            destinationEntity="WalkEntity"
+            toMany="YES"
+            optional="YES"
+            deletionRule="NSNullifyDeleteRule"
+            indexed="YES"
+            ordered="NO"
+            syncable="YES"
+            inverseName="dog"
+            inverseEntity="WalkEntity">
+        </relationship>
+    </entity>
+
+    <!--
+      ──────────────────────────────────────────────────────────────────────────
+       ENTITY: WalkEntity
+       Represents a dog walking session including location tracking,
+       photo references, status, and synchronization fields. It has links
+       to dog (DogEntity) and to both the owner and walker (UserEntity).
+      ──────────────────────────────────────────────────────────────────────────
+    -->
+    <entity name="WalkEntity" representedClassName="WalkEntity" syncable="YES" userDefinedName="WalkEntity" objectID="WalkEntity-2">
+        <!--
+          Attributes from JSON specification:
+            id (UUID)               | ownerId (UUID)     | walkerId (UUID)
+            dogId (UUID)            | scheduledStartTime (Date)
+            actualStartTime (Date?) | endTime (Date?)    | price (Double)
+            status (Int16)          | compressedLocations (Binary)
+            rating (Double?)        | notes (String?)
+            compressedPhotoUrls (Binary)
+            distance (Double)       | duration (Double)
+            syncStatus (Int16)      | isDeleted (Bool)
+            lastSyncedAt (Date)
+        -->
+        <attribute name="id"                  optional="NO"  attributeType="UUID"       syncable="YES"/>
+        <attribute name="ownerId"             optional="NO"  attributeType="UUID"       syncable="YES"/>
+        <attribute name="walkerId"            optional="NO"  attributeType="UUID"       syncable="YES"/>
+        <attribute name="dogId"               optional="NO"  attributeType="UUID"       syncable="YES"/>
+        <attribute name="scheduledStartTime"  optional="NO"  attributeType="Date"       syncable="YES"/>
+        <attribute name="actualStartTime"     optional="YES" attributeType="Date"       syncable="YES"/>
+        <attribute name="endTime"             optional="YES" attributeType="Date"       syncable="YES"/>
+        <attribute name="price"               optional="NO"  attributeType="Double"     syncable="YES"/>
+        <attribute name="status"              optional="NO"  attributeType="Integer 16" syncable="YES"/>
+        <attribute name="compressedLocations" optional="NO"  attributeType="Binary"     syncable="YES"/>
+        <attribute name="rating"              optional="YES" attributeType="Double"     syncable="YES"/>
+        <attribute name="notes"               optional="YES" attributeType="String"     syncable="YES"/>
+        <attribute name="compressedPhotoUrls" optional="NO"  attributeType="Binary"     syncable="YES"/>
+        <attribute name="distance"            optional="NO"  attributeType="Double"     syncable="YES"/>
+        <attribute name="duration"            optional="NO"  attributeType="Double"     syncable="YES"/>
+        <attribute name="syncStatus"          optional="NO"  attributeType="Integer 16" syncable="YES"/>
+        <attribute name="isDeleted"           optional="NO"  attributeType="Boolean"    syncable="YES"/>
+        <attribute name="lastSyncedAt"        optional="NO"  attributeType="Date"       syncable="YES"/>
+
+        <!--
+          Relationships for WalkEntity:
+            dog    (toOne -> DogEntity)   Nullify  inverse="walks"
+            owner  (toOne -> UserEntity) Nullify  inverse="walksAsOwner"
+            walker (toOne -> UserEntity) Nullify  inverse="walksAsWalker"
+          Each is indexed="YES" and optional="YES".
+        -->
+        <relationship
+            name="dog"
+            destinationEntity="DogEntity"
+            toMany="NO"
+            optional="YES"
+            deletionRule="NSNullifyDeleteRule"
+            indexed="YES"
+            ordered="NO"
+            syncable="YES"
+            inverseName="walks"
+            inverseEntity="DogEntity">
+        </relationship>
+        <relationship
+            name="owner"
+            destinationEntity="UserEntity"
+            toMany="NO"
+            optional="YES"
+            deletionRule="NSNullifyDeleteRule"
+            indexed="YES"
+            ordered="NO"
+            syncable="YES"
+            inverseName="walksAsOwner"
+            inverseEntity="UserEntity">
+        </relationship>
+        <relationship
+            name="walker"
+            destinationEntity="UserEntity"
+            toMany="NO"
+            optional="YES"
+            deletionRule="NSNullifyDeleteRule"
+            indexed="YES"
+            ordered="NO"
+            syncable="YES"
+            inverseName="walksAsWalker"
+            inverseEntity="UserEntity">
+        </relationship>
+    </entity>
+</model>
