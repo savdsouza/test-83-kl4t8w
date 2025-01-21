@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1530"
+   version = "1.7">
+   <!-- 
+       Exported "DogWalking" XCScheme
+       Purpose: Shared scheme configuration for building, testing, debugging, profiling and archiving.
+       Addresses:
+         - Mobile Applications: iOS 13+ with comprehensive build, test, and performance monitoring
+         - Device Support: Proper debug & profile configs for iOS 13+ 
+         - Testing Requirements: Parallel execution, code coverage, multiple test bundles
+       
+       BuildAction configuration references:
+         parallelBuild: YES
+         buildImplicitDependencies: YES
+         enableIndexBuilding: YES  (documented here as a comment)
+    -->
+
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES"
+      >
+      <!-- Configure parallel build settings for optimal performance,
+           set build implicit dependencies for build order,
+           enable index building for improved IDE integration,
+           set up caching if needed. -->
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForAnalyzing = "YES"
+            buildForArchiving = "YES"
+            buildForProfiling = "YES"
+            buildForRunning = "YES"
+            buildForTesting = "YES">
+            <!-- Main application target reference -->
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "000000000000000000000003"
+               BuildableName = "DogWalking.app"
+               BlueprintName = "DogWalking"
+               ReferencedContainer = "container:DogWalking.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForAnalyzing = "YES"
+            buildForArchiving = "YES"
+            buildForProfiling = "YES"
+            buildForRunning = "NO"
+            buildForTesting = "YES">
+            <!-- Test bundle target reference -->
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "000000000000000000000004"
+               BuildableName = "DogWalkingTests.xctest"
+               BlueprintName = "DogWalkingTests"
+               ReferencedContainer = "container:DogWalking.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      codeCoverageEnabled = "YES">
+      <!-- Steps:
+           1. Configure test target references for all test bundles
+           2. Enable code coverage
+           3. Parallel test execution & environment variables
+           4. Test timeouts/retries etc.
+      -->
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "000000000000000000000004"
+               BuildableName = "DogWalkingTests.xctest"
+               BlueprintName = "DogWalkingTests"
+               ReferencedContainer = "container:DogWalking.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "000000000000000000000003"
+            BuildableName = "DogWalking.app"
+            BlueprintName = "DogWalking"
+            ReferencedContainer = "container:DogWalking.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </TestAction>
+
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      allowLocationSimulation = "YES"
+      enableAddressSanitizer = "YES"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      enableGPUFrameCaptureMode = "auto"
+      enableGPUValidationMode = "auto">
+      <!-- Steps:
+           1. Set build configuration for debug
+           2. Enable memory sanitizer if needed
+           3. Configure environment variables or arguments
+           4. Allow location simulation
+           5. Memory graph debugging & crash reporting
+      -->
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "000000000000000000000003"
+            BuildableName = "DogWalking.app"
+            BlueprintName = "DogWalking"
+            ReferencedContainer = "container:DogWalking.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <AdditionalOptions>
+      </AdditionalOptions>
+   </LaunchAction>
+
+   <ProfileAction
+      buildConfiguration = "Release"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      enableTestabilityWhenProfilingTests = "YES"
+      debugDocumentVersioning = "YES"
+      ignoresPersistentStateOnLaunch = "NO">
+      <!-- Steps:
+           1. Set build config for profiling
+           2. Configure time profiler, memory leak detection
+           3. Set environment variables for performance tests
+           4. Baselines & concurrency checks
+      -->
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "000000000000000000000003"
+            BuildableName = "DogWalking.app"
+            BlueprintName = "DogWalking"
+            ReferencedContainer = "container:DogWalking.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+      <!-- Basic archive config referencing the release build.
+           Steps:
+            1. Generate dSYM with dwarf-with-dsym 
+            2. Adhere to code signing & provisioning rules
+            3. Produce .xcarchive for distribution
+      -->
+   </ArchiveAction>
+</Scheme>
