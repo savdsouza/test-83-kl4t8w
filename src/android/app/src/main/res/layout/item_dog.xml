@@ -1,0 +1,129 @@
+<!--
+    This layout file provides a Material Design 3 item view representing
+    an individual dog profile in a RecyclerView list. It uses Android
+    Data Binding to connect UI elements to the underlying "dog" data
+    model. Accessibility attributes and content descriptions are included
+    to ensure screen reader compatibility. A click action is bound to
+    navigate to dog details.
+
+    External Imports:
+      - CardView from androidx.cardview:cardview:1.0.0
+      - ConstraintLayout from androidx.constraintlayout:constraintlayout:2.1.4
+      - ShapeableImageView from com.google.android.material:material:1.9.0
+
+    Internal Import:
+      - bg_card.xml as the card background drawable
+-->
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        Data binding variables:
+        "dog" holds the dog properties such as name, breed, and profile image URL.
+        "fragment" references a DogListFragment (or similar) to handle navigation.
+    -->
+    <data>
+        <variable
+            name="dog"
+            type="com.example.model.Dog" />
+
+        <variable
+            name="fragment"
+            type="com.example.ui.DogListFragment" />
+    </data>
+
+    <!-- CardView from androidx.cardview.widget.CardView (version 1.0.0).
+         The root layout is focusable and clickable, serving as the touch target
+         for navigating to dog details. Content description is bound to "dog" data
+         for improved accessibility. -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/item_dog_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_small"
+        android:focusable="true"
+        android:clickable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:onClick="@{() -> fragment.navigateToDogDetails(dog.id)}"
+        android:contentDescription='@{`Dog profile card for ` + dog.name + `, ` + dog.breed}'
+        app:cardUseCompatPadding="true"
+        app:cardPreventCornerOverlap="true"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        android:background="@drawable/bg_card"
+        tools:ignore="ContentDescription">
+
+        <!-- ConstraintLayout from androidx.constraintlayout.widget.ConstraintLayout (version 2.1.4).
+             Provides flexible constraints for arranging child views. -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="88dp"
+            android:padding="@dimen/spacing_medium">
+
+            <!-- ShapeableImageView from com.google.android.material.imageview.ShapeableImageView (version 1.9.0).
+                 Displays the dog's profile picture using a round corner shape. -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iv_dog_profile"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:importantForAccessibility="no"
+                android:src="@{dog.profileImageUrl}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
+                tools:ignore="ResourceType" />
+
+            <!-- TextView displaying the dog's name in a single line with ellipsis. -->
+            <TextView
+                android:id="@+id/tv_dog_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:importantForAccessibility="yes"
+                android:maxLines="1"
+                android:text='@{dog.name}'
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                app:layout_constraintEnd_toStartOf="@id/tv_walk_status"
+                app:layout_constraintStart_toEndOf="@id/iv_dog_profile"
+                app:layout_constraintTop_toTopOf="@id/iv_dog_profile"
+                android:layout_marginStart="@dimen/spacing_medium" />
+
+            <!-- TextView displaying the dog's breed. -->
+            <TextView
+                android:id="@+id/tv_dog_breed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:importantForAccessibility="yes"
+                android:maxLines="1"
+                android:text='@{dog.breed}'
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?android:textColorSecondary"
+                app:layout_constraintEnd_toStartOf="@id/tv_walk_status"
+                app:layout_constraintStart_toEndOf="@id/iv_dog_profile"
+                app:layout_constraintTop_toBottomOf="@id/tv_dog_name"
+                android:layout_marginStart="@dimen/spacing_medium" />
+
+            <!-- TextView to show the dog's walk eligibility status with a background chip. -->
+            <TextView
+                android:id="@+id/tv_walk_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription='@{`Walk eligibility status for ` + dog.name}'
+                android:gravity="center"
+                android:minWidth="48dp"
+                android:padding="@dimen/spacing_small"
+                android:text='@{dog.isEligibleForWalk ? `Eligible` : `Not Eligible`}'
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:importantForAccessibility="yes"
+                android:background="@drawable/bg_status_chip"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</layout>
