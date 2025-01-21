@@ -1,0 +1,187 @@
+#------------------------------------------------------------------------------
+# Logstash configuration file for centralized log aggregation in the Dog Walking
+# Application's ELK stack monitoring infrastructure.
+#
+# External Dependencies (IE2: Library Versions):
+#   - logstash (v8.11.1): Core Logstash functionality (logs processing, filtering, forwarding)
+#   - x-pack-logstash (v8.11.1): Enterprise security & monitoring features
+#
+# Exports (IE3: Generous named exports for external integrations):
+#   - monitoring_settings (named section)
+#   - api_settings (named section)
+#   - elasticsearch_settings (named section)
+#
+# This file ensures enterprise-grade reliability, security, and performance,
+# addressing:
+#   1) System Monitoring (2.4.1)
+#   2) Cross-Cutting Concerns (2.4)
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# node_settings:
+# Enhanced node configuration with optimized processing parameters
+#------------------------------------------------------------------------------
+# node.name: A unique name to identify this Logstash node (often the hostname).
+node.name: "${HOSTNAME}"
+
+# pipeline.workers: Number of worker threads for the pipeline execution.
+pipeline.workers: 2
+
+# pipeline.batch.size: Number of events collected by each pipeline worker per batch.
+pipeline.batch.size: 125
+
+# pipeline.batch.delay: Maximum time in milliseconds that Logstash waits for new events
+# before processing a batch.
+pipeline.batch.delay: 50
+
+# pipeline.ordered: Ensures events are processed in order; true may reduce throughput.
+pipeline.ordered: true
+
+#------------------------------------------------------------------------------
+# path_settings:
+# Secure data and log path configuration with proper file system permissions.
+#------------------------------------------------------------------------------
+# path.data: Directory where data files for Logstash will be stored for durability.
+path.data: "/usr/share/logstash/data"
+
+# path.logs: Directory where Logstash writes its own logs.
+path.logs: "/usr/share/logstash/logs"
+
+# path.config: Directory where pipeline configuration files (inputs, filters, outputs) reside.
+path.config: "/usr/share/logstash/pipeline"
+
+# path.settings: Directory where Logstash finds this main settings file and related configs.
+path.settings: "/usr/share/logstash/config"
+
+#------------------------------------------------------------------------------
+# queue_settings:
+# Persistent queue configuration with durability and resiliency guarantees.
+#------------------------------------------------------------------------------
+# queue.type: The queue type; 'persisted' provides disk-based durability for reliability.
+queue.type: "persisted"
+
+# queue.max_bytes: The maximum size of the persistent queue on disk.
+queue.max_bytes: "2gb"
+
+# queue.checkpoint.writes: Number of events processed before a checkpoint is written.
+queue.checkpoint.writes: 1000
+
+# queue.checkpoint.retries: Number of checkpoint write retries before the pipeline halts.
+queue.checkpoint.retries: 3
+
+# queue.drain: If true, Logstash will drain the queue and exit on shutdown, preserving data integrity.
+queue.drain: true
+
+#------------------------------------------------------------------------------
+# elasticsearch_settings: (Exported Section)
+# Secure Elasticsearch output configuration with SSL and monitoring enhancements.
+#------------------------------------------------------------------------------
+# elasticsearch.hosts: The URL(s) of the Elasticsearch instances.
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# elasticsearch.username: The username used to authenticate with Elasticsearch.
+elasticsearch.username: "${ELASTICSEARCH_USERNAME}"
+
+# elasticsearch.password: The password used to authenticate with Elasticsearch.
+elasticsearch.password: "${ELASTICSEARCH_PASSWORD}"
+
+# elasticsearch.ssl.verification_mode: SSL verification mode ('certificate', 'full', or 'none').
+elasticsearch.ssl.verification_mode: "certificate"
+
+# elasticsearch.ssl.certificate_authority: Path to the CA certificate for SSL connections.
+elasticsearch.ssl.certificate_authority: "/etc/logstash/certs/ca.crt"
+
+# elasticsearch.ssl.truststore.path: Path to the truststore containing the authorized certificates.
+elasticsearch.ssl.truststore.path: "/etc/logstash/truststore.jks"
+
+# elasticsearch.sniffing: Enables automatic discovery of other Elasticsearch nodes in the cluster.
+elasticsearch.sniffing: true
+
+# elasticsearch.healthcheck.enabled: Enables cluster health checks upon establishing connections.
+elasticsearch.healthcheck.enabled: true
+
+# elasticsearch.retry.initial: Number of initial retries for failed indexing requests.
+elasticsearch.retry.initial: 5
+
+# elasticsearch.retry.max: Maximum number of retries for failed indexing requests.
+elasticsearch.retry.max: 30
+
+#------------------------------------------------------------------------------
+# monitoring_settings: (Exported Section)
+# Enhanced monitoring configuration with security and additional metrics collection.
+#------------------------------------------------------------------------------
+# xpack.monitoring.enabled: Enables X-Pack monitoring features within Logstash.
+xpack.monitoring.enabled: true
+
+# xpack.monitoring.elasticsearch.hosts: Elasticsearch hosts where monitoring data is sent.
+xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# xpack.monitoring.elasticsearch.username: Authentication username for monitoring data shipping.
+xpack.monitoring.elasticsearch.username: "${MONITORING_USERNAME}"
+
+# xpack.monitoring.elasticsearch.password: Authentication password for monitoring data shipping.
+xpack.monitoring.elasticsearch.password: "${MONITORING_PASSWORD}"
+
+# xpack.monitoring.collection.interval: Interval for collecting monitoring metrics.
+xpack.monitoring.collection.interval: "10s"
+
+# xpack.monitoring.collection.pipeline.details.enabled: Collect pipeline-level metrics for detailed insights.
+xpack.monitoring.collection.pipeline.details.enabled: true
+
+#------------------------------------------------------------------------------
+# api_settings: (Exported Section)
+# Secure API configuration for Logstash's internal HTTP server, including authentication and CORS.
+#------------------------------------------------------------------------------
+# api.enabled: Enables or disables the Logstash API endpoint.
+api.enabled: true
+
+# api.http.host: The host interface for the Logstash API (0.0.0.0 binds to all network interfaces).
+api.http.host: "0.0.0.0"
+
+# api.http.port: Port where the Logstash API listens for requests.
+api.http.port: 9600
+
+# api.auth.type: Authentication type ('basic', 'none', or other pluggable schemes).
+api.auth.type: "basic"
+
+# api.auth.basic.username / api.auth.basic.password: Credentials for basic authentication.
+api.auth.basic.username: "${API_USERNAME}"
+api.auth.basic.password: "${API_PASSWORD}"
+
+# api.ssl.enabled: Forces SSL/TLS on the API endpoint for secure communication.
+api.ssl.enabled: true
+
+# api.ssl.keystore.path: The location of the keystore file containing the server certificate/private key.
+api.ssl.keystore.path: "/etc/logstash/keystore.jks"
+
+# api.cors.enabled: Allows cross-origin requests if set to true (needed for external management tools).
+api.cors.enabled: true
+
+# api.cors.allow_origin: Allowed origins for CORS requests, can be wildcard or array of specific domains.
+api.cors.allow_origin: ["https://*.dogwalking-app.com"]
+
+#------------------------------------------------------------------------------
+# logging_settings:
+# Comprehensive internal logging configuration with JSON formatting and file rotation.
+#------------------------------------------------------------------------------
+# log.level: Logging level (valid options include fatal, error, warn, info, debug, trace).
+log.level: "info"
+
+# log.format: Output format for Logstash’s own logs (e.g., plain text, JSON, etc.).
+log.format: "json"
+
+# log.rotation.enabled: Enables log file rotation for better maintenance and disk usage control.
+log.rotation.enabled: true
+
+# log.rotation.file_size: The approximate size at which a new log file is started.
+log.rotation.file_size: "100mb"
+
+# log.rotation.max_files: The number of rotated log files to retain before old ones are removed.
+log.rotation.max_files: 7
+
+# log.rotation.compress: Specifies whether to compress rotated log files to save storage.
+log.rotation.compress: true
+
+#------------------------------------------------------------------------------
+# End of logstash.yml configuration
+#------------------------------------------------------------------------------
