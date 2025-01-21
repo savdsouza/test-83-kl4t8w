@@ -1,0 +1,166 @@
+# Root Git ignore configuration file that specifies global patterns for files and directories 
+# across mobile apps, web dashboard, backend services, and infrastructure code.
+# Purpose: Maintain clean version control by excluding build artifacts, dependencies,
+# local configurations, sensitive files, and environment-specific settings.
+
+################################################################################
+# Dependencies
+# Package and dependency directories
+################################################################################
+# Node.js package dependencies
+node_modules/
+# PHP/Ruby vendor dependencies
+vendor/
+# Python pip cache
+pip-cache/
+# iOS CocoaPods dependencies
+Pods/
+# iOS Carthage dependencies
+Carthage/
+# Android Gradle dependencies
+.gradle/
+# NPM lock file
+package-lock.json
+# Yarn lock file
+yarn.lock
+
+################################################################################
+# Build outputs
+# Compiled and build artifacts
+################################################################################
+# Distribution/production build directories
+dist/
+# Build output directories
+build/
+# iOS derived data
+DerivedData/
+# Android application packages
+*.apk
+# Android App Bundles
+*.aab
+# iOS application archives
+*.ipa
+# iOS debug symbols
+*.dSYM.zip
+# iOS provisioning profiles
+*.mobileprovision
+# Minified JavaScript files
+*.min.js
+# Minified CSS files
+*.min.css
+
+################################################################################
+# Environment and configuration
+# Environment-specific files
+################################################################################
+# Environment variables file
+.env
+# Environment-specific variable files
+.env.*
+# Local environment overrides
+.env.local
+# Environment-specific local overrides
+.env.*.local
+# AWS CLI credentials and config
+.aws/
+# Local SDK configuration
+local.properties
+
+################################################################################
+# IDE and editor files
+# IDE-specific configuration files
+################################################################################
+# JetBrains IDE files
+.idea/
+# IntelliJ IDEA module files
+*.iml
+# IntelliJ IDEA workspace files
+*.iws
+# Visual Studio Code files
+.vscode/
+# Eclipse project files
+*.project
+# Eclipse classpath files
+*.classpath
+# Vim swap files
+*.swp
+# Vim backup files
+*.swo
+# Xcode user data
+xcuserdata/
+
+################################################################################
+# System files
+# Operating system generated files
+################################################################################
+# macOS system files
+.DS_Store
+# Windows thumbnail cache
+Thumbs.db
+
+################################################################################
+# Test and coverage
+# Testing artifacts
+################################################################################
+# Test coverage reports
+coverage/
+# NYC coverage output
+.nyc_output/
+# LCOV coverage data
+lcov.info
+# Jest snapshot tests
+__snapshots__/
+# JUnit test reports
+junit.xml
+
+################################################################################
+# Logs
+# Log files
+################################################################################
+*.log
+# NPM debug logs
+npm-debug.log*
+# Yarn debug logs
+yarn-debug.log*
+# Yarn error logs
+yarn-error.log*
+
+################################################################################
+# Sensitive files
+# Security-sensitive files
+################################################################################
+# Signing keystore files
+*.keystore
+# Java keystore files
+*.jks
+# PKCS #12 certificates
+*.p12
+# Certificate files
+*.cer
+# Google Services configuration
+google-services.json
+# iOS Google Services configuration
+GoogleService-Info.plist
+# AWS Amplify configuration
+aws-exports.js
+# Firebase configuration
+firebase-config.js
+
+################################################################################
+# Infrastructure
+# Infrastructure and deployment files
+################################################################################
+# Terraform state files
+*.tfstate
+# Terraform state backups
+*.tfstate.*
+# Terraform working directory
+.terraform/
+# Serverless Framework directory
+.serverless/
+# AWS CDK output
+cdk.out/
+# Docker Compose overrides
+docker-compose.override.yml
+# Kubernetes configuration
+kubeconfig
