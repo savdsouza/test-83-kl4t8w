@@ -1,0 +1,180 @@
+name: Android CI
+
+# ----------------------------------------------------------------
+# Event triggers for the Android CI workflow. Only runs on:
+# 1) Push or pull_request to branches [main, develop]
+# 2) Changes under src/android/**
+# ----------------------------------------------------------------
+on:
+  push:
+    branches: ["main", "develop"]
+    paths:
+      - "src/android/**"
+  pull_request:
+    branches: ["main", "develop"]
+    paths:
+      - "src/android/**"
+
+# ----------------------------------------------------------------
+# Global environment variables for Android CI. Includes:
+# - JAVA_VERSION set to 17 
+# - GRADLE_VERSION set to 8.4
+# - ANDROID_SDK set to 34 (API level)
+# - WORKING_DIRECTORY pointing to src/android 
+# - GRADLE_OPTS for daemon & memory usage
+# ----------------------------------------------------------------
+env:
+  JAVA_VERSION: "17"
+  GRADLE_VERSION: "8.4"
+  ANDROID_SDK: "34"
+  WORKING_DIRECTORY: "src/android"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Xmx4g -XX:+HeapDumpOnOutOfMemoryError"
+
+# ----------------------------------------------------------------
+# Jobs Section
+# Two primary jobs:
+# 1) build: Runs static analysis, unit tests, and assembles APKs
+# 2) instrumented_tests: Runs comprehensive Android instrumented tests on an emulator
+# ----------------------------------------------------------------
+jobs:
+
+  # --------------------------------------------------------------
+  # JOB: build
+  # --------------------------------------------------------------
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # ----------------------------------------------------------
+      # Step 1: Checkout repository (actions/checkout v3)
+      # ----------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      # ----------------------------------------------------------
+      # Step 2: Set up JDK (actions/setup-java v3)
+      # ----------------------------------------------------------
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: gradle
+
+      # ----------------------------------------------------------
+      # Step 3: Setup Gradle (gradle/gradle-build-action v2)
+      # Configures Gradle and optimizes caching/daemon usage
+      # ----------------------------------------------------------
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+          # Use a read-only cache if build is not on main branch
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          gradle-home-cache-cleanup: true
+
+      # ----------------------------------------------------------
+      # Step 4: Static Analysis 
+      # Runs ktlintCheck and detekt for code styling & lint checks
+      # ----------------------------------------------------------
+      - name: Static Analysis
+        run: ./gradlew ktlintCheck detekt
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      # ----------------------------------------------------------
+      # Step 5: Unit Tests 
+      # Executes unit tests with Jacoco coverage reporting
+      # ----------------------------------------------------------
+      - name: Unit Tests
+        run: ./gradlew test jacocoTestReport
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      # ----------------------------------------------------------
+      # Step 6: Build APKs 
+      # Assembles both debug and release variants 
+      # ----------------------------------------------------------
+      - name: Build APKs
+        run: ./gradlew assembleDebug assembleRelease
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      # ----------------------------------------------------------
+      # Step 7: Upload Artifacts (actions/upload-artifact v3)
+      # Uploads built APK files as artifacts
+      # ----------------------------------------------------------
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: apks
+          path: |
+            src/android/app/build/outputs/apk/debug/*.apk
+            src/android/app/build/outputs/apk/release/*.apk
+
+  # --------------------------------------------------------------
+  # JOB: instrumented_tests
+  # --------------------------------------------------------------
+  instrumented_tests:
+    runs-on: macos-latest
+    steps:
+      # ----------------------------------------------------------
+      # Step 1: Checkout repository (actions/checkout v3)
+      # ----------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # ----------------------------------------------------------
+      # Step 2: Setup Java Environment (actions/setup-java v3)
+      # ----------------------------------------------------------
+      - name: Setup Environment
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: gradle
+
+      # ----------------------------------------------------------
+      # Step 3: Configure Android Emulator 
+      # Installs system image & sets up an emulator for instrumented tests
+      # ----------------------------------------------------------
+      - name: Configure Emulator
+        run: |
+          echo "y" | sdkmanager --install "platform-tools" "platforms;android-${ANDROID_SDK}" "system-images;android-${ANDROID_SDK};default;x86_64"
+          echo "no" | avdmanager create avd --name testAVD --package "system-images;android-${ANDROID_SDK};default;x86_64" --device "pixel"
+          emulator -avd testAVD -no-snapshot -no-audio -no-window &
+          adb wait-for-device
+          adb shell input keyevent 82
+        shell: bash
+
+      # ----------------------------------------------------------
+      # Step 4: Setup Gradle with Test Optimization
+      # Example of using environment flags or parallelization
+      # ----------------------------------------------------------
+      - name: Optimize Gradle For Tests
+        run: ./gradlew --max-workers=2 help
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      # ----------------------------------------------------------
+      # Step 5: Run UI Tests 
+      # Executes connectedAndroidTest on the emulator
+      # ----------------------------------------------------------
+      - name: Run UI Tests
+        run: ./gradlew connectedAndroidTest
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      # ----------------------------------------------------------
+      # Step 6: Generate Test Reports
+      # (Optional extra step to gather coverage reports if needed)
+      # ----------------------------------------------------------
+      - name: Generate Test Reports
+        run: ./gradlew connectedCheck
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      # ----------------------------------------------------------
+      # Step 7: Upload Test Results (actions/upload-artifact v3)
+      # Collects and uploads report artifacts for further analysis
+      # ----------------------------------------------------------
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: src/android/app/build/reports/androidTests/
