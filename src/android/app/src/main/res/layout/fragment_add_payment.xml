@@ -1,0 +1,176 @@
+<!--
+    Layout resource file for adding a secure payment method.
+    Implements user-friendly input fields and Material Design guidelines.
+
+    Third-Party Libraries:
+      • androidx.constraintlayout:constraintlayout:2.1.4 (for ConstraintLayout)
+      • com.google.android.material:material:1.9.0 (for Material Components)
+
+    Internal Resources:
+      • @style/Widget.App.EditText (from values/styles.xml) for input styling
+      • @style/Widget.App.Button (from values/styles.xml) for button styling
+      • @drawable/bg_input (see drawable/bg_input.xml) for TextInput background states
+      • @drawable/bg_button (see drawable/bg_button.xml) for Button background states
+
+    Accessibility & Security:
+      • Content descriptions provided for screen readers
+      • Secure text entry (numberPassword) applied for sensitive fields
+      • Proper touch target sizes (minHeight, padding) for interactive elements
+      • Orientation, constraints, and input fields designed to meet usability standards
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:clipToPadding="false"
+    android:focusableInTouchMode="true">
+
+    <!--
+        Card Number Input
+        - Uses TextInputLayout to provide an accessible label, hint,
+          error handling, and formatted text helper if needed.
+        - Secure text entry (numberPassword) is enabled via the nested EditText.
+    -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/cardNumberInput"
+        style="@style/Widget.App.EditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Card Number"
+        android:contentDescription="Enter your card number"
+        app:counterEnabled="true"
+        app:counterMaxLength="19"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cardNumberEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberPassword"
+            android:imeOptions="actionNext"
+            android:maxLength="19"
+            android:autofillHints="creditCardNumber"
+            android:importantForAutofill="no"
+            android:longClickable="false"
+            android:privateImeOptions="disableClipboardPaste=true;disableClipboard=true" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!--
+        Card Holder Name Input
+        - Collects the name on the card using a person-name input type.
+        - Accessibility text provided for screen readers.
+    -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/cardHolderInput"
+        style="@style/Widget.App.EditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Card Holder Name"
+        android:contentDescription="Enter card holder name"
+        app:layout_constraintTop_toBottomOf="@id/cardNumberInput"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cardHolderEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:imeOptions="actionNext" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!--
+        Expiry and CVV Container
+        - LinearLayout (horizontal) hosts two TextInputLayouts side-by-side.
+        - weightSum="2" for equal distribution of space.
+    -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        app:layout_constraintTop_toBottomOf="@id/cardHolderInput"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <!--
+            Expiry Date (MM/YY)
+            - Limited to 5 characters, numeric entry.
+        -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/expiryInput"
+            style="@style/Widget.App.EditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="MM/YY"
+            android:contentDescription="Enter card expiry date"
+            app:counterEnabled="true"
+            app:counterMaxLength="5">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/expiryEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:imeOptions="actionNext"
+                android:maxLength="5" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--
+            CVV
+            - 3-4 digit field, hidden by default for security.
+            - Margin start to separate from Expiry field.
+        -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/cvvInput"
+            style="@style/Widget.App.EditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:hint="CVV"
+            android:contentDescription="Enter card CVV"
+            app:counterEnabled="true"
+            app:counterMaxLength="4">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/cvvEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberPassword"
+                android:imeOptions="actionDone"
+                android:maxLength="4"
+                android:autofillHints="creditCardSecurityCode"
+                android:importantForAutofill="no"
+                android:longClickable="false"
+                android:privateImeOptions="disableClipboardPaste=true;disableClipboard=true" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+    <!--
+        Save Payment Method Button
+        - Styled with Widget.App.Button for Material-like appearance.
+        - Large touch target (minHeight="56dp").
+        - Anchored to bottom with margin.
+    -->
+    <Button
+        android:id="@+id/saveButton"
+        style="@style/Widget.App.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp"
+        android:text="Save Payment Method"
+        android:contentDescription="Save payment method"
+        android:minHeight="56dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
