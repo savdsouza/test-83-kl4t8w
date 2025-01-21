@@ -1,0 +1,170 @@
+<!--
+    Layout resource file defining the UI for editing user profile information.
+    Implements enhanced Material Design compliance, accessibility,
+    and references external/internally imported resources as per specification.
+-->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    <!-- Global attributes applied at the root level -->
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:clipToPadding="false"
+    android:scrollbars="none"
+    android:importantForAutofill="no"
+    android:textDirection="locale">
+
+    <!-- Using androidx.constraintlayout.widget.ConstraintLayout version 2.1.4 for layout -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_large"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+
+        <!--
+            Title TextView
+            - Uses a headline style for high visibility
+            - Marked as an accessibility heading
+        -->
+        <TextView
+            android:id="@+id/tv_edit_profile_title"
+            style="@style/TextAppearance.App.Headline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_large"
+            android:text="@string/edit_profile_title"
+            android:accessibilityHeading="true"
+            android:textDirection="locale"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!--
+            Full Name TextInputLayout + TextInputEditText
+            - Enhanced with Material Design (com.google.android.material:material:1.9.0)
+            - Exported as et_full_name
+        -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_full_name"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/hint_full_name"
+            android:importantForAutofill="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_edit_profile_title"
+            app:errorEnabled="true"
+            app:boxStrokeErrorColor="@color/error"
+            app:boxStrokeColor="@color/primary"
+            app:boxCornerRadiusTopStart="@dimen/corner_radius_small"
+            app:boxCornerRadiusTopEnd="@dimen/corner_radius_small"
+            app:boxCornerRadiusBottomStart="@dimen/corner_radius_small"
+            app:boxCornerRadiusBottomEnd="@dimen/corner_radius_small">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_full_name"
+                style="@style/Widget.App.EditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:imeOptions="actionNext"
+                android:importantForAutofill="no"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--
+            Phone TextInputLayout + TextInputEditText
+            - Styled with the same approach
+            - Exported as et_phone
+        -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_phone"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/hint_phone"
+            android:importantForAutofill="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/til_full_name"
+            app:errorEnabled="true"
+            app:boxStrokeErrorColor="@color/error"
+            app:boxStrokeColor="@color/primary"
+            app:boxCornerRadiusTopStart="@dimen/corner_radius_small"
+            app:boxCornerRadiusTopEnd="@dimen/corner_radius_small"
+            app:boxCornerRadiusBottomStart="@dimen/corner_radius_small"
+            app:boxCornerRadiusBottomEnd="@dimen/corner_radius_small">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_phone"
+                style="@style/Widget.App.EditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:imeOptions="actionNext"
+                android:importantForAutofill="no"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--
+            Bio TextInputLayout + TextInputEditText
+            - Supports multiline input
+            - Exported as et_bio
+        -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_bio"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/hint_bio"
+            android:importantForAutofill="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/til_phone"
+            app:errorEnabled="true"
+            app:boxStrokeErrorColor="@color/error"
+            app:boxStrokeColor="@color/primary"
+            app:boxCornerRadiusTopStart="@dimen/corner_radius_small"
+            app:boxCornerRadiusTopEnd="@dimen/corner_radius_small"
+            app:boxCornerRadiusBottomStart="@dimen/corner_radius_small"
+            app:boxCornerRadiusBottomEnd="@dimen/corner_radius_small">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_bio"
+                style="@style/Widget.App.EditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine|textCapSentences"
+                android:imeOptions="actionDone"
+                android:importantForAutofill="no"
+                android:maxLines="4"
+                android:minLines="3" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--
+            Save Button
+            - Uses Material Design (com.google.android.material:material:1.9.0)
+            - Exported as btn_save
+        -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save"
+            style="@style/Widget.App.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:text="@string/save"
+            android:importantForAutofill="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/til_bio" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
