@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+        Enterprise-Grade Localization Resource:
+        Holds the primary application name for display throughout the entire system.
+        Referenced in the launcher and top-level UI elements.
+    -->
+    <string name="app_name">Dog Walking</string>
+
+    <!--
+        Represents the textual label for the application logo or branding UI elements.
+    -->
+    <string name="app_logo">Application Logo</string>
+
+    <!--
+        Displayed on the login screen header; welcoming returning users to the application.
+        Related to "Authentication UI" in the Technical Specifications.
+    -->
+    <string name="login_title">Welcome Back</string>
+
+    <!--
+        Displayed on the registration screen header; guiding new users to create an account.
+        Linked to "Authentication UI" flows.
+    -->
+    <string name="register_title">Create Account</string>
+
+    <!--
+        Hint for the email text field in both login and registration screens.
+        Aligned with best practices for credential input.
+    -->
+    <string name="email_hint">Email Address</string>
+
+    <!--
+        Hint for the password text field in login and registration screens.
+        Encourages a secure password string in line with system security requirements.
+    -->
+    <string name="password_hint">Password</string>
+
+    <!--
+        Hint for the password confirmation text field during registration.
+        Advises user to confirm credentials to avoid typos or mismatches.
+    -->
+    <string name="confirm_password_hint">Confirm Password</string>
+
+    <!--
+        Label for the login action button mounted on the authentication screen.
+        Corresponds to the user-initiated login flow.
+    -->
+    <string name="login_button">Log In</string>
+
+    <!--
+        Label for the registration action button on the sign-up screen.
+        Allows new users to create an account.
+    -->
+    <string name="register_button">Register</string>
+
+    <!--
+        Prompt on the login screen, linking to the registration flow.
+        Encourages unregistered users to sign up for an account.
+    -->
+    <string name="register_prompt">Don't have an account? Sign up</string>
+
+    <!--
+        Prompt on the registration screen, linking back to the login flow.
+        Helps existing users access their account.
+    -->
+    <string name="login_prompt">Already have an account? Log in</string>
+
+    <!--
+        Text label indicating user type selection for dog owners.
+        Part of the "Please select a user type" requirement in the sign-up flow.
+    -->
+    <string name="dog_owner">Dog Owner</string>
+
+    <!--
+        Text label indicating user type selection for dog walkers.
+        Ensures correct user classification for the platform features.
+    -->
+    <string name="dog_walker">Dog Walker</string>
+
+    <!--
+        Error message displayed when an invalid email address format is entered.
+        Aligns with security validation guidelines.
+    -->
+    <string name="error_invalid_email">Please enter a valid email address</string>
+
+    <!--
+        Error message enforcing password policy:
+        "Password must be at least 12 characters" as per security requirements.
+    -->
+    <string name="error_invalid_password">Password must be at least 12 characters</string>
+
+    <!--
+        Error message shown when password and confirmation fields do not match.
+    -->
+    <string name="error_passwords_dont_match">Passwords do not match</string>
+
+    <!--
+        Error message displayed if the user fails to choose "Dog Owner" or "Dog Walker".
+    -->
+    <string name="error_select_user_type">Please select a user type</string>
+
+    <!--
+        Title representing the home screen or landing page within the app.
+    -->
+    <string name="home_title">Home</string>
+
+    <!--
+        Title for the user's profile screen.
+        Used to access account settings, personal details, and other profile-related areas.
+    -->
+    <string name="profile_title">Profile</string>
+
+    <!--
+        Title shown on the user's walks management page.
+        Represents scheduled and completed walk lists.
+    -->
+    <string name="walks_title">My Walks</string>
+
+    <!--
+        Title for the payments section, containing billing history and payment methods.
+    -->
+    <string name="payments_title">Payments</string>
+
+    <!--
+        Title for the application's settings page.
+        Houses preferences, notifications, and other user-configurable options.
+    -->
+    <string name="settings_title">Settings</string>
+
+    <!--
+        Title displayed during an ongoing dog walk session with real-time tracking features.
+    -->
+    <string name="active_walk_title">Active Walk</string>
+
+    <!--
+        Title for the booking flow where a dog owner requests a walking session.
+    -->
+    <string name="book_walk_title">Book a Walk</string>
+
+    <!--
+        Title for the user's past walks overview, including status, feedback, and re-booking options.
+    -->
+    <string name="walk_history_title">Walk History</string>
+
+    <!--
+        Title on the screen used to leave or view feedback about a completed walk.
+    -->
+    <string name="walk_review_title">Review Walk</string>
+
+    <!--
+        Title for listing available walkers near the user’s location.
+    -->
+    <string name="walker_list_title">Available Walkers</string>
+
+    <!--
+        Title for displaying a detailed view of a walker, including ratings, reviews, and scheduling info.
+    -->
+    <string name="walker_profile_title">Walker Profile</string>
+
+    <!--
+        Title on the screen that allows dog owners to add a new dog to their profile.
+    -->
+    <string name="add_dog_title">Add Dog</string>
+
+    <!--
+        Title for listing all dogs associated with an owner’s account.
+    -->
+    <string name="dog_list_title">My Dogs</string>
+
+    <!--
+        Title for any dog-specific profile screen, showing details such as breed, age, medical info, etc.
+    -->
+    <string name="dog_profile_title">Dog Profile</string>
+
+    <!--
+        Title on the screen to add or update payment methods, such as credit cards.
+    -->
+    <string name="add_payment_title">Add Payment Method</string>
+
+    <!--
+        Title displaying the user’s transactions or payment history within the platform.
+    -->
+    <string name="payment_history_title">Payment History</string>
+
+    <!--
+        Title for the profile editing interface, enabling name, email, and other user details modifications.
+    -->
+    <string name="edit_profile_title">Edit Profile</string>
+
+    <!--
+        Label for a button that logs the current user out of the application.
+    -->
+    <string name="logout_button">Log Out</string>
+
+    <!--
+        Generic cancel action button text. Used to dismiss or negate an operation.
+    -->
+    <string name="cancel_button">Cancel</string>
+
+    <!--
+        Generic save action button text. Used to confirm or persist changes.
+    -->
+    <string name="save_button">Save</string>
+
+    <!--
+        Generic confirmation text. Used to finalize critical actions.
+    -->
+    <string name="confirm_button">Confirm</string>
+
+    <!--
+        Displayed during asynchronous operations, such as network requests or background tasks.
+    -->
+    <string name="loading_message">Please wait...</string>
+
+    <!--
+        Error message signaling connectivity or network-related issues for user actions.
+    -->
+    <string name="error_network">Network error. Please try again.</string>
+
+    <!--
+        Fallback message for unexpected code paths or unknown exceptions.
+    -->
+    <string name="error_unknown">An unexpected error occurred</string>
+
+    <!--
+        Title for the emergency contact or response screen within the application.
+        Linked to "Emergency Protocol" in the Technical Specifications.
+    -->
+    <string name="emergency_contact_title">Emergency Contact</string>
+
+    <!--
+        Button text prompting the user to call local emergency services (e.g., 911).
+        Critical for immediate help in serious incidents.
+    -->
+    <string name="emergency_services_button">Contact Emergency Services</string>
+
+    <!--
+        Action text for contacting the dog owner in an urgent scenario.
+        Useful if the walker encounters an issue requiring the owner's immediate attention.
+    -->
+    <string name="emergency_contact_owner">Contact Dog Owner</string>
+
+    <!--
+        Label indicating the highest priority emergency case requiring immediate intervention.
+    -->
+    <string name="emergency_priority_critical">Critical Emergency - Immediate Response Required</string>
+
+    <!--
+        Label for a serious, though slightly less critical, emergency scenario.
+        A quick response is needed but not as urgent as a critical event.
+    -->
+    <string name="emergency_priority_high">High Priority Issue - Quick Response Needed</string>
+
+    <!--
+        Label for a moderate emergency requiring attention but not an immediate hazard, such as minor incidents.
+    -->
+    <string name="emergency_priority_medium">Medium Priority - Attention Required</string>
+
+    <!--
+        Label for the lowest priority emergency that might be handled with standard protocols or delayed response.
+    -->
+    <string name="emergency_priority_low">Low Priority - Standard Follow-up</string>
+
+    <!--
+        Title for the background check flow where walkers are verified before offering services.
+        Referenced in "Background Check Integration Flow."
+    -->
+    <string name="verification_title">Background Verification</string>
+
+    <!--
+        Message prompting walkers to submit documentation for identity and background verification.
+    -->
+    <string name="verification_submit_documents">Please submit required verification documents</string>
+
+    <!--
+        Indicates that the system is currently processing the user's verification request.
+    -->
+    <string name="verification_processing">Your verification is being processed</string>
+
+    <!--
+        Success message notifying the walker that verification has been granted.
+    -->
+    <string name="verification_approved">Your verification has been approved</string>
+
+    <!--
+        Message indicating that the verification was unsuccessful.
+        Further action may be required for re-submission.
+    -->
+    <string name="verification_rejected">Your verification was not approved</string>
+
+    <!--
+        General notice about data retention policies.
+        Used in settings or data policy disclaimers.
+    -->
+    <string name="data_retention_notice">Your data will be retained according to our data retention policy</string>
+
+    <!--
+        Notice indicating that inactive records are archived after a specific timeframe.
+        Used to maintain user awareness for data lifecycle.
+    -->
+    <string name="data_archive_notice">Inactive data will be archived after specified periods</string>
+
+    <!--
+        Message reminding users about their rights to request data deletion in compliance with privacy guidelines.
+    -->
+    <string name="data_deletion_notice">You can request data deletion according to our privacy policy</string>
+
+    <!--
+        Content description for accessibility features, describing a user profile picture.
+    -->
+    <string name="content_description_profile_image">Profile picture of the user</string>
+
+    <!--
+        Content description for an interactive map component, enabling screen reader support for visually impaired users.
+    -->
+    <string name="content_description_map_view">Map showing walk route and current location</string>
+
+    <!--
+        Content description for the navigation menu that allows quick access to different sections of the app.
+    -->
+    <string name="content_description_navigation_menu">Navigation menu for accessing different sections</string>
+
+    <!--
+        Specific data retention detail for user profile data in line with the “Data Retention Schedule.”
+    -->
+    <string name="data_retention_profile">Profile data retained for 2 years after account deletion</string>
+
+    <!--
+        Specific data retention detail for walk records, reflecting compliance with archival policies over 6 years.
+    -->
+    <string name="data_retention_walks">Walk records retained for 1 year, then archived for 6 years</string>
+
+    <!--
+        Specific data retention detail for GPS tracking data, which is aggregated or anonymized after 30 days.
+    -->
+    <string name="data_retention_gps">GPS data retained for 30 days, then aggregated</string>
+
+    <!--
+        Specific data retention detail for in-app messages, following a 90-day active retention with a 1-year archive.
+    -->
+    <string name="data_retention_messages">Messages retained for 90 days, then archived for 1 year</string>
+
+</resources>
