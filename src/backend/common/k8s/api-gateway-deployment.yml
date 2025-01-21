@@ -1,0 +1,245 @@
+################################################################################
+# Production-Grade Kubernetes Deployment for the API Gateway
+# ------------------------------------------------------------------------------
+# This manifest deploys the API Gateway service with the following features:
+#  - High Availability (2-10 replicas) governed by HPA, pod anti-affinity, and
+#    topology spread constraints across availability zones.
+#  - Security controls including non-root user, read-only root filesystem,
+#    dropped capabilities, and WAF/rate-limit integration via configMap.
+#  - Comprehensive monitoring with Prometheus annotations for metrics scraping.
+#  - Rolling updates with controlled surge/unavailability thresholds.
+################################################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: dogwalking
+  labels:
+    app: api-gateway
+    component: gateway
+    part-of: dogwalking-platform
+    version: "1.0.0"
+    managed-by: "kubectl"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    prometheus.io/path: "/metrics"
+    kubernetes.io/change-cause: "Initial deployment"
+spec:
+  ##########################################################################
+  # Replicas:
+  #  - Default set to 3 for initial deployment
+  #  - Actual scaling governed by the HorizontalPodAutoscaler
+  ##########################################################################
+  replicas: 3
+
+  ##########################################################################
+  # Rolling Update Strategy:
+  #  - maxSurge: 25% extra pods can start above desired replicas
+  #  - maxUnavailable: 25% pods can go down during rolling updates
+  ##########################################################################
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+  ##########################################################################
+  # Selector & Template Specs:
+  ##########################################################################
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+        checksum/config: "${CONFIG_CHECKSUM}"
+    spec:
+      ########################################################################
+      # Security Context for the Entire Pod:
+      #  - fsGroup: ensures shared fs volumes are writable by the app user
+      ########################################################################
+      securityContext:
+        fsGroup: 1000
+
+      ########################################################################
+      # Affinity & Topology Spread Constraints:
+      #  - Pod anti-affinity distributes pods to avoid single point of failure
+      #  - Spread constraints ensure pods are balanced across availability zones
+      ########################################################################
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - api-gateway
+                topologyKey: topology.kubernetes.io/zone
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: api-gateway
+
+      ########################################################################
+      # Container Specification: API Gateway
+      ########################################################################
+      containers:
+        - name: api-gateway
+          # Using node:18.17.1-alpine3.18 as a secure, lightweight base
+          image: "dogwalking/api-gateway:1.0.0"
+          imagePullPolicy: Always
+
+          ######################################################################
+          # Container Ports:
+          #  - 3000 for primary HTTP traffic
+          #  - 9090 for Prometheus metrics
+          ######################################################################
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          ######################################################################
+          # Resource Requests & Limits:
+          #  - 500m CPU and 512Mi memory requested
+          #  - 1000m CPU and 1Gi memory limited
+          ######################################################################
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+          ######################################################################
+          # Probes for Liveness, Readiness, and Startup:
+          #  - Ensure the service is fully functional
+          #  - Health endpoints respond with 2xx for success
+          ######################################################################
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+
+          ######################################################################
+          # Environment & Configuration:
+          #  - envFrom references a ConfigMap for gateway settings
+          ######################################################################
+          envFrom:
+            - configMapRef:
+                name: api-gateway-config
+
+          ######################################################################
+          # Security Context for Container:
+          #  - runAsNonRoot: ensures container does not run as root
+          #  - readOnlyRootFilesystem: prevents container from writing to FS
+          ######################################################################
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+
+          ######################################################################
+          # Volume Mounts:
+          #  - /tmp: scratch space for ephemeral usage
+          #  - /app/config: read-only volume with config from ConfigMap
+          ######################################################################
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+
+      ########################################################################
+      # Volumes:
+      #  - tmp: ephemeral emptyDir for ephemeral usage
+      #  - config: references the api-gateway-config ConfigMap
+      ########################################################################
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: api-gateway-config
+
+---
+################################################################################
+# HorizontalPodAutoscaler for the API Gateway
+# ------------------------------------------------------------------------------
+# Governs automatic scaling of the API Gateway based on CPU and memory
+# utilization, ensuring High Availability within 2 to 10 replicas.
+################################################################################
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway-hpa
+  namespace: dogwalking
+  labels:
+    app: api-gateway
+    component: gateway
+    part-of: dogwalking-platform
+    managed-by: "kubectl"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+  minReplicas: 2
+  maxReplicas: 10
+  # Target 70% CPU utilization and 80% memory utilization
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
