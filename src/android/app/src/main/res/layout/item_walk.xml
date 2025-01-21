@@ -1,0 +1,219 @@
+<!-- 
+    item_walk.xml
+
+    This layout defines the item view structure for displaying a single walk entry
+    in a RecyclerView or similar list component. It provides details such as the
+    walk status, time, distance, price, and rating, while ensuring full accessibility
+    and Material Design compliance.
+
+    --------------------------------------------------------------------------------
+    Data Binding Setup
+    --------------------------------------------------------------------------------
+    - Wraps the layout in a <layout> tag to enable data binding.
+    - Declares two variables:
+        1) "walk": a data model containing the walk details.
+        2) "context": an Android Context object for localized string formatting.
+    - Binds text properties via expressions (e.g., walkStatus, walkTime, walkDistance,
+      walkPrice, and walkRating) referencing the "walk" and "context" variables.
+
+    --------------------------------------------------------------------------------
+    External Imports (with library versions)
+    --------------------------------------------------------------------------------
+    - CardView (androidx.cardview.widget.CardView)                    // version 1.0.0
+    - ConstraintLayout (androidx.constraintlayout.widget.ConstraintLayout) // version 2.1.4
+
+    --------------------------------------------------------------------------------
+    Internal Imports
+    --------------------------------------------------------------------------------
+    - bg_card.xml (Drawable)     : Sets the card background adhering to Material specs.
+    - ic_walk.xml (Drawable)     : The walk status icon with proper touch target size.
+    - ic_location.xml (Drawable) : The location marker icon used for indicating distance.
+    - dimens.xml (Values)        : Provides standardizedmargin_medium and padding_medium
+                                   amongst other dimension resources for consistent sizing.
+
+    --------------------------------------------------------------------------------
+    Accessibility Considerations
+    --------------------------------------------------------------------------------
+    - Minimum card touch target size is 88dp (defined via android:minHeight on the
+      ConstraintLayout and the card’s padding).
+    - contentDescription attributes on icon, distance text, and rating bar for TalkBack.
+    - android:focusable and android:clickable set to true on the CardView for improved
+      accessibility in focus-based navigation scenarios.
+
+    --------------------------------------------------------------------------------
+    Material Design Compliance
+    --------------------------------------------------------------------------------
+    - CardView for elevated container with 4dp elevation.
+    - ConstraintLayout for efficient and flexible UI arrangement.
+    - Icon sizing and text appearances align with recommended guidelines.
+    - Data binding ensures dynamic updates of walk data in real time.
+
+-->
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        Data Binding Variables
+        1) "walk"   : Data model representing the walk details.
+        2) "context": Context object used for string formatting or resource access.
+    -->
+    <data>
+        <variable
+            name="walk"
+            type="com.example.models.Walk" />
+
+        <variable
+            name="context"
+            type="android.content.Context" />
+    </data>
+
+    <!--
+        CardView:
+        - Provides the elevated, rounded-corner container following Material guidelines.
+        - The background is set to @drawable/bg_card to present a subtle shadow and
+          consistent corner radius.
+        - Focusable and clickable to allow item selection or navigation events.
+    -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_medium"
+        android:elevation="4dp"
+        android:background="@drawable/bg_card"
+        android:focusable="true"
+        android:clickable="true"
+        android:foreground="?attr/selectableItemBackground"
+        tools:viewBindingIgnore="true">
+
+        <!--
+            ConstraintLayout:
+            - Acts as the main content container for the walk details.
+            - Min height of 88dp ensures accessible touch target compliance.
+            - Padding ensures comfortable spacing around child elements.
+        -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/padding_medium"
+            android:minHeight="88dp"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp">
+
+            <!--
+                Walk Status Icon
+                - Displays a thematic walking icon indicating the type of this list item.
+                - 48dp size with 12dp internal padding (total 72dp area) meets the
+                  recommended 48dp minimum touch target.
+                - Tint uses ?attr/colorPrimary for color consistency with the brand.
+                - contentDescription references a localized string for accessibility.
+            -->
+            <ImageView
+                android:id="@+id/walkIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="12dp"
+                android:src="@drawable/ic_walk"
+                android:tint="?attr/colorPrimary"
+                android:contentDescription="@string/walk_status_icon_description"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!--
+                Walk Status Text
+                - Reflects the current status of the walk (e.g., Scheduled, In Progress, Completed).
+                - Uses data binding to fetch a display name from the walk data model.
+                - The textAppearance references style attributes for a Subtitle1 style.
+            -->
+            <TextView
+                android:id="@+id/walkStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{walk.status.getDisplayName(context)}'
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:textColor="?attr/colorPrimary"
+                app:layout_constraintStart_toEndOf="@id/walkIcon"
+                app:layout_constraintTop_toTopOf="@id/walkIcon"
+                app:layout_constraintBottom_toBottomOf="@id/walkIcon"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintEnd_toStartOf="@id/walkRating" />
+
+            <!--
+                Rating Bar
+                - Displays the average rating for this walk (e.g., 4.5 out of 5).
+                - Set as an indicator only, preventing user edits.
+                - The small style keeps it visually unobtrusive.
+                - contentDescription for accessibility so users can hear the rating read out.
+            -->
+            <RatingBar
+                android:id="@+id/walkRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:isIndicator="true"
+                android:style="?android:attr/ratingBarStyleSmall"
+                android:contentDescription="@string/walk_rating_description"
+                android:rating='@{walk.rating}'
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/walkIcon" />
+
+            <!--
+                Walk Time Text
+                - Displays formatted start time (or possibly both start and end times)
+                  of the dog's walk.
+                - Body2 text appearance ensures a normal body font size.
+                - The data binding expression references a method within the walk model
+                  for returning a localized time string.
+            -->
+            <TextView
+                android:id="@+id/walkTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{walk.getFormattedStartTime()}'
+                android:textAppearance="?attr/textAppearanceBody2"
+                app:layout_constraintStart_toStartOf="@id/walkStatus"
+                app:layout_constraintTop_toBottomOf="@id/walkStatus"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <!--
+                Walk Distance Text
+                - Displays total distance walked, prefixed by a location pin icon.
+                - The data binding fetches a string resource with placeholders, e.g.,
+                  "Distance: X km/miles".
+                - contentDescription for TalkBack users indicating the total walk distance.
+            -->
+            <TextView
+                android:id="@+id/walkDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{context.getString(R.string.walk_distance_format, walk.distance)}'
+                android:drawableStart="@drawable/ic_location"
+                android:drawablePadding="4dp"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:contentDescription="@string/walk_distance_description"
+                app:layout_constraintStart_toEndOf="@id/walkTime"
+                app:layout_constraintBaseline_toBaselineOf="@id/walkTime"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <!--
+                Walk Price Text
+                - Shows the cost of the walk. For example, "$15.00".
+                - Uses the Headline6 text appearance for emphasis.
+                - Right-aligned within the ConstraintLayout to create a balanced layout.
+                - Bound to a string resource for currency formatting and localization.
+            -->
+            <TextView
+                android:id="@+id/walkPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='@{context.getString(R.string.price_format, walk.price)}'
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBaseline_toBaselineOf="@id/walkTime"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</layout>
