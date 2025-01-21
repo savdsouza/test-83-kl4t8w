@@ -1,0 +1,452 @@
+version: "3.9"
+
+###############################################################################
+# PRODUCTION DOCKER COMPOSE FOR DOG WALKING APPLICATION
+# -----------------------------------------------------------------------------
+# This file orchestrates all microservices (API Gateway, Auth, Booking, Tracking,
+# Payment, Notification), databases (PostgreSQL, MongoDB, TimescaleDB), and cache
+# (Redis) for a high-availability, enterprise-grade setup. It includes security
+# mechanisms such as secrets management, isolated networks, and resource limits
+# for ensuring 99.9% uptime and robust performance.
+###############################################################################
+
+secrets:
+  #############################################################################
+  # DOCKER SECRETS FOR SECURE MANAGEMENT OF SENSITIVE CREDENTIALS.
+  # ----------------------------------------------------------------------------
+  # "postgres_user" and "postgres_password" are used by the PostgreSQL container
+  # to securely load the database username and password. The values are stored
+  # in external files referenced here and injected at runtime.
+  #############################################################################
+  postgres_user:
+    file: ./secrets/postgres_user.txt
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+
+configs:
+  #############################################################################
+  # DOCKER CONFIGS FOR SHARING STATIC CONFIGURATION ACROSS CONTAINERS.
+  # ----------------------------------------------------------------------------
+  # "nginx_conf" is used by the optional NGINX reverse proxy service to configure
+  # HTTP routing and SSL termination for the API Gateway.
+  #############################################################################
+  nginx_conf:
+    file: ./config/nginx.conf
+
+volumes:
+  #############################################################################
+  # PERSISTENT VOLUMES FOR DATABASES AND OTHER SERVICES.
+  # ----------------------------------------------------------------------------
+  # "postgres_data" is a bind-mounted volume that ensures PostgreSQL data
+  # persists across container restarts and may be backed up externally.
+  #############################################################################
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "/data/postgres"
+      o: bind
+
+networks:
+  #############################################################################
+  # CUSTOM BRIDGE NETWORK FOR INTERNAL SERVICE COMMUNICATION.
+  # ----------------------------------------------------------------------------
+  # "backend" network is encrypted, and it isolates microservices, databases, and
+  # caches from external access. Subnet config ensures predictable IP allocation.
+  #############################################################################
+  backend:
+    driver: bridge
+    driver_opts:
+      encrypted: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.238.0/24"
+
+services:
+  ###############################################################################
+  # POSTGRES SERVICE
+  # -----------------------------------------------------------------------------
+  # Official Postgres v15.4-alpine image for storing user data. The container
+  # loads credentials from Docker secrets, runs on the "backend" network, and
+  # persists data to the "postgres_data" volume.
+  ###############################################################################
+  postgres:
+    image: "postgres:15.4-alpine" # PostgreSQL 15.4-alpine
+    container_name: "postgres_prod"
+    environment:
+      # The database name can be customized. Additional environment variables
+      # can be injected as needed for SSL configuration, etc.
+      POSTGRES_DB: "dog_walking"
+      POSTGRES_USER_FILE: "/run/secrets/postgres_user"
+      POSTGRES_PASSWORD_FILE: "/run/secrets/postgres_password"
+    secrets:
+      - postgres_user
+      - postgres_password
+    networks:
+      - backend
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dog_walking || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+        reservations:
+          cpus: "0.25"
+          memory: "512M"
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # REDIS SERVICE
+  # -----------------------------------------------------------------------------
+  # Official Redis 7.0.12-alpine image for caching. Used by multiple services to
+  # store sessions, rate limiting data, and real-time tracking updates.
+  ###############################################################################
+  redis:
+    image: "redis:7.0.12-alpine" # Redis 7.0.12-alpine
+    container_name: "redis_prod"
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "example_redis_password"]
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "example_redis_password", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+      restart_policy:
+        condition: on-failure
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # MONGODB SERVICE
+  # -----------------------------------------------------------------------------
+  # Official MongoDB 6.0.8 image for storing walk records and reviews. Default
+  # credentials can be enhanced with Docker secrets for production.
+  ###############################################################################
+  mongodb:
+    image: "mongo:6.0.8" # MongoDB 6.0.8
+    container_name: "mongodb_prod"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "root"
+      MONGO_INITDB_ROOT_PASSWORD: "example_mongo_password"
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongo --username root --password example_mongo_password --eval 'db.runCommand({ ping: 1 })' || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+      restart_policy:
+        condition: any
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # TIMESCALEDB SERVICE
+  # -----------------------------------------------------------------------------
+  # Official TimescaleDB 2.11.1-pg15 image for storing time-series GPS data.
+  # Typically uses PostgreSQL-compatible environment variables.
+  ###############################################################################
+  timescaledb:
+    image: "timescale/timescaledb:2.11.1-pg15" # TimescaleDB 2.11.1-pg15
+    container_name: "timescaledb_prod"
+    environment:
+      POSTGRES_DB: "tracking_db"
+      POSTGRES_USER: "tsdb_user"
+      POSTGRES_PASSWORD: "example_tsdb_password"
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tsdb_user -d tracking_db || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+      restart_policy:
+        condition: on-failure
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # AUTH SERVICE
+  # -----------------------------------------------------------------------------
+  # Auth microservice (Node.js/Express) for user authentication and token
+  # management. In production, this would have its own Dockerfile or prebuilt
+  # image with reference to environment variables for DB connections, etc.
+  ###############################################################################
+  auth-service:
+    image: "dogwalking/auth-service:1.0.0" # Node.js-based Auth service
+    container_name: "auth_service_prod"
+    environment:
+      NODE_ENV: "production"
+      PORT: "4000"
+      POSTGRES_HOST: "postgres"
+      POSTGRES_DB: "dog_walking"
+      REDIS_HOST: "redis"
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "512M"
+      restart_policy:
+        condition: on-failure
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # BOOKING SERVICE
+  # -----------------------------------------------------------------------------
+  # Booking microservice (Java/Spring Boot) to handle scheduling, availability,
+  # and booking logic for walks. The environment variables reference DB services.
+  ###############################################################################
+  booking-service:
+    image: "dogwalking/booking-service:1.0.0-java17" # Java 17 / Spring Boot
+    container_name: "booking_service_prod"
+    environment:
+      SPRING_PROFILES_ACTIVE: "prod"
+      SERVER_PORT: "4001"
+      MONGO_HOST: "mongodb"
+      POSTGRES_HOST: "postgres"
+      REDIS_HOST: "redis"
+    networks:
+      - backend
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4001/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+      restart_policy:
+        condition: any
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # TRACKING SERVICE
+  # -----------------------------------------------------------------------------
+  # Tracking microservice (Go) for real-time location handling. Communicates with
+  # TimescaleDB to store GPS data, potentially uses MQTT or WebSockets.
+  ###############################################################################
+  tracking-service:
+    image: "dogwalking/tracking-service:1.0.0-go" # Go-based tracking service
+    container_name: "tracking_service_prod"
+    environment:
+      SERVICE_PORT: "4002"
+      TIMESCALEDB_HOST: "timescaledb"
+      REDIS_HOST: "redis"
+    networks:
+      - backend
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "512M"
+      restart_policy:
+        condition: on-failure
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # PAYMENT SERVICE
+  # -----------------------------------------------------------------------------
+  # Payment microservice (Node.js) responsible for handling billing, charges,
+  # refunds, and integration with external payment gateways (e.g., Stripe).
+  ###############################################################################
+  payment-service:
+    image: "dogwalking/payment-service:1.0.0" # Node.js-based payment service
+    container_name: "payment_service_prod"
+    environment:
+      NODE_ENV: "production"
+      PORT: "4003"
+      POSTGRES_HOST: "postgres"
+      REDIS_HOST: "redis"
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4003/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "512M"
+      restart_policy:
+        condition: on-failure
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # NOTIFICATION SERVICE
+  # -----------------------------------------------------------------------------
+  # Notification microservice (Python) for push notifications, emails, and general
+  # user messaging. Interacts with third-party APIs (Firebase FCM, APNs, etc.).
+  ###############################################################################
+  notification-service:
+    image: "dogwalking/notification-service:1.0.0-python" # Python-based service
+    container_name: "notification_service_prod"
+    environment:
+      FLASK_ENV: "production"
+      FLASK_RUN_PORT: "4004"
+      REDIS_HOST: "redis"
+    networks:
+      - backend
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4004/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256M"
+      restart_policy:
+        condition: any
+    restart: "unless-stopped"
+
+  ###############################################################################
+  # API GATEWAY SERVICE
+  # -----------------------------------------------------------------------------
+  # The gateway that routes incoming traffic, applies rate limiting, handles
+  # authentication, and forwards requests to each microservice. Built from the
+  # provided Dockerfile with security best practices, robust health checks, rate
+  # limiting, and logging. Exposed on port 3000 externally.
+  ###############################################################################
+  api-gateway:
+    build:
+      context: "./api-gateway"        # build_context (directory)
+      dockerfile: "./api-gateway/Dockerfile"
+    container_name: "api_gateway_prod"
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: "production"
+      PORT: "3000"
+      RATE_LIMIT_WINDOW: "15m"
+      RATE_LIMIT_MAX: "100"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+        reservations:
+          cpus: "0.5"
+          memory: "512M"
+    restart: "unless-stopped"
+    networks:
+      - backend
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+
+  ###############################################################################
+  # OPTIONAL NGINX REVERSE PROXY
+  # -----------------------------------------------------------------------------
+  # An optional container to serve as a reverse proxy and SSL terminator for the
+  # API Gateway. Integrates Docker config 'nginx_conf' for advanced routing rules.
+  ###############################################################################
+  nginx:
+    image: "nginx:1.25.0-alpine" # Nginx 1.25.0-alpine
+    container_name: "nginx_prod"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "512M"
+      restart_policy:
+        condition: on-failure
+    restart: "unless-stopped"
