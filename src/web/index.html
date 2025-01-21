@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<!--
+  Entry Point HTML File for the Dog Walking Web Application
+  Implements:
+    1) User Interface Design (Technical Specifications/6.1 Design System Key)
+    2) Security Considerations (Technical Specifications/7.2 Data Security)
+    3) Cross-Cutting Concerns (Technical Specifications/2.4 Cross-Cutting Concerns)
+
+  This document:
+    - Establishes essential meta tags, character encoding, viewport, and theme color.
+    - Sets up comprehensive security headers via meta http-equiv attributes.
+    - Includes performance optimizations (preconnect, preload, DNS prefetch).
+    - Loads Datadog RUM for analytics and monitoring.
+    - Mounts the React application at #root.
+    - Serves as the container for the entire front-end, ensuring accessibility compliance
+      and fallback messages for non-JavaScript environments.
+-->
+
+<html lang="en" dir="ltr">
+<head>
+  <!-- CHARACTER ENCODING -->
+  <meta charset="UTF-8" />
+
+  <!-- VIEWPORT & THEME COLOR (Responsive / PWA considerations) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2196F3" />
+
+  <!-- SECURITY HEADERS (http-equiv) -->
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' https://www.datadoghq-browser-agent.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.dogwalking.com https://*.datadoghq.com; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests;" />
+  <!-- X-Content-Type-Options -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <!-- X-Frame-Options -->
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <!-- X-XSS-Protection -->
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+  <!-- Strict-Transport-Security -->
+  <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains" />
+  <!-- Referrer-Policy -->
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <!-- Permissions-Policy -->
+  <meta http-equiv="Permissions-Policy" content="geolocation=(self), camera=(), microphone=()" />
+
+  <!-- META TAGS FOR SEO AND SOCIAL SHARING -->
+  <meta name="description" content="Dog Walking Mobile Application - Connect with professional dog walkers for real-time pet care services" />
+  <meta name="keywords" content="dog walking, pet care, dog walkers, pet services, professional dog walking, on-demand dog walking" />
+  <meta name="author" content="Dog Walking App Team" />
+  <meta property="og:title" content="Dog Walking App - Professional Pet Care Services" />
+  <meta property="og:description" content="Professional dog walking services at your fingertips - Real-time tracking, verified walkers, and secure payments" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://dogwalking.com/social-share.jpg" />
+
+  <!-- PRECONNECT FOR PERFORMANCE (Fonts, API, etc.) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://api.dogwalking.com" crossorigin />
+
+  <!-- DNS PREFETCH for Datadog (Analytics) -->
+  <link rel="dns-prefetch" href="https://www.datadoghq-browser-agent.com" />
+
+  <!-- PRELOAD FONTS AND SCRIPT -->
+  <!-- Preload Roboto WOFF2 font file for faster performance -->
+  <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Me5Q.woff2" crossorigin />
+  <!-- Preload main application script (entry point) -->
+  <link rel="preload" as="script" href="/src/main.tsx" />
+
+  <!-- ROBOTO FONT (PRIMARY APPLICATION FONT) -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet" />
+
+  <!-- GLOBAL STYLESHEET (critical CSS inlining or global references) -->
+  <!-- Provided for entire application, ensuring consistent styling across components -->
+  <link rel="stylesheet" href="/src/styles/global.css" />
+
+  <title>Dog Walking App</title>
+</head>
+
+<body>
+  <!-- SKIP LINK FOR ACCESSIBILITY (Keyboard Navigation) -->
+  <!-- Allows users (particularly with screen readers) to jump directly to main content -->
+  <a id="skip-to-main" class="skip-link" href="#root">Skip to main content</a>
+
+  <!-- REACT MOUNT POINT -->
+  <!-- The React Application will mount here via hydration or client rendering -->
+  <div
+    id="root"
+    aria-live="polite"
+    role="main"
+  ></div>
+
+  <!-- NOSCRIPT FALLBACK FOR NON-JS ENVIRONMENTS -->
+  <noscript style="text-align: center; padding: 20px;">
+    You need to enable JavaScript to run this app. Please enable it to continue.
+  </noscript>
+
+  <!-- GLOBAL ERROR BOUNDARY CONTAINER (OPTIONAL PLACEHOLDER) -->
+  <!-- Could be used by a top-level React error boundary or fallback rendering approach if desired -->
+  <div
+    id="error-root"
+    aria-live="assertive"
+    role="alert"
+    style="display: none;"
+  ></div>
+
+  <!-- DATADOG RUM (MONITORING & ANALYTICS) - @datadog/browser-rum@^4.0.0 -->
+  <!-- Script loaded from the authorized domain as per CSP rules -->
+  <script src="https://www.datadoghq-browser-agent.com/datadog-rum.js" crossorigin></script>
+  <script>
+    /* 
+      initializeDatadog:
+      Steps:
+       1) Initialize Datadog with application ID and client token.
+       2) Configure monitoring parameters including sample rate.
+       3) Set up custom performance metrics tracking.
+       4) Initialize error tracking and reporting.
+       5) Configure user session tracking.
+       6) Set up Core Web Vitals monitoring.
+    */
+    (function initializeDatadog() {
+      if (typeof DD_RUM === 'undefined') {
+        console.warn('Datadog RUM library not found. Monitoring is disabled.');
+        return;
+      }
+      DD_RUM.init({
+        applicationId: 'PLACEHOLDER-APP-ID',
+        clientToken: 'PLACEHOLDER-CLIENT-TOKEN',
+        site: 'datadoghq.com',
+        service: 'dog-walking-web',
+        env: 'production',
+        version: '1.0.0',
+        sampleRate: 100,
+        trackInteractions: true,
+        defaultPrivacyLevel: 'mask-user-input',
+      });
+      // Enabling experimental feature tracking for Core Web Vitals
+      if (typeof DD_RUM !== 'undefined' && DD_RUM.enableExperimentalFeatures) {
+        DD_RUM.enableExperimentalFeatures(['track_web_vitals']);
+      }
+      // Begin session replay recording if desired
+      if (typeof DD_RUM.startSessionReplayRecording === 'function') {
+        DD_RUM.startSessionReplayRecording();
+      }
+    })();
+  </script>
+
+  <!-- MAIN APPLICATION SCRIPT (REACT ENTRY POINT) -->
+  <!-- Defer loading with type="module" and secure sourcing as per CSP ('self') -->
+  <script src="/src/main.tsx" type="module" defer></script>
+</body>
+</html>
