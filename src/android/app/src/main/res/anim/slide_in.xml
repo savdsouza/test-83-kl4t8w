@@ -1,0 +1,48 @@
+<!-- 
+  ==========================================================================================
+  FILE: slide_in.xml
+  DESCRIPTION:
+    This XML animation resource provides a smooth slide-in effect from the right edge (or 
+    opposite side in RTL environments) to the screen center, ensuring fluid and natural 
+    transitions based on Material Design motion principles.
+
+  REQUIREMENTS ADDRESSED:
+    • Smooth UI Transitions (accelerate_decelerate interpolator, 300ms duration)
+    • Consistent directional movement for intuitive navigation ([<] Previous / [>] Next)
+
+  USAGE CONTEXTS:
+    • Fragment transitions
+    • Activity transitions
+    • Navigation drawer animations
+    • Screen navigation transitions
+    • Dialog slide-in effects
+    • ViewPager page transitions
+    • RecyclerView item animations
+    • Custom view transitions
+
+  ACCESSIBILITY & RTL SUPPORT:
+    • Respects system animation settings (e.g., reduced motion preferences) for accessibility
+    • 100%p fromXDelta ensures proper behavior in both LTR and RTL layouts
+    • Short duration (300ms) reduces user disorientation
+
+  PERFORMANCE CONSIDERATIONS:
+    • Low memory impact
+    • GPU acceleration supported
+    • Minimal battery usage
+    • Compatible with devices running Android 4.0 and above
+
+  EXPORT DETAILS:
+    • Name: slide_in
+    • Type: animation-resource
+    • Members Exposed: translate (animation-property)
+    • Purpose: Reusable, performance-optimized slide-in animation
+
+  ==========================================================================================
+-->
+<translate
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="300"
+    android:interpolator="@android:interpolator/accelerate_decelerate"
+    android:fromXDelta="100%p"
+    android:toXDelta="0"
+    android:fillAfter="true"/>
