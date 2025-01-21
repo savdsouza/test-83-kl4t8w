@@ -1,0 +1,135 @@
+################################################################################
+# Kubernetes configuration file for defining StorageClasses and PersistentVolumeClaims
+# for the Dog Walking Application. This file covers storage needs for:
+#  - Media storage (fast shared volumes)
+#  - Databases and caching (general-purpose block storage)
+#  - Compliance with encryption at rest, scheduled backups, and data retention
+#
+# References:
+#  - Technical Requirement: Media storage for 90 days active, 1 year archive
+#  - Technical Requirement: Data storage strategy supporting user data, walks,
+#    locations, media, and caching.
+#  - Imported External Driver: AWS EBS CSI Driver v1.0
+#
+# Annotations Overview:
+#  - storageclass.kubernetes.io/is-default-class: Marks the default storage class.
+#  - encryption.storage.kubernetes.io/enabled: Indicates encryption at rest.
+#  - backup.storage.kubernetes.io/schedule: Cron schedule for periodic backup tasks.
+#  - Additional parameters in each StorageClass specify the underlying volume
+#    characteristics, encryption key usage, and performance tuning.
+#
+# Security & Monitoring:
+#  - KMS encryption for EBS-based volumes (gp3).
+#  - EFS encryption for multi-access shared volumes.
+#  - Potential monitoring or backup controllers may use these annotations to
+#    enforce backup retention policies and schedule nightly backups (0 0 * * *).
+################################################################################
+
+# ------------------------------------------------------------------------------
+# StorageClass: standard-rwo
+# Description: Default class for block storage volumes requiring ReadWriteOnce.
+# Provisioner: ebs.csi.aws.com (AWS EBS CSI Driver v1.0)
+# ------------------------------------------------------------------------------
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard-rwo
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+    encryption.storage.kubernetes.io/enabled: "true"
+    backup.storage.kubernetes.io/schedule: "0 0 * * *"
+    # Indicates that encrypted volumes use KMS with a designated key
+    # to satisfy at-rest encryption requirements.
+spec:
+  provisioner: ebs.csi.aws.com # External dependency: AWS EBS CSI driver v1.0
+  parameters:
+    # gp3 volume type offers baseline performance suitable for databases/caches.
+    type: gp3
+    iopsPerGB: "3000"
+    throughput: "125"
+    encrypted: "true"
+    kmsKeyId: "arn:aws:kms:region:account:key/key-id"
+  reclaimPolicy: Retain
+  volumeBindingMode: WaitForFirstConsumer
+  allowVolumeExpansion: true
+
+---
+# ------------------------------------------------------------------------------
+# StorageClass: fast-rwx
+# Description: Storage class for EFS-based volumes supporting ReadWriteMany
+#              across multiple pods. Useful for media files and shared directories.
+# Provisioner: efs.csi.aws.com
+# ------------------------------------------------------------------------------
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-rwx
+  annotations:
+    encryption.storage.kubernetes.io/enabled: "true"
+    backup.storage.kubernetes.io/schedule: "0 0 * * *"
+spec:
+  provisioner: efs.csi.aws.com
+  parameters:
+    provisioningMode: efs-ap
+    fileSystemId: "fs-efs"
+    directoryPerms: "700"
+    encrypted: "true"
+    performanceMode: "generalPurpose"
+    throughputMode: "bursting"
+  reclaimPolicy: Retain
+  volumeBindingMode: Immediate
+
+---
+################################################################################
+# Example PersistentVolumeClaim for Media Storage
+# This PVC demonstrates using the fast-rwx StorageClass to enable ReadWriteMany.
+# Suitable for storing large media files (photos, walk updates) with a 90-day
+# active retention, then archival up to 1 year per external lifecycle policies.
+################################################################################
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-storage-pvc
+  namespace: default
+  labels:
+    app: media-storage
+    part-of: dog-walking-platform
+    managed-by: platform-team
+  annotations:
+    media.retention.active: "90d"
+    media.retention.archive: "1y"
+spec:
+  storageClassName: fast-rwx
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+################################################################################
+# Example PersistentVolumeClaim for Cache Storage
+# This PVC uses the standard-rwo StorageClass to provide block storage with RWO
+# access for caching data (e.g., Redis or other ephemeral data) while still
+# retaining encryption at rest, potential backups, and volume expansion.
+################################################################################
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cache-storage-pvc
+  namespace: default
+  labels:
+    app: cache-storage
+    part-of: dog-walking-platform
+    managed-by: platform-team
+  annotations:
+    cache.role: "ephemeral"
+    # Although caching may be ephemeral, persistent volumes can help with node
+    # failovers or rolling updates while preserving essential state.
+spec:
+  storageClassName: standard-rwo
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
