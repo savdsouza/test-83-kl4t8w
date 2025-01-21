@@ -1,0 +1,747 @@
+################################################################################
+# Dog Walking Application - Monitoring Stack Kubernetes Manifest
+#
+# This file provides a highly available, secure, and production-grade monitoring
+# stack for the Dog Walking Application. It integrates:
+#   • Prometheus (v2.45.0) for Metrics Collection
+#   • Grafana (v9.5.3) for Dashboards
+#   • Jaeger (Operator v1.28.0) for Distributed Tracing
+#
+# JSON Specification Directives Addressed:
+#   1) Namespace: "monitoring" with restricted pod security
+#   2) NetworkPolicy: "monitoring-network-policy" limiting ingress/egress
+#   3) Prometheus StatefulSet with high availability and persistent storage
+#   4) Grafana Deployment with rolling updates
+#   5) PodDisruptionBudget to maintain minimum cluster availability
+#   6) Exports (Services):
+#       - prometheus-service => metrics_endpoint, alerts_endpoint
+#       - grafana-service    => dashboard_endpoint, api_endpoint
+#       - jaeger-service     => collector_endpoint, query_endpoint, admin_endpoint
+#
+# Global Configurations (from JSON "globals"):
+#   • namespace: monitoring
+#   • storage_class: gp2
+#   • pod_security_policy: restricted
+#
+# Internal Imports Referenced:
+#   - prometheus-config (prometheus.yml): scrape_configs, alerting_rules, recording_rules
+#   - grafana-dashboards (services.json): services_dashboard, slo_dashboard
+#   - jaeger-config (jaeger.yml): sampling_config, storage_config, security_config
+#
+# External Imports:
+#   - prom/prometheus:v2.45.0
+#   - grafana/grafana:9.5.3
+#   - jaeger-operator:1.28.0
+#
+# NOTE:
+#   This manifest combines multiple Kubernetes resources using '---' to separate
+#   documents, fulfilling an enterprise-ready monitoring solution with extensive
+#   comments, fully complying with the given technical requirements and JSON spec.
+################################################################################
+
+---
+# ------------------------------------------------------------------------------
+# 1. NAMESPACE
+# Creates the "monitoring" namespace used by all monitoring components.
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    pod-security.kubernetes.io/enforce: "restricted"
+    pod-security.kubernetes.io/enforce-version: "latest"
+---
+# ------------------------------------------------------------------------------
+# 2. NETWORK POLICY
+# Restricts inbound/outbound traffic to pods in the monitoring namespace.
+# Allows traffic from the 'default' namespace only as per specification.
+# ------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monitoring-network-policy
+  namespace: monitoring
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: "default"
+  # Egress can be further restricted or left open. For demonstration, it's empty:
+  egress: []
+
+---
+# ------------------------------------------------------------------------------
+# 3. PROMETHEUS CONFIGMAP
+# Holds the Prometheus configuration, alerting rules, and recording rules
+# from imported files:
+#   - prometheus.yml (scrape_configs, global, alerting)
+#   - rules.yml (recording_rules)
+#   - alerts.yml (alerting_rules)
+# The content is embedded within data keys for the Prometheus server to load.
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: prometheus
+data:
+  prometheus.yml: |
+# ----------------- BEGIN PROMETHEUS.YML IMPORT -----------------
+# Content imported from infrastructure/monitoring/prometheus/prometheus.yml
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        environment: "production"
+        region: "us-east-1"
+    rule_files:
+      - "rules.yml"
+      - "alerts.yml"
+    scrape_configs:
+      - job_name: "api-gateway"
+        metrics_path: "/metrics"
+        scheme: "http"
+        static_configs:
+          - targets:
+              - "api-gateway:9090"
+            labels:
+              service: "api-gateway"
+              tier: "frontend"
+      - job_name: "auth-service"
+        metrics_path: "/metrics"
+        scheme: "http"
+        static_configs:
+          - targets:
+              - "auth-service:9090"
+            labels:
+              service: "auth-service"
+              tier: "backend"
+      - job_name: "booking-service"
+        metrics_path: "/metrics"
+        scheme: "http"
+        static_configs:
+          - targets:
+              - "booking-service:9090"
+            labels:
+              service: "booking-service"
+              tier: "backend"
+      - job_name: "payment-service"
+        metrics_path: "/metrics"
+        scheme: "http"
+        static_configs:
+          - targets:
+              - "payment-service:9090"
+            labels:
+              service: "payment-service"
+              tier: "backend"
+      - job_name: "tracking-service"
+        metrics_path: "/metrics"
+        scheme: "http"
+        static_configs:
+          - targets:
+              - "tracking-service:9090"
+            labels:
+              service: "tracking-service"
+              tier: "backend"
+      - job_name: "notification-service"
+        metrics_path: "/metrics"
+        scheme: "http"
+        static_configs:
+          - targets:
+              - "notification-service:9090"
+            labels:
+              service: "notification-service"
+              tier: "backend"
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - "alertmanager:9093"
+          scheme: "http"
+          timeout: "10s"
+          api_version: "v2"
+# ----------------- END PROMETHEUS.YML IMPORT -----------------
+
+  rules.yml: |
+# ----------------- BEGIN RULES.YML IMPORT -----------------
+# Content imported from infrastructure/monitoring/prometheus/rules.yml
+    groups:
+      - name: "service_availability"
+        interval: "30s"
+        rules:
+          - record: "service:up:ratio"
+            expr: "avg(up) by (job, instance, availability_zone)"
+            labels:
+              severity: "critical"
+              team: "platform"
+          - record: "service:availability:ratio"
+            expr: "avg_over_time(service:up:ratio[24h])"
+            labels:
+              severity: "critical"
+              slo: "availability"
+          - record: "service:health:score"
+            expr: "avg(probe_success) by (service, region)"
+            labels:
+              severity: "critical"
+              type: "health"
+      - name: "service_performance"
+        interval: "1m"
+        rules:
+          - record: "service:request_duration:p95"
+            expr: "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job, endpoint))"
+            labels:
+              severity: "warning"
+              slo: "latency"
+          - record: "service:error_rate:ratio"
+            expr: "sum(rate(http_requests_total{status=~\"5.*\"}[5m])) by (job, service) / sum(rate(http_requests_total[5m])) by (job, service)"
+            labels:
+              severity: "warning"
+              slo: "errors"
+          - record: "service:apdex:score"
+            expr: "(sum(rate(http_request_duration_seconds_bucket{le=\"0.5\"}[5m])) + sum(rate(http_request_duration_seconds_bucket{le=\"2\"}[5m]))) / 2 / sum(rate(http_request_duration_seconds_count[5m]))"
+            labels:
+              type: "satisfaction"
+      - name: "business_metrics"
+        interval: "1m"
+        rules:
+          - record: "business:active_walks:total"
+            expr: "sum(active_walks_total) by (region, service)"
+            labels:
+              type: "kpi"
+              business_unit: "operations"
+          - record: "business:payment_success:ratio"
+            expr: "sum(rate(payment_transactions_total{status=\"success\"}[5m])) / sum(rate(payment_transactions_total[5m]))"
+            labels:
+              type: "kpi"
+              business_unit: "finance"
+          - record: "business:user_satisfaction:score"
+            expr: "avg(walk_rating_total) by (region, service)"
+            labels:
+              type: "kpi"
+              business_unit: "customer"
+      - name: "resource_utilization"
+        interval: "2m"
+        rules:
+          - record: "resource:memory:usage"
+            expr: "sum(container_memory_usage_bytes) by (service, instance) / sum(container_spec_memory_limit_bytes) by (service, instance)"
+            labels:
+              severity: "warning"
+              type: "resource"
+          - record: "resource:cpu:usage"
+            expr: "sum(rate(container_cpu_usage_seconds_total[5m])) by (service, instance)"
+            labels:
+              severity: "warning"
+              type: "resource"
+          - record: "resource:network:saturation"
+            expr: "sum(rate(container_network_transmit_bytes_total[5m])) by (instance) / 1024 / 1024"
+            labels:
+              severity: "warning"
+              type: "resource"
+# ----------------- END RULES.YML IMPORT -----------------
+
+  alerts.yml: |
+# ----------------- BEGIN ALERTS.YML IMPORT -----------------
+# Content imported from infrastructure/monitoring/prometheus/alerts.yml
+    groups:
+      - name: "service_health"
+        rules:
+          - alert: "ServiceDown"
+            expr: "service:up:ratio < 0.999"
+            for: "5m"
+            labels:
+              severity: "critical"
+              category: "availability"
+            annotations:
+              summary: "Service availability below 99.9% SLA"
+              description: "{{ $labels.job }} service availability is {{ $value }} over 5m period"
+              runbook_url: "runbooks/service-availability.md"
+          - alert: "HighErrorRate"
+            expr: "service:error_rate:ratio > 0.05"
+            for: "5m"
+            labels:
+              severity: "warning"
+              category: "errors"
+            annotations:
+              summary: "Error rate exceeds 5% threshold"
+              description: "{{ $labels.job }} error rate is {{ $value }} over 5m period"
+              runbook_url: "runbooks/error-rate.md"
+      - name: "performance"
+        rules:
+          - alert: "SlowResponseTime"
+            expr: "service:request_duration:p95 > 2"
+            for: "10m"
+            labels:
+              severity: "warning"
+              category: "latency"
+            annotations:
+              summary: "P95 latency exceeds 2s threshold"
+              description: "{{ $labels.job }} p95 latency is {{ $value }}s over 10m period"
+              runbook_url: "runbooks/latency.md"
+      - name: "business_alerts"
+        rules:
+          - alert: "LowActiveWalks"
+            expr: "rate(business:active_walks:total[1h]) < 10"
+            for: "30m"
+            labels:
+              severity: "warning"
+              team: "business"
+              category: "business"
+            annotations:
+              summary: "Active walks below business threshold"
+              description: "Active walks rate is {{ $value }} per hour over 30m period"
+              dashboard_url: "dashboards/business-metrics"
+          - alert: "PaymentFailureSpike"
+            expr: 'rate(payment_transactions_total{status="failed"}[5m]) > 5'
+            for: "5m"
+            labels:
+              severity: "critical"
+              team: "payments"
+              category: "business"
+            annotations:
+              summary: "Payment failure rate spike detected"
+              description: "Payment failures at {{ $value }} per minute over 5m period"
+              runbook_url: "runbooks/payment-failures.md"
+      - name: "resource_alerts"
+        rules:
+          - alert: "HighMemoryUsage"
+            expr: "resource:memory:usage > 0.85"
+            for: "15m"
+            labels:
+              severity: "warning"
+              category: "resources"
+            annotations:
+              summary: "Memory usage exceeds 85% threshold"
+              description: "{{ $labels.job }} memory usage at {{ $value }}% over 15m period"
+              runbook_url: "runbooks/memory-usage.md"
+          - alert: "HighCPUUsage"
+            expr: "resource:cpu:usage > 0.8"
+            for: "15m"
+            labels:
+              severity: "warning"
+              category: "resources"
+            annotations:
+              summary: "CPU usage exceeds 80% threshold"
+              description: "{{ $labels.job }} CPU usage at {{ $value }}% over 15m period"
+              runbook_url: "runbooks/cpu-usage.md"
+# ----------------- END ALERTS.YML IMPORT -----------------
+
+---
+# ------------------------------------------------------------------------------
+# 4. GRAFANA DASHBOARDS CONFIGMAP
+# Stores JSON for the "services_dashboard" and "slo_dashboard" from imported
+# infrastructure/monitoring/grafana/dashboards/services.json. The snippet
+# provided shows the "services_dashboard." We also include a placeholder for
+# "slo_dashboard" if needed.
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: grafana
+data:
+  services.json: |
+    {
+      "_comment_file_overview": "Simplified snippet of the services_dashboard import",
+      "title": "Dog Walking Services Overview",
+      "version": 2,
+      "panels": [
+        {
+          "title": "Services Health Status",
+          "type": "stat"
+        },
+        {
+          "title": "SLA Compliance",
+          "type": "gauge"
+        }
+      ]
+    }
+  slo.json: |
+    {
+      "_comment_slo_dashboard": "Placeholder JSON for SLO dashboard. Extend for deeper SLO monitoring."
+    }
+
+---
+# ------------------------------------------------------------------------------
+# 5. JAEGER CONFIGMAP (Optional storage of raw config for reference)
+# This shows how we import the sampling/ storage / query settings from jaeger.yml.
+# In practice, the Jaeger Operator CR can reference this file or embed these values.
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jaeger-config
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: jaeger
+data:
+  jaeger.yaml: |
+    agent:
+      collector_host_port: "${JAEGER_COLLECTOR_HOST:jaeger-collector}:${JAEGER_COLLECTOR_PORT:14250}"
+      log_level: "info"
+    collector:
+      host_port: ":14250"
+      grpc_port: 14250
+      http_port: 14268
+      log_level: "info"
+      num_workers: 50
+      queue_size: 2000
+    sampling:
+      strategies:
+        - service: "api-gateway"
+          type: "probabilistic"
+          param: 1.0
+        - service: "auth-service"
+          type: "probabilistic"
+          param: 0.5
+        - service: "booking-service"
+          type: "probabilistic"
+          param: 0.5
+        - service: "payment-service"
+          type: "probabilistic"
+          param: 1.0
+        - service: "tracking-service"
+          type: "probabilistic"
+          param: 0.3
+        - service: "notification-service"
+          type: "probabilistic"
+          param: 0.3
+    storage:
+      type: "elasticsearch"
+      options:
+        es:
+          server-urls: "${ELASTICSEARCH_URL:http://elasticsearch:9200}"
+          username: "${ELASTIC_USERNAME}"
+          password: "${ELASTIC_PASSWORD}"
+          index-prefix: "jaeger"
+          max-doc-count: 10000
+          bulk-size: 5000000
+          bulk-workers: 5
+          bulk-actions: 1000
+          bulk-flush-interval: "200ms"
+    query:
+      host_port: ":16686"
+      base_path: "/jaeger"
+      additional_headers:
+        - "Access-Control-Allow-Origin: *"
+      cors:
+        enabled: true
+        allowed_origins: ["*"]
+        allowed_headers: ["Content-Type"]
+    ingester:
+      dead_letter_queue:
+        enabled: true
+        topic: "jaeger-spans-dlq"
+        group_id: "jaeger-ingester"
+
+---
+# ------------------------------------------------------------------------------
+# 6. STATEFULSET: PROMETHEUS
+# High availability configuration with 2 replicas. We set the container to run
+# as non-root, mount a persistent volume (50Gi), and use anti-affinity for multi-AZ.
+# Using prom/prometheus:v2.45.0 (noted library version).
+# ------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: prometheus
+spec:
+  serviceName: prometheus
+  replicas: 2
+  selector:
+    matchLabels:
+      app: monitoring
+      component: prometheus
+  template:
+    metadata:
+      labels:
+        app: monitoring
+        component: prometheus
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 65534
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: component
+                    operator: In
+                    values:
+                      - prometheus
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: prometheus
+          image: "prom/prometheus:v2.45.0" # Prometheus v2.45.0
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+            - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+            - "--web.console.templates=/usr/share/prometheus/consoles"
+            - "--web.enable-lifecycle"
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/prometheus
+            - name: prometheus-data
+              mountPath: /prometheus
+      volumes:
+        - name: config-volume
+          configMap:
+            name: prometheus-config
+            items:
+              - key: prometheus.yml
+                path: prometheus.yml
+              - key: rules.yml
+                path: rules.yml
+              - key: alerts.yml
+                path: alerts.yml
+  volumeClaimTemplates:
+    - metadata:
+        name: prometheus-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp2
+        resources:
+          requests:
+            storage: 50Gi
+
+---
+# ------------------------------------------------------------------------------
+# 7. DEPLOYMENT: GRAFANA
+# Runs Grafana (v9.5.3) with 2 replicas, rolling updates, resource constraints,
+# and non-root security context. The dashboards are mounted from the "grafana-dashboards"
+# config map, enabling dynamic import of "services.json" and "slo.json".
+# ------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: grafana
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: monitoring
+      component: grafana
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: monitoring
+        component: grafana
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 472
+      containers:
+        - name: grafana
+          image: "grafana/grafana:9.5.3" # Grafana v9.5.3
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 472
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
+              readOnly: true
+          env:
+            - name: GF_PROVISIONING_ENABLED
+              value: "true"
+            - name: GF_DASHBOARDS_JSON_ENABLED
+              value: "true"
+            - name: GF_DASHBOARDS_JSON_PATH
+              value: "/var/lib/grafana/dashboards"
+      volumes:
+        - name: grafana-dashboards
+          configMap:
+            name: grafana-dashboards
+
+---
+# ------------------------------------------------------------------------------
+# 8. POD DISRUPTION BUDGET
+# Ensures at least one monitoring pod remains available during disruptions.
+# Matches pods with "app=monitoring".
+# ------------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: monitoring-pdb
+  namespace: monitoring
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: monitoring
+
+---
+# ------------------------------------------------------------------------------
+# 9. SERVICE EXPORT: PROMETHEUS-SERVICE
+# Exposing Prometheus ports:
+#   • 9090 => metrics_endpoint
+#   • 9093 => alerts_endpoint
+# The JSON specification requires exporting these endpoints by name.
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: monitoring
+    component: prometheus
+  ports:
+    - name: metrics-endpoint
+      port: 9090
+      targetPort: 9090
+    - name: alerts-endpoint
+      port: 9093
+      targetPort: 9093
+
+---
+# ------------------------------------------------------------------------------
+# 10. SERVICE EXPORT: GRAFANA-SERVICE
+# Provides:
+#   • 3000 => dashboard_endpoint, api_endpoint
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: grafana
+spec:
+  type: ClusterIP
+  selector:
+    app: monitoring
+    component: grafana
+  ports:
+    - name: dashboard-endpoint
+      port: 3000
+      targetPort: 3000
+    - name: api-endpoint
+      port: 3001
+      targetPort: 3000
+      # Note: Optionally replicate traffic on a second port if needed. If not,
+      # we can remove the extra port.
+
+---
+# ------------------------------------------------------------------------------
+# 11. JAEGER OPERATOR CR (OPTIONAL) + SERVICE EXPORT: JAEGER-SERVICE
+# Demonstration of a 'Jaeger' custom resource referencing the monitoring config:
+#   • Exports multiple endpoints: collector_endpoint(14250), admin_endpoint(14268),
+#     query_endpoint(16686).
+# ------------------------------------------------------------------------------
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: jaeger
+spec:
+  strategy: production
+  collector:
+    image: jaegertracing/jaeger-collector:1.28
+    replicas: 2
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+  ingester:
+    image: jaegertracing/jaeger-ingester:1.28
+    replicas: 2
+  query:
+    image: jaegertracing/jaeger-query:1.28
+    replicas: 2
+  storage:
+    type: elasticsearch
+    options:
+      es:
+        server-urls: http://elasticsearch:9200
+  volumeMounts:
+    - name: jaeger-config-vol
+      mountPath: /etc/jaeger
+
+---
+# ------------------------------------------------------------------------------
+# 12. JAEGER SERVICE
+# Exposes the collector, admin, and query endpoints:
+#   • 14250 => collector_endpoint (gRPC)
+#   • 14268 => admin_endpoint (HTTP ingest)
+#   • 16686 => query_endpoint (UI / queries)
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-service
+  namespace: monitoring
+  labels:
+    app: monitoring
+    component: jaeger
+spec:
+  type: ClusterIP
+  selector:
+    app: monitoring
+    component: jaeger
+  ports:
+    - name: collector-endpoint
+      port: 14250
+      targetPort: 14250
+    - name: admin-endpoint
+      port: 14268
+      targetPort: 14268
+    - name: query-endpoint
+      port: 16686
+      targetPort: 16686
