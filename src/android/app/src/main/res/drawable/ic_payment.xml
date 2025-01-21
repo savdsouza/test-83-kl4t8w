@@ -1,0 +1,59 @@
+<!--
+    External Import: android.graphics.drawable.VectorDrawable (native) - Vector drawable support for scalable icon rendering with theme-aware capabilities
+    Description: Material Design payment/credit card vector drawable icon optimized for bottom navigation and payment-related screens, with accessibility support and theme-aware rendering
+    Design Specs: 
+      - Material Design 3
+      - Grid Alignment: 4dp
+      - Optical Alignment: true
+      - Weight: regular
+
+    Accessibility:
+      - Role: image
+      - Min Touch Target: 48dp
+      - TalkBack Support: "Payment icon"
+      - Content Description: @string/payment_icon_description
+
+    Performance & Theme Support:
+      - Vector Complexity: Low (16 path points)
+      - Supports RTL: true
+      - Hardware Accelerated: true (handled by system)
+      - Day/Night Aware: true
+      - Tint Attribute: ?attr/colorControlNormal
+      - Background Aware: true
+
+    Export: 
+      - Name: ic_payment
+      - Type: drawable
+      - Purpose: Provides standardized payment icon for consistent use across navigation and payment-related UI components
+-->
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0"
+
+    <!-- Tint attribute ensures day/night theme rendering -->
+    android:tint="?attr/colorControlNormal"
+    android:tintMode="src_in"
+
+    <!-- Allow automatic horizontal mirroring in RTL layouts -->
+    android:autoMirrored="true"
+
+    <!-- Accessibility content description for TalkBack and screen readers -->
+    android:contentDescription="@string/payment_icon_description"
+    >
+
+    <!-- Main path for the payment/credit card shape -->
+    <path
+        android:name="payment_icon"
+        android:fillColor="@android:color/white"
+
+        <!-- Optional stroke to ensure consistent boundary rendering -->
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="1"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+
+        android:pathData="M20,4H4C2.89,4 2.01,4.89 2.01,6L2,18C2,19.11 2.89,20 4,20H20C21.11,20 22,19.11 22,18V6C22,4.89 21.11,4 20,4ZM20,18H4V12H20V18ZM20,8H4V6H20V8Z" />
+</vector>
