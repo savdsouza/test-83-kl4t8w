@@ -1,0 +1,171 @@
+/* 
+  =============================================================================
+  =  IMPORTS                                                                  =
+  =============================================================================
+  We import our global CSS custom properties and variables (e.g., colors, 
+  spacing, font sizes, transitions) from "variables.css" to ensure consistent 
+  styling across all components in the application.
+*/
+@import url('../styles/variables.css');
+
+/* 
+  =============================================================================
+  =  CUSTOM MEDIA QUERIES                                                     =
+  =============================================================================
+  These custom media queries define named breakpoints for responsive behavior. 
+  They align with the design system breakpoints established for this application.
+*/
+@custom-media --viewport-sm (max-width: 375px);
+@custom-media --viewport-md (max-width: 768px);
+@custom-media --viewport-lg (max-width: 1024px);
+
+/* 
+  =============================================================================
+  =  BASE COMPONENT CLASSES                                                   =
+  =============================================================================
+  Below are foundational styles for commonly used UI elements such as buttons 
+  and inputs. Each includes properties for layout, typography, and state handling.
+*/
+
+/* 
+  -----------------------------------------------------------------------------
+  .btn 
+  -----------------------------------------------------------------------------
+  Base button class providing a consistent look and feel. It handles alignment, 
+  spacing, cursor behavior, and transition effects. Buttons are intended to be 
+  styled further via modifier classes, as needed.
+*/
+.btn {
+  /* Layout & Positioning */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  /* Sizing & Spacing */
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+
+  /* Typography & Appearance */
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+
+  /* Transitions & Animations */
+  transition: var(--transition-normal);
+}
+
+/* 
+  -----------------------------------------------------------------------------
+  .input 
+  -----------------------------------------------------------------------------
+  Base input class that ensures a consistent design for form controls. 
+  It includes default padding, border handling, and full-width adaptation.
+*/
+.input {
+  /* Layout & Sizing */
+  width: 100%;
+  padding: var(--spacing-sm);
+
+  /* Borders & Rounding */
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+
+  /* Typography */
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+}
+
+/* 
+  =============================================================================
+  =  INTERACTION & STATE CLASSES                                              =
+  =============================================================================
+  Defines styles for hover, focus, loading, error, or any other specific 
+  component states. These help provide clear visual feedback to the user.
+*/
+
+/* 
+  -----------------------------------------------------------------------------
+  .btn:hover 
+  -----------------------------------------------------------------------------
+  Hover interaction for buttons, slightly reducing opacity and translating 
+  the button's position for a subtle raised effect.
+*/
+.btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* 
+  -----------------------------------------------------------------------------
+  .btn:focus-visible 
+  -----------------------------------------------------------------------------
+  Focus state for keyboard accessibility. This ensures that users navigating 
+  via tab or other keyboard methods can see a distinct outline.
+*/
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 
+  -----------------------------------------------------------------------------
+  .btn--loading 
+  -----------------------------------------------------------------------------
+  Indicates the button is in a loading or processing state, disabling interaction 
+  and giving a visual cue via reduced opacity.
+*/
+.btn--loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* 
+  -----------------------------------------------------------------------------
+  .input--error 
+  -----------------------------------------------------------------------------
+  Error state for input fields, highlighting the border and background 
+  to inform the user that validation has failed or additional attention is needed.
+*/
+.input--error {
+  border-color: var(--color-error);
+  background-color: var(--color-error-light);
+}
+
+/* 
+  =============================================================================
+  =  RESPONSIVE & ACCESSIBILITY QUERIES                                       =
+  =============================================================================
+  Below are media queries that adapt component styles for different device sizes 
+  (small mobile screens) and user preferences (reduced motion).
+*/
+
+/* 
+  -----------------------------------------------------------------------------
+  Mobile Viewport Adjustments 
+  -----------------------------------------------------------------------------
+  Using the custom media query --viewport-sm to optimize styles specifically 
+  for small mobile devices such as narrower smartphones.
+*/
+@media (--viewport-sm) {
+  .btn {
+    width: 100%;
+    padding: var(--spacing-md);
+  }
+  .input {
+    font-size: 16px;
+  }
+}
+
+/* 
+  -----------------------------------------------------------------------------
+  Reduced Motion 
+  -----------------------------------------------------------------------------
+  Respects user preferences for reduced motion by disabling transitions. 
+  This improves accessibility for users with motion sensitivities.
+*/
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
