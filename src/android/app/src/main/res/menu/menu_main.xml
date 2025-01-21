@@ -1,0 +1,88 @@
+<!--
+  Main activity options menu resource.
+  Implements Material Design guidelines and provides quick access
+  to core application features including search, profile management,
+  settings, and help functionality.
+
+  This file supports:
+    • RTL layout (rtl_support = true)
+    • Tablet optimization (tablet_optimization = true)
+    • Dark mode styling (dark_mode_support = true)
+
+  External Library Reference:
+    - androidx.appcompat.widget.Toolbar (version 1.6.1)
+      Purpose: Material design toolbar support and menu integration
+
+  Accessibility:
+    Each menu item includes a contentDescription attribute for screen readers
+    and other accessibility services.
+
+  Menu Items:
+    1. Search (action_search):
+       - Provides collapsible search action view (SearchView).
+       - ifRoom|collapseActionView ensures it displays if space is available,
+         otherwise collapses into a small icon.
+    2. Profile (action_profile):
+       - Gives quick access to the user profile management section.
+    3. Settings (action_settings):
+       - Opens the settings screen where users can configure the application.
+    4. Help (action_help):
+       - Offers access to help/support resources.
+
+  Order of menu items is controlled by orderInCategory attribute.
+  This ensures predictable item grouping and arrangement on various screen sizes.
+-->
+
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!--
+      1. Search Menu Item
+      Provides immediate search functionality with a collapsible SearchView.
+    -->
+    <item
+        android:id="@+id/action_search"
+        android:title="@string/search_title"
+        android:icon="@drawable/ic_search"
+        app:showAsAction="ifRoom|collapseActionView"
+        android:actionViewClass="androidx.appcompat.widget.SearchView"
+        android:contentDescription="@string/search_content_description"
+        android:orderInCategory="100" />
+
+    <!--
+      2. Profile Menu Item
+      Gives users direct access to their account profile management screen.
+    -->
+    <item
+        android:id="@+id/action_profile"
+        android:title="@string/profile_title"
+        android:icon="@drawable/ic_profile"
+        app:showAsAction="ifRoom"
+        android:contentDescription="@string/profile_content_description"
+        android:orderInCategory="300" />
+
+    <!--
+      3. Settings Menu Item
+      Navigates to the application settings page for configuring preferences.
+    -->
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/settings_title"
+        app:showAsAction="never"
+        android:contentDescription="@string/settings_content_description"
+        android:orderInCategory="200" />
+
+    <!--
+      4. Help Menu Item
+      Provides access to help documentation and support resources.
+    -->
+    <item
+        android:id="@+id/action_help"
+        android:title="@string/help_title"
+        android:icon="@drawable/ic_help"
+        app:showAsAction="never"
+        android:contentDescription="@string/help_content_description"
+        android:orderInCategory="400" />
+
+</menu>
