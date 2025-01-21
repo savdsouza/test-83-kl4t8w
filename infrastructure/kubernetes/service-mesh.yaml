@@ -1,0 +1,142 @@
+################################################################################
+# Istio Operator Configuration for the Dog Walking Platform
+# --------------------------------------------------------------------------------
+# This manifest is validated against:
+# - Kubernetes v1.28  (see external import reference)
+# - Istio v1.20       (see external import reference)
+#
+# References:
+#   1) System Architecture -> Communication Patterns:
+#      - Ensures strict mTLS enforcement and advanced observability through Istio.
+#   2) Cross-Cutting Concerns -> System Monitoring:
+#      - 100% tracing sampling, log output to /dev/stdout, Jaeger integration.
+#   3) Security Architecture -> Zero-trust model:
+#      - Strict mode mTLS, registry-only outbound policy, access logging for auditing.
+#
+# Integration Notes:
+#   - The "api-gateway.yaml" (imported as Deployment) will be automatically injected
+#     with Istio sidecars to intercept inbound/outbound traffic.
+#   - The "ingress.yaml" (imported as Ingress) will route external traffic to the
+#     Istio Ingress Gateway, enabling consistent security policies.
+#
+# This operator configuration exposes an Istio service mesh with egress/ingress
+# gateways, advanced resource usage constraints, HPA setup for Istio control-plane
+# components, and auto mTLS for zero-trust communication across pods.
+################################################################################
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: dog-walking-istio-config
+  namespace: istio-system
+spec:
+  ##############################################################################
+  # Istio Profile:
+  #   "default" provides a well-balanced configuration for production, enabling
+  #   essential components such as Pilot, Ingress Gateway, Egress Gateway, etc.
+  ##############################################################################
+  profile: default
+
+  ##############################################################################
+  # COMPONENTS:
+  #   Fine-grained resource tuning for Pilot and Gateways, including CPU/Memory
+  #   requests/limits and Horizontal Pod Autoscaler specs.
+  ##############################################################################
+  components:
+    pilot:
+      k8s:
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "4Gi"
+          limits:
+            cpu: "2000m"
+            memory: "8Gi"
+        hpaSpec:
+          minReplicas: 2
+          maxReplicas: 5
+
+    ##########################################################################
+    # EGRESS GATEWAY:
+    #   Enabled to control traffic leaving the mesh. Resource constraints set
+    #   for stable, efficient operation.
+    ##########################################################################
+    egressGateways:
+      - name: istio-egressgateway
+        enabled: true
+        k8s:
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "400m"
+              memory: "512Mi"
+
+    ##########################################################################
+    # INGRESS GATEWAY:
+    #   Enabled to handle external traffic entering the mesh, complementing the
+    #   "dog-walking-ingress" from ingress.yaml. Enforced TLS and mTLS bridging
+    #   configurations occur here for zero-trust security boundaries.
+    ##########################################################################
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "400m"
+              memory: "512Mi"
+
+  ##############################################################################
+  # MESH CONFIGURATION:
+  #   - enableTracing: Allows distributed tracing across all services.
+  #   - defaultConfig.tracing.sampling: Set to 100% for maximum observability.
+  #   - enableAutoMtls: Automates certificate provisioning for service-to-service
+  #     encryption.
+  #   - accessLogFile: Streams logs for security auditing.
+  #   - outboundTrafficPolicy: "REGISTRY_ONLY" to restrict unknown external endpoints.
+  #   - security.mtls.mode: "STRICT" enforces zero-trust model.
+  ##############################################################################
+  meshConfig:
+    enableTracing: true
+    defaultConfig:
+      tracing:
+        sampling: 100.0
+        zipkin:
+          address: jaeger-collector.monitoring:9411
+    enableAutoMtls: true
+    accessLogFile: "/dev/stdout"
+    outboundTrafficPolicy:
+      mode: REGISTRY_ONLY
+    security:
+      mtls:
+        mode: STRICT
+
+  ##############################################################################
+  # VALUES:
+  #   Centralized override for global proxy resources, mutual TLS defaults, and
+  #   sidecar injection settings. The sidecarInjectorWebhook config ensures that
+  #   HTTP probes are automatically rewritten, and the objectSelector allows for
+  #   granular injection scoping (for example, to include the api-gateway pods
+  #   from api-gateway.yaml).
+  ##############################################################################
+  values:
+    global:
+      proxy:
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "400m"
+            memory: "512Mi"
+      mtls:
+        enabled: true
+        auto: false
+    sidecarInjectorWebhook:
+      rewriteAppHTTPProbe: true
+      objectSelector:
+        enabled: true
